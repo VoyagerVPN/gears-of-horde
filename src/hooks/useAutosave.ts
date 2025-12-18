@@ -1,0 +1,245 @@
+"use client";
+
+import { useEffect, useRef, useCallback, useState } from "react";
+import { ModData } from "@/types/mod";
+
+export interface DraftData {
+    id: string;
+    data: ModData;
+    savedAt: string;
+}
+
+export interface UseAutosaveOptions {
+    /** Unique key for this draft (e.g., mod slug or 'new') */
+    draftKey: string;
+    /** Current mod data to autosave */
+    data: ModData;
+    /** Server's updatedAt timestamp (for existing mods) */
+    serverUpdatedAt?: string;
+    /** Interval in milliseconds for autosave (default: 5 minutes) */
+    intervalMs?: number;
+    /** Maximum number of draft versions to keep (default: 10) */
+    maxVersions?: number;
+    /** Called when autosave completes */
+    onSaved?: () => void;
+}
+
+export interface UseAutosaveReturn {
+    /** Whether any drafts exist in localStorage */
+    hasDraft: boolean;
+    /** All saved draft versions (newest first) */
+    draftHistory: DraftData[];
+    /** Whether currently saving */
+    isSaving: boolean;
+    /** Load a specific draft into state (defaults to latest) */
+    restoreDraft: (draftId?: string) => ModData | null;
+    /** Delete a specific draft by ID */
+    deleteDraft: (draftId: string) => void;
+    /** Clear all drafts for this mod */
+    clearAllDrafts: () => void;
+    /** Manually trigger a save */
+    saveNow: () => void;
+    /** Timestamp of last successful save */
+    lastSavedAt: string | null;
+}
+
+const DRAFT_PREFIX = "mod-drafts-";
+
+/**
+ * Generate a unique ID for a draft
+ */
+function generateDraftId(): string {
+    return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
+
+/**
+ * Hook for autosaving mod data to localStorage with interval-based saving
+ * and multi-version draft history support
+ */
+export function useAutosave({
+    draftKey,
+    data,
+    serverUpdatedAt,
+    intervalMs = 5 * 60 * 1000, // 5 minutes default
+    maxVersions = 10,
+    onSaved,
+}: UseAutosaveOptions): UseAutosaveReturn {
+    const storageKey = `${DRAFT_PREFIX}${draftKey}`;
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const [draftHistory, setDraftHistory] = useState<DraftData[]>([]);
+    const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+    const lastSavedData = useRef<string>("");
+    const isInitialMount = useRef(true);
+
+    // Load existing drafts on mount
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        try {
+            const stored = localStorage.getItem(storageKey);
+            if (stored) {
+                const parsed: DraftData[] = JSON.parse(stored);
+
+                // Filter drafts newer than server data
+                let validDrafts = parsed;
+                if (serverUpdatedAt) {
+                    const serverTime = new Date(serverUpdatedAt).getTime();
+                    validDrafts = parsed.filter(draft => {
+                        const draftTime = new Date(draft.savedAt).getTime();
+                        return draftTime > serverTime;
+                    });
+
+                    // If all drafts are older than server, clear them
+                    if (validDrafts.length === 0 && parsed.length > 0) {
+                        localStorage.removeItem(storageKey);
+                    } else if (validDrafts.length !== parsed.length) {
+                        localStorage.setItem(storageKey, JSON.stringify(validDrafts));
+                    }
+                }
+
+                setDraftHistory(validDrafts);
+                if (validDrafts.length > 0) {
+                    setLastSavedAt(validDrafts[0].savedAt);
+                }
+            }
+        } catch (error) {
+            console.error("Failed to load drafts:", error);
+            localStorage.removeItem(storageKey);
+        }
+    }, [storageKey, serverUpdatedAt]);
+
+    // Save to localStorage
+    const saveDraft = useCallback(() => {
+        if (typeof window === "undefined") return;
+
+        const dataString = JSON.stringify(data);
+
+        // Don't save if data hasn't changed
+        if (dataString === lastSavedData.current) {
+            return;
+        }
+
+        setIsSaving(true);
+
+        try {
+            const newDraft: DraftData = {
+                id: generateDraftId(),
+                data,
+                savedAt: new Date().toISOString(),
+            };
+
+            // Get existing drafts and add new one at the beginning
+            const existingDrafts = [...draftHistory];
+            existingDrafts.unshift(newDraft);
+
+            // Limit to maxVersions
+            const limitedDrafts = existingDrafts.slice(0, maxVersions);
+
+            localStorage.setItem(storageKey, JSON.stringify(limitedDrafts));
+            lastSavedData.current = dataString;
+            setDraftHistory(limitedDrafts);
+            setLastSavedAt(newDraft.savedAt);
+            onSaved?.();
+        } catch (error) {
+            console.error("Failed to save draft:", error);
+        } finally {
+            setIsSaving(false);
+        }
+    }, [data, draftHistory, storageKey, maxVersions, onSaved]);
+
+    // Interval-based autosave
+    useEffect(() => {
+        // Skip initial mount to avoid saving initial data immediately
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            lastSavedData.current = JSON.stringify(data);
+            return;
+        }
+
+        // Clear existing interval
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+        }
+
+        // Set up interval-based saving
+        intervalRef.current = setInterval(() => {
+            saveDraft();
+        }, intervalMs);
+
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+        };
+    }, [data, intervalMs, saveDraft]);
+
+    // Restore a specific draft or the latest one
+    const restoreDraft = useCallback((draftId?: string): ModData | null => {
+        if (draftHistory.length === 0) return null;
+
+        const targetDraft = draftId
+            ? draftHistory.find(d => d.id === draftId)
+            : draftHistory[0];
+
+        if (targetDraft) {
+            return targetDraft.data;
+        }
+        return null;
+    }, [draftHistory]);
+
+    // Delete a specific draft
+    const deleteDraft = useCallback((draftId: string) => {
+        if (typeof window === "undefined") return;
+
+        const updatedDrafts = draftHistory.filter(d => d.id !== draftId);
+
+        if (updatedDrafts.length === 0) {
+            localStorage.removeItem(storageKey);
+        } else {
+            localStorage.setItem(storageKey, JSON.stringify(updatedDrafts));
+        }
+
+        setDraftHistory(updatedDrafts);
+
+        // Update lastSavedAt if we still have drafts
+        if (updatedDrafts.length > 0) {
+            setLastSavedAt(updatedDrafts[0].savedAt);
+        } else {
+            setLastSavedAt(null);
+        }
+    }, [draftHistory, storageKey]);
+
+    // Clear all drafts
+    const clearAllDrafts = useCallback(() => {
+        if (typeof window === "undefined") return;
+
+        localStorage.removeItem(storageKey);
+        setDraftHistory([]);
+        setLastSavedAt(null);
+    }, [storageKey]);
+
+    // Manual save
+    const saveNow = useCallback(() => {
+        saveDraft();
+    }, [saveDraft]);
+
+    return {
+        hasDraft: draftHistory.length > 0,
+        draftHistory,
+        isSaving,
+        restoreDraft,
+        deleteDraft,
+        clearAllDrafts,
+        saveNow,
+        lastSavedAt,
+    };
+}
+
+/**
+ * Utility to clear all drafts for a mod by key (useful after successful save)
+ */
+export function clearModDraft(draftKey: string): void {
+    if (typeof window === "undefined") return;
+    localStorage.removeItem(`${DRAFT_PREFIX}${draftKey}`);
+}

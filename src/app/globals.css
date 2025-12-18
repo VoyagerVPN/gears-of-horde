@@ -1,26 +1,89 @@
 @import "tailwindcss";
 
+/* Custom Font Registration */
+@font-face {
+  font-family: "CGF Locust Resistance";
+  src: url("/fonts/CGF Locust Resistance.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  /* Color Palette */
+  --color-background: #191919;
+  --color-surface: #2d2d2d;
+  --color-surfaceHover: #3d3d3d;
+  --color-primary: #ce4729;
+  --color-textMain: #ededed;
+  --color-textMuted: #a1a1a1;
+
+  /* Semantic Colors */
+  --color-success: #22c55e;
+  --color-warning: #eab308;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Typography Scale */
+  --font-size-xs: 10px;
+  --font-size-sm: 11px;
+  --font-size-base: 12px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 18px;
+  --font-size-2xl: 20px;
+  --font-size-3xl: 24px;
+
+  /* Spacing Scale */
+  --spacing-xs: 0.25rem;
+  /* 4px */
+  --spacing-sm: 0.5rem;
+  /* 8px */
+  --spacing-md: 1rem;
+  /* 16px */
+  --spacing-lg: 1.5rem;
+  /* 24px */
+  --spacing-xl: 2rem;
+  /* 32px */
+  --spacing-2xl: 3rem;
+  /* 48px */
+
+  /* Border Radius */
+  --radius-sm: 0.375rem;
+  /* 6px */
+  --radius-md: 0.5rem;
+  /* 8px */
+  --radius-lg: 0.75rem;
+  /* 12px */
+  --radius-xl: 1rem;
+  /* 16px */
+
+  /* Transitions */
+  --transition-fast: 150ms;
+  --transition-base: 200ms;
+  --transition-slow: 300ms;
+
+  /* Custom Font */
+  --font-locust: "CGF Locust Resistance", sans-serif;
+
+  /* Animations */
+  --animate-spin-slow: spin 3s linear infinite;
+}
+
+/* Tag Styling (standalone CSS variables) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --tag-radius: 4px;
+  --tag-font-size: 9px;
+  --tag-padding-x: 6px;
+  --tag-padding-y: 2px;
+  --tag-font-weight: 500;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Global Styles */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-textMain);
+  /* Font smoothing for dark theme */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
