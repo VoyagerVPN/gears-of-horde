@@ -5,6 +5,7 @@ import { ChevronDown, Plus, Check, Gamepad2 } from "lucide-react";
 import { TagData } from "@/types/mod";
 import { createTag, recalculateGameVersionColors } from "@/app/actions/tag-actions";
 import { getTagColor, colorToTagStyles } from "@/lib/tag-colors";
+import { normalizeGameVersion, gameVersionToTagValue } from "@/lib/utils";
 
 interface GameVersionSelectorProps {
     value: string;
@@ -56,18 +57,22 @@ export default function GameVersionSelector({
 
         setIsSubmitting(true);
         try {
+            // Normalize version to always have "V" prefix (e.g., "2.2" → "V2.2")
+            const normalizedVersion = normalizeGameVersion(newVersionInput.trim());
+            const tagValue = gameVersionToTagValue(normalizedVersion);
+            
             // Create the tag
             await createTag({
                 category: 'gamever',
-                value: newVersionInput.trim().toLowerCase().replace(/[^a-z0-9.]/g, '_'),
-                displayName: newVersionInput.trim(),
+                value: tagValue,
+                displayName: normalizedVersion,
             });
 
             // Recalculate colors for all game versions
             await recalculateGameVersionColors();
 
-            // Select the new version
-            onChange(newVersionInput.trim());
+            // Select the new version (normalized)
+            onChange(normalizedVersion);
 
             // Refresh tags
             if (onTagsRefresh) {
@@ -155,7 +160,7 @@ export default function GameVersionSelector({
                                             setNewVersionInput("");
                                         }
                                     }}
-                                    placeholder="e.g., V1.2"
+                                    placeholder="e.g., 1.2 or V1.2"
                                     className="flex-1 bg-black/40 border border-white/10 rounded px-2 py-1 text-white font-mono text-[10px] outline-none focus:border-primary"
                                     disabled={isSubmitting}
                                 />

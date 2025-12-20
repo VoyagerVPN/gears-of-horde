@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, X, Plus, Tag as TagIcon, TrendingUp } from 'lucide-react';
+import { Search, X, Plus, Tag as TagIcon, TrendingUp, Check } from 'lucide-react';
 import { searchTags, fetchPopularTags, TagData } from '@/app/actions/tag-actions';
 import Tag from '@/components/ui/Tag';
 import { cn } from '@/lib/utils';
@@ -22,6 +22,8 @@ interface TagSelectorProps {
     maxTags?: number;
     /** Additional className */
     className?: string;
+    /** Hide the list of selected tags (useful if parent renders them differently) */
+    hideSelectedTags?: boolean;
 }
 
 export default function TagSelector({
@@ -31,7 +33,8 @@ export default function TagSelector({
     placeholder,
     showPopular = true,
     maxTags,
-    className
+    className,
+    hideSelectedTags = false
 }: TagSelectorProps) {
     const t = useTranslations('Common');
     const [query, setQuery] = useState('');
@@ -45,9 +48,8 @@ export default function TagSelector({
     // Fetch popular tags on mount
     useEffect(() => {
         if (showPopular) {
-            fetchPopularTags(8).then(tags => {
-                // Filter to only show 'tag' category and exclude already selected
-                setPopularTags(tags.filter(t => t.category === category));
+            fetchPopularTags(8, category).then(tags => {
+                setPopularTags(tags);
             });
         }
     }, [showPopular, category]);
@@ -62,18 +64,14 @@ export default function TagSelector({
         setIsLoading(true);
         try {
             const results = await searchTags(searchQuery, category);
-            // Filter out already selected tags
-            const filtered = results.filter(
-                r => !selectedTags.some(s => s.displayName.toLowerCase() === r.displayName.toLowerCase())
-            );
-            setSuggestions(filtered);
+            setSuggestions(results);
         } catch (error) {
             console.error('Error searching tags:', error);
             setSuggestions([]);
         } finally {
             setIsLoading(false);
         }
-    }, [category, selectedTags]);
+    }, [category]);
 
     // Debounce search
     useEffect(() => {
@@ -94,27 +92,39 @@ export default function TagSelector({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // Helper to check if tag is selected
+    const isSelected = (tagName: string) => {
+        return selectedTags.some(s => s.displayName.toLowerCase() === tagName.toLowerCase());
+    };
+
     const addTag = (tagName: string) => {
         if (!tagName.trim()) return;
         if (maxTags && selectedTags.length >= maxTags) return;
-        if (selectedTags.some(t => t.displayName.toLowerCase() === tagName.toLowerCase())) return;
+        if (isSelected(tagName)) return;
 
         onTagsChange([...selectedTags.map(t => ({ displayName: t.displayName, category: t.category || category })), { displayName: tagName.trim(), category }]);
         setQuery('');
         setSuggestions([]);
-        setIsOpen(false);
+        // Keep dropdown open so user can add multiple tags
     };
 
     const removeTag = (tagName: string) => {
         onTagsChange(selectedTags.filter(t => t.displayName !== tagName).map(t => ({ displayName: t.displayName, category: t.category || category })));
     };
 
+    const toggleTag = (tagName: string) => {
+        if (isSelected(tagName)) {
+            removeTag(tagName);
+        } else {
+            addTag(tagName);
+        }
+    };
+
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            // If there's a suggestion highlighted or query matches, add it
             if (suggestions.length > 0) {
-                addTag(suggestions[0].displayName);
+                toggleTag(suggestions[0].displayName);
             } else if (query.trim()) {
                 addTag(query);
             }
@@ -122,19 +132,35 @@ export default function TagSelector({
             setIsOpen(false);
             setQuery('');
         } else if (e.key === 'Backspace' && !query && selectedTags.length > 0) {
-            // Remove last tag if backspace on empty input
             removeTag(selectedTags[selectedTags.length - 1].displayName);
         }
     };
 
-    // Available popular tags (not already selected)
-    const availablePopular = popularTags.filter(
-        p => !selectedTags.some(s => s.displayName.toLowerCase() === p.displayName.toLowerCase())
-    );
+    // Combine server suggestions with matching selected tags (for local feedback)
+    const matchingSelected = query
+        ? selectedTags.filter(t =>
+            t.displayName.toLowerCase().includes(query.toLowerCase()) &&
+            (t.category === category || !t.category)
+        )
+        : [];
+
+    // Deduplicate suggestions + matching selected
+    const allSuggestions = [...suggestions];
+    matchingSelected.forEach(selected => {
+        if (!allSuggestions.some(s => s.displayName.toLowerCase() === selected.displayName.toLowerCase())) {
+            // Convert to TagData shape if needed (TagData has id, usageCount etc which might be missing on selected)
+            allSuggestions.push({
+                id: selected.id || `temp-${selected.displayName}`,
+                displayName: selected.displayName,
+                category: selected.category || category,
+                usageCount: 0 // Local/Selected tags might not have usage count known
+            });
+        }
+    });
 
     return (
         <div className={cn("space-y-3", className)} ref={dropdownRef}>
-            {/* Input with dropdown */}
+            {/* Input ... (same) */}
             <div className="relative">
                 <div className="relative flex items-center">
                     <Search size={14} className="absolute left-3 text-textMuted pointer-events-none" />
@@ -159,34 +185,42 @@ export default function TagSelector({
                 </div>
 
                 {/* Dropdown */}
-                {isOpen && (query.length > 0 || availablePopular.length > 0) && (
+                {isOpen && (query.length > 0 || popularTags.length > 0) && (
                     <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-white/10 rounded-lg shadow-xl z-50 max-h-64 overflow-y-auto">
-                        {/* Search results */}
-                        {query && suggestions.length > 0 && (
+                        {/* Search results - horizontal pill layout like Popular Tags */}
+                        {query && allSuggestions.length > 0 && (
                             <div className="p-2 border-b border-white/5">
                                 <div className="text-[10px] uppercase tracking-wider text-textMuted mb-2 px-1">
                                     {t('suggestions')}
                                 </div>
-                                {suggestions.map(tag => (
-                                    <button
-                                        key={tag.id}
-                                        onClick={() => addTag(tag.displayName)}
-                                        className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-white/5 text-left transition-colors group"
-                                    >
-                                        <Tag color={tag.color || undefined} className="text-xs">
-                                            {tag.displayName}
-                                        </Tag>
-                                        <span className="text-[10px] text-textMuted">
-                                            {tag.usageCount} {t('mods')}
-                                        </span>
-                                        <Plus size={12} className="ml-auto text-textMuted group-hover:text-primary transition-colors" />
-                                    </button>
-                                ))}
+                                <div className="flex flex-wrap gap-1.5">
+                                    {allSuggestions.map(tag => {
+                                        const selected = isSelected(tag.displayName);
+                                        return (
+                                            <span
+                                                key={tag.id || tag.displayName}
+                                                onClick={() => toggleTag(tag.displayName)}
+                                                className={cn(
+                                                    "cursor-pointer transition-all hover:scale-105 active:scale-95 inline-flex items-center gap-1",
+                                                    selected && "ring-1 ring-primary/50 rounded-md"
+                                                )}
+                                            >
+                                                <Tag
+                                                    category={tag.category || category}
+                                                    color={tag.color || undefined}
+                                                >
+                                                    {tag.displayName} ({tag.usageCount ?? 0})
+                                                </Tag>
+                                                {selected && <Check size={10} className="text-primary -ml-1" />}
+                                            </span>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         )}
 
                         {/* Create new tag option */}
-                        {query && !suggestions.some(s => s.displayName.toLowerCase() === query.toLowerCase()) && (
+                        {query && !allSuggestions.some(s => s.displayName.toLowerCase() === query.toLowerCase()) && !isSelected(query) && (
                             <button
                                 onClick={() => addTag(query)}
                                 className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/5 text-left transition-colors border-b border-white/5"
@@ -198,24 +232,27 @@ export default function TagSelector({
                             </button>
                         )}
 
-                        {/* Popular tags */}
-                        {!query && availablePopular.length > 0 && (
+                        {/* Popular tags - filtered to exclude already selected */}
+                        {!query && popularTags.filter(p => !isSelected(p.displayName)).length > 0 && (
                             <div className="p-2">
                                 <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-textMuted mb-2 px-1">
                                     <TrendingUp size={10} />
                                     {t('popularTags')}
                                 </div>
                                 <div className="flex flex-wrap gap-1.5">
-                                    {availablePopular.slice(0, 6).map(tag => (
-                                        <button
+                                    {popularTags.filter(p => !isSelected(p.displayName)).slice(0, 6).map(tag => (
+                                        <span
                                             key={tag.id}
                                             onClick={() => addTag(tag.displayName)}
-                                            className="transition-transform hover:scale-105 active:scale-95"
+                                            className="cursor-pointer transition-all hover:scale-105 active:scale-95"
                                         >
-                                            <Tag color={tag.color || undefined} className="text-xs cursor-pointer hover:opacity-80">
-                                                {tag.displayName}
+                                            <Tag
+                                                category={tag.category || category}
+                                                color={tag.color || undefined}
+                                            >
+                                                {tag.displayName} ({tag.usageCount ?? 0})
                                             </Tag>
-                                        </button>
+                                        </span>
                                     ))}
                                 </div>
                             </div>
@@ -232,36 +269,38 @@ export default function TagSelector({
             </div>
 
             {/* Selected tags */}
-            {selectedTags.length > 0 && (
+            {!hideSelectedTags && selectedTags.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
-                    {selectedTags.filter(t => t.category === category || !t.category).map(tag => (
-                        <span
-                            key={tag.displayName}
-                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-xs"
-                            style={(() => {
-                                // Author tags always use blue
-                                const tagColor = tag.color || (category === 'author' ? '#3b82f6' : null);
-                                return tagColor ? {
-                                    color: tagColor,
-                                    backgroundColor: `${tagColor}1a`,
-                                    borderColor: `${tagColor}33`
-                                } : {
-                                    color: '#a1a1aa',
-                                    backgroundColor: 'rgba(161, 161, 170, 0.1)',
-                                    borderColor: 'rgba(161, 161, 170, 0.2)'
-                                };
-                            })()}
-                        >
-                            {tag.displayName}
-                            <button
-                                type="button"
-                                onClick={() => removeTag(tag.displayName)}
-                                className="text-current opacity-60 hover:opacity-100 hover:text-red-400 transition-all"
+                    {selectedTags
+                        .filter(t => t.category === category || !t.category)
+                        .sort((a, b) => a.displayName.localeCompare(b.displayName))
+                        .map(tag => (
+                            <span
+                                key={tag.displayName}
+                                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-xs"
+                                style={(() => {
+                                    const tagColor = tag.color || (category === 'author' ? '#3b82f6' : null);
+                                    return tagColor ? {
+                                        color: tagColor,
+                                        backgroundColor: `${tagColor}1a`,
+                                        borderColor: `${tagColor}33`
+                                    } : {
+                                        color: '#a1a1aa',
+                                        backgroundColor: 'rgba(161, 161, 170, 0.1)',
+                                        borderColor: 'rgba(161, 161, 170, 0.2)'
+                                    };
+                                })()}
                             >
-                                <X size={12} />
-                            </button>
-                        </span>
-                    ))}
+                                {tag.displayName}
+                                <button
+                                    type="button"
+                                    onClick={() => removeTag(tag.displayName)}
+                                    className="text-current opacity-60 hover:opacity-100 hover:text-red-400 transition-all"
+                                >
+                                    <X size={12} />
+                                </button>
+                            </span>
+                        ))}
                 </div>
             )}
         </div>

@@ -1,9 +1,22 @@
 'use server';
 
 import { db as prisma } from "@/lib/db";
-import { ModData, TranslationSuggestion, ModStatusType } from "@/types/mod";
+import { ModData, TranslationSuggestion, ModStatusType, ModChangelog, ModLocalization } from "@/types/mod";
+import { PrismaModWithTags, mapPrismaTagToTagData, mapPrismaModToModData, ModLinksJson, ModVideosJson, ModChangelogJson, ModLocalizationJson } from "@/types/database";
 import { revalidatePath } from "next/cache";
 import { ROUTES } from "@/lib/routes";
+import { normalizeGameVersion } from "@/lib/utils";
+import {
+    findOrCreateAuthorTag,
+    findOrCreateGameVerTag,
+    findOrCreateGenericTag,
+    findOrCreateLangTag,
+    findOrCreateNewscatTag,
+    removeModTagsByCategory,
+    batchLinkTagsToMod,
+    linkTagToModWithMetadata,
+    AUTHOR_TAG_COLOR
+} from "@/lib/tag-utils";
 
 export async function fetchAllMods(): Promise<ModData[]> {
     const mods = await prisma.mod.findMany({
@@ -18,29 +31,7 @@ export async function fetchAllMods(): Promise<ModData[]> {
     });
 
     // Map Prisma result to ModData interface
-    return mods.map((mod: any) => ({
-        ...mod,
-        bannerUrl: mod.bannerUrl ?? undefined, // Convert null to undefined
-        status: mod.status as ModStatusType,
-        tags: mod.tags.map((mt: any) => ({
-            id: mt.tag.id,
-            displayName: mt.tag.displayName,
-            color: mt.tag.color,
-            category: mt.tag.category
-        })),
-        createdAt: mod.createdAt.toISOString(),
-        updatedAt: mod.updatedAt.toISOString(),
-        links: mod.links as any,
-        videos: mod.videos as any,
-        changelog: mod.changelog as any,
-        localizations: mod.localizations as any,
-        stats: {
-            rating: mod.rating,
-            ratingCount: mod.ratingCount,
-            downloads: mod.downloads,
-            views: mod.views
-        }
-    }));
+    return mods.map((mod: PrismaModWithTags) => mapPrismaModToModData(mod));
 }
 
 export async function fetchModBySlug(slug: string): Promise<ModData | null> {
@@ -57,29 +48,7 @@ export async function fetchModBySlug(slug: string): Promise<ModData | null> {
 
     if (!mod) return null;
 
-    return {
-        ...mod,
-        bannerUrl: mod.bannerUrl ?? undefined, // Convert null to undefined
-        status: mod.status as ModStatusType,
-        tags: mod.tags.map((mt: any) => ({
-            id: mt.tag.id,
-            displayName: mt.tag.displayName,
-            color: mt.tag.color,
-            category: mt.tag.category
-        })),
-        createdAt: mod.createdAt.toISOString(),
-        updatedAt: mod.updatedAt.toISOString(),
-        links: mod.links as any,
-        videos: mod.videos as any,
-        changelog: mod.changelog as any,
-        localizations: mod.localizations as any,
-        stats: {
-            rating: mod.rating,
-            ratingCount: mod.ratingCount,
-            downloads: mod.downloads,
-            views: mod.views
-        }
-    };
+    return mapPrismaModToModData(mod as PrismaModWithTags);
 }
 
 export async function fetchPendingSuggestions(): Promise<TranslationSuggestion[]> {
@@ -109,32 +78,20 @@ export async function approveTranslationSuggestion(id: string) {
         const mod = await prisma.mod.findUnique({ where: { slug: suggestion.modSlug } });
         if (!mod) return;
 
-        // Create new localization entry
-        const newLocalization = {
-            code: suggestion.languageCode,
-            name: suggestion.languageName,
-            type: 'external',
-            url: suggestion.link
-        };
+        // Create new lang tag if it doesn't exist
+        const langTag = await findOrCreateLangTag(suggestion.languageName, suggestion.languageCode);
 
-        // Update Mod's localizations (replace existing if same code, or append)
-        const currentLocalizations = (mod.localizations as any[]) || [];
-        const updatedLocalizations = [
-            ...currentLocalizations.filter((l: any) => l.code !== suggestion.languageCode),
-            newLocalization
-        ];
+        // Link to mod with metadata
+        await linkTagToModWithMetadata(suggestion.modSlug, langTag.id, {
+            isExternal: true,
+            externalLink: suggestion.link
+        });
 
-        // Transaction to ensure atomicity
-        await prisma.$transaction([
-            prisma.mod.update({
-                where: { slug: suggestion.modSlug },
-                data: { localizations: updatedLocalizations }
-            }),
-            prisma.translationSuggestion.update({
-                where: { id },
-                data: { status: 'approved' }
-            })
-        ]);
+        // Update Suggestion status
+        await prisma.translationSuggestion.update({
+            where: { id },
+            data: { status: 'approved' }
+        });
 
         return { success: true };
     } catch (error) {
@@ -189,28 +146,8 @@ export async function updateModAction(slug: string, updates: any) {
 
     // 2. Handle News Creation (Quick Update)
     if (isQuickUpdate && updates.changes) {
-        // Create News Item
-        const tagValue = updates.eventType.toLowerCase(); // e.g., 'update'
-
-        // Find or create the tag for eventType
-        let tag = await prisma.tag.findUnique({
-            where: {
-                category_value: {
-                    category: 'newscat',
-                    value: tagValue
-                }
-            }
-        });
-
-        if (!tag) {
-            tag = await prisma.tag.create({
-                data: {
-                    category: 'newscat',
-                    value: tagValue,
-                    displayName: updates.eventType.charAt(0).toUpperCase() + updates.eventType.slice(1).toLowerCase()
-                }
-            });
-        }
+        // Create News Item - find or create the tag for eventType
+        const tag = await findOrCreateNewscatTag(updates.eventType);
 
         const newsContent = Array.isArray(updates.changes)
             ? updates.changes.map((c: string) => `- ${c}`).join('\n')
@@ -235,7 +172,7 @@ export async function updateModAction(slug: string, updates: any) {
         // Update Mod Changelog
         if (!updates.changelog) {
             const currentMod = await prisma.mod.findUnique({ where: { slug }, select: { changelog: true } });
-            const currentChangelog = (currentMod?.changelog as any[]) || [];
+            const currentChangelog = (currentMod?.changelog as unknown as ModChangelogJson[]) || [];
 
             const newLog = {
                 version: updates.version,
@@ -262,16 +199,11 @@ export async function updateModAction(slug: string, updates: any) {
     const tagIdsToLink: string[] = [];
 
     // 4a. Handle AUTHOR tags (from tags array with category='author')
-    // Remove old author tags first
-    await prisma.modTag.deleteMany({
-        where: {
-            modId: slug,
-            tag: { category: 'author' }
-        }
-    });
+    await removeModTagsByCategory(slug, 'author');
 
     // Get author tags from updates.tags array
-    const authorTagsFromUpdates = updates.tags?.filter((t: any) => t.category === 'author') || [];
+    interface TagUpdate { displayName: string; category?: string }
+    const authorTagsFromUpdates: TagUpdate[] = updates.tags?.filter((t: TagUpdate) => t.category === 'author') || [];
 
     // If no author tags in updates but there's an author field, use that as fallback
     if (authorTagsFromUpdates.length === 0 && updates.author) {
@@ -283,27 +215,7 @@ export async function updateModAction(slug: string, updates: any) {
         const authorName = typeof authorData === 'string' ? authorData : authorData.displayName;
         if (!authorName) continue;
 
-        // Find or create author tag with blue color
-        let authorTag = await prisma.tag.findUnique({
-            where: {
-                category_value: {
-                    category: 'author',
-                    value: authorName.toLowerCase()
-                }
-            }
-        });
-
-        if (!authorTag) {
-            authorTag = await prisma.tag.create({
-                data: {
-                    category: 'author',
-                    value: authorName.toLowerCase(),
-                    displayName: authorName,
-                    color: '#3b82f6' // blue-500
-                }
-            });
-        }
-
+        const authorTag = await findOrCreateAuthorTag(authorName);
         tagIdsToLink.push(authorTag.id);
 
         // Update mod.author field with first author for backwards compatibility
@@ -316,41 +228,36 @@ export async function updateModAction(slug: string, updates: any) {
     }
 
     // 4b. Handle GAMEVER tag (auto from gameVersion field)
-    const gameVersion = updates.gameVersion || (await prisma.mod.findUnique({ where: { slug }, select: { gameVersion: true } }))?.gameVersion;
-    if (gameVersion) {
-        // Remove old gamever tags
-        await prisma.modTag.deleteMany({
-            where: {
-                modId: slug,
-                tag: { category: 'gamever' }
-            }
-        });
+    const rawGameVersion = updates.gameVersion || (await prisma.mod.findUnique({ where: { slug }, select: { gameVersion: true } }))?.gameVersion;
+    if (rawGameVersion) {
+        // Normalize game version to always have "V" prefix (e.g., "2.2" → "V2.2")
+        const gameVersion = normalizeGameVersion(rawGameVersion);
 
-        // Convert "V2.4" to "2_4" for storage
-        const gameVerValue = gameVersion.replace(/^V/, '').replace('.', '_');
+        // Update mod.gameVersion with normalized value if it changed
+        if (gameVersion !== rawGameVersion) {
+            await prisma.mod.update({
+                where: { slug },
+                data: { gameVersion }
+            });
+        }
+
+        // Remove old gamever tags
+        await removeModTagsByCategory(slug, 'gamever');
 
         // Find or create gamever tag
-        let gameVerTag = await prisma.tag.findUnique({
-            where: {
-                category_value: {
-                    category: 'gamever',
-                    value: gameVerValue
-                }
-            }
-        });
+        let gameVerTag = await findOrCreateGameVerTag(gameVersion);
 
-        if (!gameVerTag) {
-            gameVerTag = await prisma.tag.create({
-                data: {
-                    category: 'gamever',
-                    value: gameVerValue,
-                    displayName: gameVersion
-                }
-            });
-
-            // Recalculate gamever colors when new version is added
+        // Check if this is a new tag OR existing tag without color
+        if (!gameVerTag.color) {
+            // Recalculate gamever colors when new version is added or missing color
             const { recalculateGameVersionColors } = await import('@/lib/tags');
             await recalculateGameVersionColors(prisma);
+
+            // Refetch tag to get the assigned color
+            const updatedTag = await prisma.tag.findUnique({ where: { id: gameVerTag.id } });
+            if (updatedTag) {
+                gameVerTag = updatedTag as any;
+            }
         }
 
         tagIdsToLink.push(gameVerTag.id);
@@ -359,54 +266,45 @@ export async function updateModAction(slug: string, updates: any) {
     // 4c. Handle TAG category (manually managed)
     if (updates.tags) {
         // Remove old tag: category tags
-        await prisma.modTag.deleteMany({
-            where: {
-                modId: slug,
-                tag: { category: 'tag' }
-            }
-        });
+        await removeModTagsByCategory(slug, 'tag');
 
         // Get only tags with category 'tag' from the updates
-        const manualTags = updates.tags.filter((t: any) => t.category === 'tag' || !t.category);
+        const manualTags = updates.tags.filter((t: TagUpdate) => t.category === 'tag' || !t.category);
 
         for (const tagData of manualTags) {
             const tagName = typeof tagData === 'string' ? tagData : tagData.displayName;
             if (!tagName) continue;
 
-            // Find or create tag
-            let tag = await prisma.tag.findFirst({
-                where: {
-                    category: 'tag',
-                    displayName: { equals: tagName, mode: 'insensitive' }
-                }
-            });
-
-            if (!tag) {
-                tag = await prisma.tag.create({
-                    data: {
-                        category: 'tag',
-                        value: tagName.toLowerCase().replace(/\s+/g, '-'),
-                        displayName: tagName
-                    }
-                });
-            }
-
+            const tag = await findOrCreateGenericTag(tagName);
             tagIdsToLink.push(tag.id);
         }
     }
 
-    // 4d. Create all tag links (skip duplicates)
-    for (const tagId of tagIdsToLink) {
-        const exists = await prisma.modTag.findUnique({
-            where: { modId_tagId: { modId: slug, tagId } }
-        });
+    // 4d. Handle LANG tags
+    if (updates.tags) {
+        // Remove old lang tags from this mod
+        await removeModTagsByCategory(slug, 'lang');
 
-        if (!exists) {
-            await prisma.modTag.create({
-                data: { modId: slug, tagId }
+        // Filter tags with category 'lang'
+        const langTags = updates.tags.filter((t: any) => t.category === 'lang');
+
+        for (const langData of langTags) {
+            // value is usually the code, displayName is name
+            const langName = langData.displayName;
+            const langCode = langData.value || langData.displayName.substring(0, 2).toUpperCase();
+
+            const langTag = await findOrCreateLangTag(langName, langCode);
+
+            // Link with metadata
+            await linkTagToModWithMetadata(slug, langTag.id, {
+                isExternal: langData.isExternal,
+                externalLink: langData.externalLink
             });
         }
     }
+
+    // 4e. Create all tag links using batch operation
+    await batchLinkTagsToMod(slug, tagIdsToLink);
 
     revalidatePath(ROUTES.mods);
     revalidatePath(`/mod/${slug}`);

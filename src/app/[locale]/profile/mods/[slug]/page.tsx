@@ -1,4 +1,4 @@
-import VisualModEditor from "@/components/admin/VisualModEditor";
+import VisualModEditor from "@/components/mod/VisualModEditor";
 import { fetchModBySlug } from "@/app/actions/admin-actions";
 import { fetchModSubmissionById } from "@/app/actions/mod-submission-actions";
 import { convertSubmissionToModData } from "@/lib/mod-utils";

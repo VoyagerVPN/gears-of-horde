@@ -5,7 +5,7 @@ import { Save, ArrowLeft, Loader2, RotateCcw, X, Cloud, History } from "lucide-r
 import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 
-import { ModData, TagData } from "@/types/mod";
+import { type ModData, type TagData } from "@/schemas";
 import UnifiedModLayout from "@/components/mod/UnifiedModLayout";
 import { createMod } from "@/app/actions/mod-actions";
 import { updateModAction } from "@/app/actions/admin-actions";
@@ -26,7 +26,9 @@ const EMPTY_MOD: ModData = {
     gameVersion: "V1.0",
     isSaveBreaking: false,
     features: [],
-    tags: [],
+    tags: [
+        { displayName: "English", category: "lang", value: "EN", isExternal: false }
+    ],
     installationSteps: [
         "Download the mod file.",
         "Extract the archive to your 7 Days to Die 'Mods' folder.",
@@ -38,9 +40,7 @@ const EMPTY_MOD: ModData = {
     videos: { trailer: "", review: "" },
     screenshots: [],
     changelog: [],
-    localizations: [
-        { code: "EN", name: "English", type: 'builtin', url: "" }
-    ]
+    localizations: []
 };
 
 interface VisualModEditorProps {
@@ -153,7 +153,7 @@ export default function VisualModEditor({
                     }
 
                     alert("Mod created successfully!");
-                    router.push(`/admin/mods/${result.slug}`);
+                    router.push(`/profile/mods/${result.data.slug}`);
                 } else {
                     alert(`Failed to create mod: ${result.error}`);
                 }

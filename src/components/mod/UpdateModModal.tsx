@@ -12,13 +12,26 @@ import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import DateDisplay from "@/components/DateDisplay";
 import { ModData, ModStatusType } from "@/types/mod";
+
+/** Data structure for mod updates */
+export interface ModUpdateData {
+    version: string;
+    gameVersion: string;
+    status: ModStatusType;
+    isSaveBreaking: boolean;
+    eventType?: string;
+    description?: string;
+    date?: string;
+    changes?: string[];
+    sourceUrl?: string;
+}
 import { STATUS_OPTIONS } from "@/lib/mod-constants";
 
 interface UpdateModModalProps {
   isOpen: boolean;
   onClose: () => void;
   mod: ModData | null;
-  onSave: (updatedData: any) => void;
+  onSave: (updatedData: ModUpdateData) => void;
   locale?: 'en' | 'ru';
 }
 

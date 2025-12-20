@@ -2,6 +2,7 @@
 
 import { db as prisma } from "@/lib/db";
 import { ModData, ModStatusType } from "@/types/mod";
+import { PrismaModWithTags, mapPrismaModToModData } from "@/types/database";
 
 interface SearchFilters {
     tag?: string;
@@ -81,26 +82,5 @@ export async function searchMods(query: string, filters: SearchFilters = {}): Pr
     });
 
     // Map to ModData
-    return mods.map((mod: any) => ({
-        ...mod,
-        status: mod.status as ModStatusType,
-        tags: mod.tags.map((mt: any) => ({
-            id: mt.tag.id,
-            displayName: mt.tag.displayName,
-            color: mt.tag.color,
-            category: mt.tag.category
-        })),
-        createdAt: mod.createdAt.toISOString(),
-        updatedAt: mod.updatedAt.toISOString(),
-        links: mod.links as any,
-        videos: mod.videos as any,
-        changelog: mod.changelog as any,
-        localizations: mod.localizations as any,
-        stats: {
-            rating: mod.rating,
-            ratingCount: mod.ratingCount,
-            downloads: mod.downloads,
-            views: mod.views
-        }
-    }));
+    return mods.map((mod: PrismaModWithTags) => mapPrismaModToModData(mod));
 }

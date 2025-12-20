@@ -1,7 +1,15 @@
 'use server';
 
 import { db as prisma } from "@/lib/db";
-import { ModSubmission, ModData, TagData, ModChangelog, ModLocalization } from "@/types/mod";
+import {
+    ModSubmissionCreateSchema,
+    type ModSubmission,
+    type ModData,
+    type TagData,
+    type ModChangelog,
+    type ModLocalization
+} from "@/schemas";
+import { validate, ok, err, type Result } from "@/lib/result";
 import { revalidatePath } from "next/cache";
 import { ROUTES } from "@/lib/routes";
 import { auth } from "@/auth";
@@ -9,11 +17,18 @@ import { auth } from "@/auth";
 /**
  * Submit a new mod for review (Developer role required)
  */
-export async function submitModSuggestion(data: Omit<ModSubmission, 'id' | 'submitterId' | 'submitterName' | 'submitterImage' | 'status' | 'submittedAt' | 'reviewedAt'>) {
+export async function submitModSuggestion(rawData: unknown): Promise<Result<{ id: string }>> {
+    // Validate input with Zod
+    const validated = validate(ModSubmissionCreateSchema, rawData);
+    if (!validated.success) {
+        return validated;
+    }
+    const data = validated.data;
+
     const session = await auth();
 
     if (!session?.user?.id) {
-        return { success: false, error: "Not authenticated" };
+        return err("Not authenticated");
     }
 
     // Check if user has Author role or higher
@@ -23,12 +38,12 @@ export async function submitModSuggestion(data: Omit<ModSubmission, 'id' | 'subm
     });
 
     if (!user || user.isBanned) {
-        return { success: false, error: "Account not found or banned" };
+        return err("Account not found or banned");
     }
 
     // Allow all users to submit mods
     // if (!['DEVELOPER', 'MODERATOR', 'ADMIN'].includes(user.role)) {
-    //     return { success: false, error: "Developer role required to submit mods" };
+    //     return err("Developer role required to submit mods");
     // }
 
     // Check if slug already exists (in mods or pending submissions)
@@ -36,15 +51,15 @@ export async function submitModSuggestion(data: Omit<ModSubmission, 'id' | 'subm
     const existingSubmission = await prisma.modSubmission.findUnique({ where: { slug: data.slug } });
 
     if (existingMod) {
-        return { success: false, error: "A mod with this slug already exists" };
+        return err("A mod with this slug already exists");
     }
 
     if (existingSubmission) {
-        return { success: false, error: "A submission with this slug is already pending" };
+        return err("A submission with this slug is already pending");
     }
 
     try {
-        await prisma.modSubmission.create({
+        const submission = await prisma.modSubmission.create({
             data: {
                 title: data.title,
                 slug: data.slug,
@@ -56,12 +71,13 @@ export async function submitModSuggestion(data: Omit<ModSubmission, 'id' | 'subm
                 isSaveBreaking: data.isSaveBreaking,
                 features: data.features,
                 installationSteps: data.installationSteps,
-                links: data.links as any,
-                videos: data.videos as any,
-                changelog: data.changelog as any,
-                localizations: data.localizations as any,
+                // Zod validates these, Prisma accepts as Json
+                links: data.links,
+                videos: data.videos,
+                changelog: data.changelog,
+                localizations: data.localizations,
                 screenshots: data.screenshots,
-                tags: data.tags as any,
+                tags: data.tags,
                 submitterId: session.user.id,
                 submitterNote: data.submitterNote || null,
             }
@@ -70,10 +86,10 @@ export async function submitModSuggestion(data: Omit<ModSubmission, 'id' | 'subm
         revalidatePath(ROUTES.mods);
         revalidatePath('/author');
 
-        return { success: true };
+        return ok({ id: submission.id });
     } catch (error) {
         console.error("Failed to submit mod:", error);
-        return { success: false, error: "Failed to submit mod" };
+        return err("Failed to submit mod");
     }
 }
 

@@ -2,13 +2,13 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useTranslations } from 'next-intl';
-import { Plus, Trash2, Merge, RefreshCw, FolderEdit, FolderX, Gamepad2 } from "lucide-react";
+import { Plus, Trash2, Merge, RefreshCw, FolderEdit, FolderX, Gamepad2, Check } from "lucide-react";
 import SearchBar from "@/components/ui/SearchBar";
 import { fetchAllTags, createTag, updateTag, deleteTag, mergeTags, renameCategory, deleteCategory, TagData } from "@/app/actions/tag-actions";
-import TagModal from "@/components/admin/TagModal";
-import MergeTagModal from "@/components/admin/MergeTagModal";
-import CategoryEditModal from "@/components/admin/CategoryEditModal";
-import MergeCategoryModal from "@/components/admin/MergeCategoryModal";
+import TagModal from "@/components/tags/TagModal";
+import MergeTagModal from "@/components/tags/MergeTagModal";
+import CategoryEditModal from "@/components/tags/CategoryEditModal";
+import MergeCategoryModal from "@/components/tags/MergeCategoryModal";
 import Tag from "@/components/ui/Tag";
 
 export default function AdminTagsPage() {
@@ -19,6 +19,7 @@ export default function AdminTagsPage() {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [createCategory, setCreateCategory] = useState<string | undefined>(undefined);
     const [sortOption, setSortOption] = useState<'name' | 'usage'>('name');
+    const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
     // Modals state
     const [isTagModalOpen, setIsTagModalOpen] = useState(false);
@@ -43,15 +44,16 @@ export default function AdminTagsPage() {
         // Filter first
         const filtered = tags.filter(tag =>
             tag.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            tag.value.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            tag.category.toLowerCase().includes(searchQuery.toLowerCase())
+            tag.value?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (tag.category ?? '').toLowerCase().includes(searchQuery.toLowerCase())
         );
 
         filtered.forEach(tag => {
-            if (!groups[tag.category]) {
-                groups[tag.category] = [];
+            const category = tag.category ?? 'tag';
+            if (!groups[category]) {
+                groups[category] = [];
             }
-            groups[tag.category].push(tag);
+            groups[category].push(tag);
         });
 
         // Sort tags within groups
@@ -60,7 +62,7 @@ export default function AdminTagsPage() {
                 if (sortOption === 'name') {
                     return a.displayName.localeCompare(b.displayName);
                 } else {
-                    return b.usageCount - a.usageCount;
+                    return (b.usageCount ?? 0) - (a.usageCount ?? 0);
                 }
             });
         });
@@ -75,7 +77,7 @@ export default function AdminTagsPage() {
     }, [groupedTags]);
 
     const allCategories = useMemo(() => {
-        return Array.from(new Set(tags.map(t => t.category))).sort();
+        return Array.from(new Set(tags.map(t => t.category ?? 'tag').filter(Boolean))).sort() as string[];
     }, [tags]);
 
     // Tag Actions
@@ -93,22 +95,47 @@ export default function AdminTagsPage() {
 
     const handleDeleteTag = async (e: React.MouseEvent, tag: TagData) => {
         e.stopPropagation(); // Prevent opening edit modal
-        if (confirm(t('deleteTagConfirm'))) {
-            try {
-                await deleteTag(tag.id);
+        if (tag.id) {
+            setDeleteConfirmId(tag.id);
+        }
+    };
+
+    const handleConfirmDelete = async (e: React.MouseEvent, tag: TagData) => {
+        e.stopPropagation();
+        if (tag.id) {
+            const result = await deleteTag(tag.id);
+            if (result.success) {
                 setRefreshTrigger(prev => prev + 1);
-            } catch (error) {
-                console.error("Failed to delete tag:", error);
+                setDeleteConfirmId(null);
+            } else {
+                console.error("Failed to delete tag:", result.error);
                 alert("Failed to delete tag");
             }
         }
     };
 
+    // Close delete confirm when clicking elsewhere (using useEffect)
+    useEffect(() => {
+        const handleClickOutside = () => setDeleteConfirmId(null);
+        if (deleteConfirmId) {
+            document.addEventListener('click', handleClickOutside);
+        }
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [deleteConfirmId]);
+
     const handleSaveTag = async (data: { category: string; value: string; displayName: string; color?: string }) => {
-        if (selectedTag) {
-            await updateTag(selectedTag.id, data);
+        if (selectedTag && selectedTag.id) {
+            const result = await updateTag(selectedTag.id, data);
+            if (!result.success) {
+                alert(`Failed to update tag: ${result.error}`);
+                return;
+            }
         } else {
-            await createTag(data);
+            const result = await createTag(data);
+            if (!result.success) {
+                alert(`Failed to create tag: ${result.error}`);
+                return;
+            }
         }
         setRefreshTrigger(prev => prev + 1);
     };
@@ -120,9 +147,13 @@ export default function AdminTagsPage() {
     };
 
     const handleMergeTags = async (targetId: string) => {
-        if (!selectedTag) return;
-        await mergeTags(selectedTag.id, targetId);
-        setRefreshTrigger(prev => prev + 1);
+        if (!selectedTag || !selectedTag.id) return;
+        const result = await mergeTags({ sourceId: selectedTag.id, targetId });
+        if (result.success) {
+            setRefreshTrigger(prev => prev + 1);
+        } else {
+            alert(`Failed to merge tags: ${result.error}`);
+        }
     };
 
     // Category Actions
@@ -265,45 +296,74 @@ export default function AdminTagsPage() {
                             {/* Tag Cloud */}
                             <div className="p-6">
                                 <div className="flex flex-wrap gap-2">
-                                    {(groupedTags[category] || []).map(tag => (
-                                        <div
-                                            key={tag.id}
-                                            onClick={() => handleEditTag(tag)}
-                                            className="group relative cursor-pointer"
-                                        >
-                                            <Tag
-                                                variant="default"
-                                                className="hover:bg-white/10 hover:border-white/20 transition-all h-8 text-sm"
-                                                color={tag.color || undefined}
-                                            >
-                                                {category === 'gamever' && <Gamepad2 size={14} />}
-                                                <span>{tag.displayName}</span>
-                                                {category !== 'newscat' && (
-                                                    <span className="opacity-50">({tag.usageCount})</span>
-                                                )}
-                                            </Tag>
+                                    {(groupedTags[category] || []).map(tag => {
+                                        const isConfirming = deleteConfirmId === tag.id;
 
-                                            {/* Hover Controls for Tag */}
-                                            <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-black/80 rounded backdrop-blur-sm z-10 pointer-events-auto">
-                                                <button
-                                                    type="button"
-                                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleMergeTagClick(e, tag); }}
-                                                    className="p-1 hover:text-yellow-400 text-textMuted transition-colors"
-                                                    title={t('merge')}
+                                        return (
+                                            <div
+                                                key={tag.id}
+                                                className="group relative"
+                                            >
+                                                <Tag
+                                                    variant="default"
+                                                    className={`transition-all h-8 text-sm pr-1 ${isConfirming ? 'bg-black/40 border-primary/50' : 'hover:bg-white/10 hover:border-white/20'}`}
+                                                    color={isConfirming ? undefined : (tag.color || undefined)}
                                                 >
-                                                    <Merge size={14} />
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteTag(e, tag); }}
-                                                    className="p-1 hover:text-red-400 text-textMuted transition-colors"
-                                                    title={t('delete')}
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
+                                                    {category === 'gamever' && <Gamepad2 size={14} />}
+                                                    <span
+                                                        className="cursor-pointer"
+                                                        onClick={() => handleEditTag(tag)}
+                                                    >
+                                                        {tag.displayName}
+                                                    </span>
+                                                    {category !== 'newscat' && (
+                                                        <span className="opacity-50 cursor-pointer" onClick={() => handleEditTag(tag)}>({tag.usageCount})</span>
+                                                    )}
+
+                                                    {/* Controls Divider */}
+                                                    <div className="h-4 w-px bg-white/10 mx-1" />
+
+                                                    {/* Tag Actions */}
+                                                    <div className="flex items-center gap-0.5">
+                                                        {!isConfirming ? (
+                                                            <>
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); handleMergeTagClick(e, tag); }}
+                                                                    className="p-1 hover:text-yellow-400 text-textMuted/50 transition-colors"
+                                                                    title={t('merge')}
+                                                                >
+                                                                    <Merge size={12} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); handleDeleteTag(e, tag); }}
+                                                                    className="p-1 hover:text-red-400 text-textMuted/50 transition-colors"
+                                                                    title={t('delete')}
+                                                                >
+                                                                    <Trash2 size={12} />
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); handleConfirmDelete(e, tag); }}
+                                                                    className="p-1 text-primary hover:scale-110 transition-transform"
+                                                                    title={t('confirm')}
+                                                                >
+                                                                    <Check size={12} />
+                                                                </button>
+                                                                <button
+                                                                    disabled
+                                                                    className="p-1 text-textMuted/30 cursor-not-allowed"
+                                                                >
+                                                                    <Trash2 size={12} />
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </Tag>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                     <button
                                         onClick={() => handleCreateTag(category)}
                                         className="h-8 px-3 rounded border border-dashed border-white/20 text-textMuted hover:text-white hover:border-white/40 hover:bg-white/5 transition-all text-xs font-bold flex items-center gap-1"
@@ -327,7 +387,7 @@ export default function AdminTagsPage() {
                 <TagModal
                     isOpen={isTagModalOpen}
                     onClose={() => setIsTagModalOpen(false)}
-                    tag={selectedTag}
+                    tag={selectedTag ? { ...selectedTag, id: selectedTag.id ?? '', category: selectedTag.category ?? 'tag', value: selectedTag.value ?? '' } : null}
                     onSave={handleSaveTag}
                     initialCategory={createCategory}
                     existingCategories={allCategories}

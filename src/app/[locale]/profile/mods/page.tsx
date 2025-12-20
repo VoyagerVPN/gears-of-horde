@@ -12,7 +12,7 @@ import { fetchAllMods, fetchPendingSuggestions, approveTranslationSuggestion, re
 import { fetchPendingModSubmissions, rejectModSubmission } from "@/app/actions/mod-submission-actions";
 import { ModData, TranslationSuggestion, ModSubmission } from "@/types/mod";
 import Image from "next/image";
-import UpdateModModal from "@/components/admin/UpdateModModal";
+import UpdateModModal from "@/components/mod/UpdateModModal";
 import Tag from "@/components/ui/Tag";
 import VersionTag from "@/components/VersionTag";
 import DateDisplay from "@/components/DateDisplay";
@@ -298,7 +298,7 @@ export default function AdminModsPage() {
                     >
                       <X size={18} />
                     </button>
-                    <Link href={`/admin/mods/new?fromSubmission=${submission.id}`}>
+                    <Link href={`/profile/mods/new?fromSubmission=${submission.id}`}>
                       <button
                         className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5 transition-colors shadow-lg shadow-amber-900/20"
                         title={t('reviewSubmission')}
@@ -346,7 +346,7 @@ export default function AdminModsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-white font-exo2">{t('modsCatalog')}</h1>
-          <Link href="/admin/mods/new">
+          <Link href="/profile/mods/new">
             <button className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-red-600 text-white text-sm font-bold rounded-lg transition-colors shadow-lg shadow-red-900/20 uppercase tracking-wider font-exo2">
               <Plus size={18} /> {t('addNewMod')}
             </button>
@@ -491,7 +491,7 @@ export default function AdminModsPage() {
                         <RefreshCw size={16} />
                       </button>
 
-                      <Link href={`/admin/mods/${mod.slug}`}>
+                      <Link href={`/profile/mods/${mod.slug}`}>
                         <button className="p-2 hover:bg-white/10 rounded text-textMuted hover:text-white transition-colors" title={t('fullEdit')}>
                           <Edit size={16} />
                         </button>
@@ -522,4 +522,3 @@ export default function AdminModsPage() {
     </div>
   );
 }
-

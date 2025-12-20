@@ -3,6 +3,15 @@
 import { db } from "@/lib/db"
 import { auth } from "@/auth"
 import { revalidatePath } from "next/cache"
+import { UserBioUpdateSchema } from "@/schemas"
+import { validate, ok, err, type Result } from "@/lib/result"
+import {
+    PrismaSubscriptionWithMod,
+    PrismaViewHistoryWithMod,
+    PrismaDownloadHistoryWithMod,
+    PrismaModWithTags,
+    mapPrismaTagToTagData
+} from "@/types/database"
 
 // ============ SUBSCRIPTIONS ============
 
@@ -26,17 +35,11 @@ export async function getSubscriptions(sort: 'update' | 'subscribed' = 'update')
             : { subscribedAt: 'desc' }
     })
 
-    return subscriptions.map((sub: any) => ({
+    return subscriptions.map((sub: PrismaSubscriptionWithMod) => ({
         ...sub,
         mod: {
             ...sub.mod,
-            tags: sub.mod.tags.map((mt: any) => ({
-                id: mt.tag.id,
-                category: mt.tag.category,
-                value: mt.tag.value,
-                displayName: mt.tag.displayName,
-                color: mt.tag.color
-            }))
+            tags: sub.mod.tags.map(mapPrismaTagToTagData)
         }
     }))
 }
@@ -130,17 +133,11 @@ export async function getDownloadHistory(page: number = 1, pageSize: number = 20
     const items = downloads.slice(0, pageSize)
 
     return {
-        downloads: items.map((dl: any) => ({
+        downloads: items.map((dl: PrismaDownloadHistoryWithMod) => ({
             ...dl,
             mod: {
                 ...dl.mod,
-                tags: dl.mod.tags.map((mt: any) => ({
-                    id: mt.tag.id,
-                    category: mt.tag.category,
-                    value: mt.tag.value,
-                    displayName: mt.tag.displayName,
-                    color: mt.tag.color
-                }))
+                tags: dl.mod.tags.map(mapPrismaTagToTagData)
             }
         })),
         hasMore
@@ -205,17 +202,11 @@ export async function getViewHistory() {
         take: VIEW_HISTORY_LIMIT
     })
 
-    return history.map((vh: any) => ({
+    return history.map((vh: PrismaViewHistoryWithMod) => ({
         ...vh,
         mod: {
             ...vh.mod,
-            tags: vh.mod.tags.map((mt: any) => ({
-                id: mt.tag.id,
-                category: mt.tag.category,
-                value: mt.tag.value,
-                displayName: mt.tag.displayName,
-                color: mt.tag.color
-            }))
+            tags: vh.mod.tags.map(mapPrismaTagToTagData)
         }
     }))
 }
@@ -251,7 +242,7 @@ export async function recordView(modSlug: string) {
     if (allViews.length > 0) {
         await db.viewHistory.deleteMany({
             where: {
-                id: { in: allViews.map((v: any) => v.id) }
+                id: { in: allViews.map((v) => v.id) }
             }
         })
     }
@@ -267,7 +258,7 @@ export async function getUserMods() {
     if (!session?.user?.id) return []
 
     // Check if user has author permissions
-    if (!['AUTHOR', 'MODERATOR', 'ADMIN'].includes(session.user.role)) {
+    if (!['DEVELOPER', 'MODERATOR', 'ADMIN'].includes(session.user.role)) {
         return []
     }
 
@@ -281,15 +272,11 @@ export async function getUserMods() {
         orderBy: { updatedAt: 'desc' }
     })
 
-    return mods.map((mod: any) => ({
+    return mods.map((mod: PrismaModWithTags) => ({
         ...mod,
-        tags: mod.tags.map((mt: any) => ({
-            id: mt.tag.id,
-            category: mt.tag.category,
-            value: mt.tag.value,
-            displayName: mt.tag.displayName,
-            color: mt.tag.color
-        }))
+        tags: mod.tags.map(mapPrismaTagToTagData),
+        updatedAt: mod.updatedAt.toISOString(),
+        createdAt: mod.createdAt.toISOString()
     }))
 }
 
@@ -385,20 +372,30 @@ export async function getUserProfileStats() {
     }
 }
 
-export async function updateUserBio(bio: string) {
+export async function updateUserBio(rawData: unknown): Promise<Result<{ bio: string }>> {
     const session = await auth()
-    if (!session?.user?.id) throw new Error("Not authenticated")
+    if (!session?.user?.id) {
+        return err("Not authenticated")
+    }
 
-    // Limit bio length
-    const trimmedBio = bio.trim().slice(0, 500)
+    // Validate with Zod (includes trim and max length check)
+    const validated = validate(UserBioUpdateSchema, rawData)
+    if (!validated.success) {
+        return validated
+    }
 
-    await db.user.update({
-        where: { id: session.user.id },
-        data: { bio: trimmedBio }
-    })
+    try {
+        await db.user.update({
+            where: { id: session.user.id },
+            data: { bio: validated.data.bio }
+        })
 
-    revalidatePath('/profile')
+        revalidatePath('/profile')
 
-    return { success: true }
+        return ok({ bio: validated.data.bio })
+    } catch (error) {
+        console.error("Failed to update bio:", error)
+        return err("Failed to update bio")
+    }
 }
 

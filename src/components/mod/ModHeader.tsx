@@ -12,7 +12,7 @@ interface ModHeaderProps {
     mod: ModData;
     isEditing?: boolean;
     initialStatus?: ModStatusType;
-    onUpdate?: (field: keyof ModData, value: any) => void;
+    onUpdate?: <K extends keyof ModData>(field: K, value: ModData[K]) => void;
     isNew?: boolean;
 }
 
@@ -23,7 +23,7 @@ export default function ModHeader({ mod, isEditing = false, initialStatus, onUpd
     const statusInfo = STATUS_CONFIG[mod.status] || STATUS_CONFIG.unknown;
     const StatusIcon = statusInfo.icon;
 
-    const updateField = (field: keyof ModData, value: any) => {
+    const updateField = <K extends keyof ModData>(field: K, value: ModData[K]) => {
         if (onUpdate) onUpdate(field, value);
     };
 

@@ -1,12 +1,25 @@
 import { PrismaClient } from '@prisma/client'
+import { GAME_VERSION_COLORS } from './tag-colors'
 
-// Helper to parse version string "1_4" -> [1, 4]
-function parseVersion(version: string): number[] {
-    return version.split('_').map(Number)
+// ============================================================================
+// VERSION PARSING UTILITIES
+// ============================================================================
+
+/**
+ * Parse version string "1_4" -> [1, 4]
+ */
+export function parseVersion(version: string): number[] {
+    // Remove 'v' prefix and any other non-numeric chars (except . and _)
+    const cleanVersion = version.toLowerCase().replace(/[^0-9._]/g, '')
+    // Replace underscores with dots and split
+    return cleanVersion.replace(/_/g, '.').split('.').map(Number)
 }
 
-// Helper to compare versions
-function compareVersions(a: string, b: string): number {
+/**
+ * Compare two version strings
+ * @returns negative if a < b, positive if a > b, 0 if equal
+ */
+export function compareVersions(a: string, b: string): number {
     const partsA = parseVersion(a)
     const partsB = parseVersion(b)
 
@@ -20,12 +33,27 @@ function compareVersions(a: string, b: string): number {
     return 0
 }
 
-// Helper to interpolate color
-// Start: Red (239, 68, 68) #ef4444
-// End: Green (34, 197, 94) #22c55e
+// ============================================================================
+// COLOR INTERPOLATION
+// ============================================================================
+
+// Parse hex color to RGB
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : { r: 0, g: 0, b: 0 }
+}
+
+/**
+ * Interpolate between game version gradient colors
+ * Uses colors from GAME_VERSION_COLORS constant
+ */
 function interpolateColor(factor: number): string {
-    const startColor = { r: 239, g: 68, b: 68 }
-    const endColor = { r: 34, g: 197, b: 94 }
+    const startColor = hexToRgb(GAME_VERSION_COLORS.oldest)
+    const endColor = hexToRgb(GAME_VERSION_COLORS.newest)
 
     const r = Math.round(startColor.r + (endColor.r - startColor.r) * factor)
     const g = Math.round(startColor.g + (endColor.g - startColor.g) * factor)
@@ -49,7 +77,7 @@ export async function recalculateGameVersionColors(prisma: PrismaClient) {
     const updates = sortedTags.map((tag, index) => {
         let color: string
         if (sortedTags.length === 1) {
-            color = '#22c55e' // Green if only one version
+            color = GAME_VERSION_COLORS.newest // Green if only one version
         } else {
             const factor = index / (sortedTags.length - 1)
             color = interpolateColor(factor)
@@ -68,7 +96,7 @@ export async function recalculateGameVersionColors(prisma: PrismaClient) {
     return sortedTags.map((t, i) => {
         let color: string
         if (sortedTags.length === 1) {
-            color = '#22c55e'
+            color = GAME_VERSION_COLORS.newest
         } else {
             const factor = i / (sortedTags.length - 1)
             color = interpolateColor(factor)

@@ -44,8 +44,8 @@ export default function NewsItem({
     ? getTagColor(primaryTag.category || 'tag', primaryTag.value, primaryTag.color)
     : '#a1a1a1';
 
-  // Find gamever tag to get database color
-  const gameVerTag = gameVersion ? tags.find(t => t.category === 'gamever' && t.displayName === gameVersion) : null;
+  // Find gamever tag to get database color (no displayName match needed)
+  const gameVerTag = gameVersion ? tags.find(t => t.category === 'gamever') : null;
   // Use getTagColor for proper color fallback with gamever
   const gameVerColor = gameVerTag
     ? getTagColor('gamever', gameVerTag.value, gameVerTag.color)

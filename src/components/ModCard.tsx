@@ -1,3 +1,5 @@
+"use client";
+
 import { Link } from "@/i18n/routing";
 import { useTranslations } from 'next-intl';
 import { Star, Download, Calendar, Eye } from "lucide-react";
@@ -39,11 +41,11 @@ export default function ModCard({
 }: ModCardProps) {
   const t = useTranslations('ModCard');
 
-  // Find gamever tag to get database color
-  const gameVerTag = tags.find(t => t.category === 'gamever' && t.displayName === gameVersion);
+  // Find gamever tag to get database color (no displayName match needed - mod should have only one gamever tag)
+  const gameVerTag = tags.find(t => t.category === 'gamever');
 
   return (
-    <Link href={`/mod/${slug}`} className="group block h-full">
+    <div className="group block h-full relative">
       <div className="bg-surface rounded-xl overflow-hidden border border-white/5 hover:border-primary/50 transition-colors duration-200 h-full flex flex-col">
 
         {/* HEADER / BANNER */}
@@ -72,7 +74,7 @@ export default function ModCard({
           </h3>
 
           {/* Author & Versions Row */}
-          <div className="flex items-center gap-2 flex-wrap text-[10px] text-textMuted">
+          <div className="flex items-center gap-2 flex-wrap text-[10px] text-textMuted relative z-20">
             {/* Author */}
             <div className="flex items-center gap-1">
               {tags.filter(t => t.category === 'author').length > 0 ? (
@@ -103,7 +105,7 @@ export default function ModCard({
           <div className="w-full h-px bg-white/5 my-0.5" />
 
           {/* Tags */}
-          <div className="flex flex-wrap gap-1 items-start content-start">
+          <div className="flex flex-wrap gap-1 items-start content-start relative z-20">
             <span className="text-[10px] text-textMuted/60 self-center mr-1">
               {t('tagsLabel')}
             </span>
@@ -112,6 +114,7 @@ export default function ModCard({
                 key={tag.id || tag.displayName}
                 color={tag.color || undefined}
                 category={tag.category}
+                href={`/search?tag=${encodeURIComponent(tag.displayName)}`}
               >
                 {tag.displayName}
               </Tag>
@@ -122,7 +125,7 @@ export default function ModCard({
           <div className="w-full h-px bg-white/5 my-0.5" />
 
           {/* Description */}
-          <div className="text-[11px] text-textMuted leading-relaxed line-clamp-2">
+          <div className="text-[11px] text-white leading-relaxed line-clamp-2">
             {description || t('noDescription')}
           </div>
 
@@ -150,6 +153,9 @@ export default function ModCard({
         </div>
 
       </div>
-    </Link>
+
+      {/* Main Card Link - Overlay */}
+      <Link href={`/mod/${slug}`} className="absolute inset-0 z-10" aria-label={`View ${title}`} />
+    </div>
   );
 }

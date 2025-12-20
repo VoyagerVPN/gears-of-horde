@@ -26,11 +26,12 @@ import GameVersionSelector from "@/components/ui/GameVersionSelector";
 // Extracted components
 import ModHeader from "@/components/mod/ModHeader";
 import ModAboutSection from "@/components/mod/ModAboutSection";
+import ViewModeActions from "@/components/mod/ViewModeActions";
 
 // Admin Components
-import EditableChangelog from "@/components/admin/EditableChangelog";
-import SimpleMultilineEditor from "@/components/admin/SimpleMultilineEditor";
-import EditableLocalizations from "@/components/admin/EditableLocalizations";
+import EditableChangelog from "@/components/mod/EditableChangelog";
+import SimpleMultilineEditor from "@/components/ui/SimpleMultilineEditor";
+import EditableLanguageTags from "@/components/mod/EditableLanguageTags";
 import TagSelector from "@/components/TagSelector";
 import { SIDEBAR_HEADER_STYLE } from "@/lib/constants/ui-constants";
 import { getDomain } from "@/lib/utils";
@@ -50,79 +51,6 @@ function getYouTubeVideoId(url: string): string | null {
     }
 
     return null;
-}
-
-// ViewModeActions component with Subscribe button and download tracking
-function ViewModeActions({ mod, t }: { mod: ModData; t: (key: string) => string }) {
-    const [isSubscribed, setIsSubscribed] = useState(false)
-    const [isLoading, setIsLoading] = useState(false)
-
-    useEffect(() => {
-        // Check subscription status on mount
-        getSubscriptionStatus(mod.slug).then(({ subscribed }) => {
-            setIsSubscribed(subscribed)
-        })
-
-        // Record view when component mounts
-        recordView(mod.slug)
-    }, [mod.slug])
-
-    const handleSubscribe = async () => {
-        setIsLoading(true)
-        const { subscribed } = await toggleSubscription(mod.slug)
-        setIsSubscribed(subscribed)
-        setIsLoading(false)
-    }
-
-    const handleDownload = async () => {
-        // Generate session ID (stored in sessionStorage)
-        let sessionId = sessionStorage.getItem('download_session')
-        if (!sessionId) {
-            sessionId = crypto.randomUUID()
-            sessionStorage.setItem('download_session', sessionId)
-        }
-
-        // Record download
-        await recordDownload(mod.slug, mod.version, sessionId)
-
-        // Open download link
-        if (mod.links.download) {
-            window.open(mod.links.download, '_blank')
-        }
-    }
-
-    return (
-        <div className="flex gap-3 h-14">
-            <button
-                onClick={handleDownload}
-                className="flex-1 bg-primary hover:bg-red-600 text-white font-bold h-full rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 uppercase tracking-wider font-exo2 group"
-            >
-                <Download size={20} className="group-hover:animate-bounce" />
-                {t('downloadMod')}
-            </button>
-
-            {mod.links.discord && (
-                <a href={mod.links.discord} target="_blank" rel="noopener noreferrer" className="shrink-0 aspect-square h-full">
-                    <button className="bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold h-full w-full rounded-lg flex items-center justify-center transition-all shadow-lg active:scale-95" title={t('joinDiscord')}>
-                        <Discord size={24} />
-                    </button>
-                </a>
-            )}
-
-            {/* Subscribe Button */}
-            <button
-                onClick={handleSubscribe}
-                disabled={isLoading}
-                className={`shrink-0 aspect-square h-full rounded-lg flex items-center justify-center transition-all shadow-lg active:scale-95 ${isSubscribed
-                    ? 'bg-primary text-white hover:bg-red-600'
-                    : 'bg-white/10 text-textMuted hover:bg-white/20 hover:text-white'
-                    }`}
-                title={isSubscribed ? t('unsubscribe') : t('subscribe')}
-            >
-                <Heart size={22} className={isSubscribed ? 'fill-current' : ''} />
-            </button>
-        </div>
-    )
 }
 
 interface UnifiedModLayoutProps {
@@ -148,11 +76,11 @@ export default function UnifiedModLayout({
 }: UnifiedModLayoutProps) {
     const t = useTranslations('Common');
 
-    // Find gamever tag to get database color for Technical Specs
-    const gameVerTag = mod.tags.find(t => t.category === 'gamever' && t.displayName === mod.gameVersion);
+    // Find gamever tag to get database color for Technical Specs (no displayName match needed)
+    const gameVerTag = mod.tags.find(t => t.category === 'gamever');
 
     // --- HELPER UPDATERS (Only used if isEditing is true) ---
-    const updateField = (field: keyof ModData, value: any) => {
+    const updateField = <K extends keyof ModData>(field: K, value: ModData[K]) => {
         if (onUpdate) onUpdate({ ...mod, [field]: value });
     };
 
@@ -629,15 +557,18 @@ export default function UnifiedModLayout({
                             />
                         ) : (
                             <div className="flex flex-wrap gap-2">
-                                {mod.tags.filter(t => t.category !== 'author' && t.category !== 'gamever').map(tag => (
-                                    <Tag
-                                        key={tag.id || tag.displayName}
-                                        color={tag.color || undefined}
-                                        href={`/search?tag=${tag.displayName}`}
-                                    >
-                                        {tag.displayName}
-                                    </Tag>
-                                ))}
+                                {mod.tags
+                                    .filter(t => t.category === 'tag')
+                                    .sort((a, b) => a.displayName.localeCompare(b.displayName))
+                                    .map(tag => (
+                                        <Tag
+                                            key={tag.id || tag.displayName}
+                                            color={tag.color || undefined}
+                                            href={`/search?tag=${tag.displayName}`}
+                                        >
+                                            {tag.displayName}
+                                        </Tag>
+                                    ))}
                             </div>
                         )}
                     </div>
@@ -651,27 +582,31 @@ export default function UnifiedModLayout({
                         </div>
 
                         {isEditing ? (
-                            <EditableLocalizations
-                                items={mod.localizations}
-                                onChange={(newItems) => updateField('localizations', newItems)}
+                            <EditableLanguageTags
+                                items={mod.tags.filter(t => t.category === 'lang')}
+                                onChange={(newLangTags) => {
+                                    // Keep non-lang categories and replace 'lang' category
+                                    const otherTags = mod.tags.filter(t => t.category !== 'lang');
+                                    onUpdate && onUpdate({ ...mod, tags: [...otherTags, ...newLangTags] });
+                                }}
                             />
                         ) : (
                             <>
                                 <div className="flex flex-wrap gap-2 mb-3">
-                                    {mod.localizations
-                                        .filter(loc => loc.code || loc.name) // Filter out empty localizations
+                                    {mod.tags
+                                        .filter(t => t.category === 'lang')
                                         .map((loc, idx) => {
-                                            const displayName = loc.name || loc.code || 'Unknown';
-                                            return loc.type === 'builtin' ? (
+                                            const displayName = loc.displayName || 'Unknown';
+                                            return !loc.isExternal ? (
                                                 <Tag key={idx} variant="muted">
                                                     {displayName}
                                                 </Tag>
-                                            ) : loc.url ? (
+                                            ) : loc.externalLink ? (
                                                 <Tag
                                                     key={idx}
                                                     variant="accent"
-                                                    href={`/search?lang=${loc.code}`}
-                                                    onAction={() => window.open(loc.url, '_blank')}
+                                                    href={`/search?lang=${loc.value}`}
+                                                    onAction={() => window.open(loc.externalLink, '_blank')}
                                                     actionIcon={<Download size={12} />}
                                                 >
                                                     {displayName}
@@ -680,7 +615,7 @@ export default function UnifiedModLayout({
                                                 <Tag
                                                     key={idx}
                                                     variant="accent"
-                                                    href={`/search?lang=${loc.code}`}
+                                                    href={`/search?lang=${loc.value}`}
                                                 >
                                                     {displayName}
                                                 </Tag>

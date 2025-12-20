@@ -118,6 +118,7 @@ model Tag {
   value       String   // "1_0", "khaine", "en", "active", "release", "survival"
   displayName String
   color       String?  // Optional hex color or class name
+  isExternal  Boolean  @default(false) // Whether this tag represents external content by default
   
   modTags     ModTag[]
   newsTags    NewsTag[]
@@ -126,8 +127,12 @@ model Tag {
 }
 
 model ModTag {
-  modId String
-  tagId String
+  modId        String
+  tagId        String
+  
+  // Specific to the relationship (e.g., for language tags)
+  isExternal   Boolean @default(false)
+  externalLink String?
   
   mod   Mod @relation(fields: [modId], references: [slug], onDelete: Cascade)
   tag   Tag @relation(fields: [tagId], references: [id], onDelete: Cascade)

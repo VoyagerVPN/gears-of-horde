@@ -1,16 +1,27 @@
 'use server';
 
 import { db as prisma } from "@/lib/db";
-import { ModData } from "@/types/mod";
+import { normalizeGameVersion } from "@/lib/utils";
+import {
+    findOrCreateAuthorTag,
+    findOrCreateGenericTag,
+    findOrCreateLangTag,
+    findOrCreateGameVerTag
+} from "@/lib/tag-utils";
+import { ModDataSchema, type ModData } from "@/schemas";
+import { validate, ok, err, type Result } from "@/lib/result";
 import { revalidatePath } from "next/cache";
 import { ROUTES } from "@/lib/routes";
 
-export async function createMod(data: ModData) {
+export async function createMod(rawData: unknown): Promise<Result<{ slug: string }>> {
+    // Validate input with Zod schema
+    const validated = validate(ModDataSchema, rawData);
+    if (!validated.success) {
+        return validated;
+    }
+    const data = validated.data;
+
     try {
-        // Validate required fields (basic validation)
-        if (!data.slug || !data.title || !data.author) {
-            throw new Error("Missing required fields");
-        }
 
         // Check if mod with slug already exists
         const existingMod = await prisma.mod.findUnique({
@@ -21,65 +32,43 @@ export async function createMod(data: ModData) {
             throw new Error(`Mod with slug '${data.slug}' already exists`);
         }
 
-        // 1. Handle Author Tag
-        let authorTag = await prisma.tag.findUnique({
-            where: {
-                category_value: {
-                    category: 'author',
-                    value: data.author.toLowerCase().replace(/\s+/g, '_')
-                }
-            }
+        // 1. Prepare Tag Data
+        // We will link these AFTER mod creation or as part of nested create
+        const tagLinks = [];
+
+        // Author Tag
+        const authorTag = await findOrCreateAuthorTag(data.author);
+        tagLinks.push({
+            tag: { connect: { id: authorTag.id } }
         });
 
-        if (!authorTag) {
-            authorTag = await prisma.tag.create({
-                data: {
-                    category: 'author',
-                    value: data.author.toLowerCase().replace(/\s+/g, '_'),
-                    displayName: data.author
-                }
+        // Game Version Tag
+        const gameVerTag = await findOrCreateGameVerTag(normalizeGameVersion(data.gameVersion));
+        tagLinks.push({
+            tag: { connect: { id: gameVerTag.id } }
+        });
+
+        // Other Tags
+        for (const t of data.tags) {
+            let tag;
+            const category = t.category || 'tag';
+
+            if (category === 'lang') {
+                tag = await findOrCreateLangTag(t.displayName, t.value || t.displayName.substring(0, 2).toUpperCase());
+            } else if (category === 'author') {
+                tag = await findOrCreateAuthorTag(t.displayName);
+            } else if (category === 'gamever') {
+                tag = await findOrCreateGameVerTag(normalizeGameVersion(t.displayName));
+            } else {
+                tag = await findOrCreateGenericTag(t.displayName);
+            }
+
+            tagLinks.push({
+                isExternal: t.isExternal || false,
+                externalLink: t.externalLink || null,
+                tag: { connect: { id: tag.id } }
             });
         }
-
-        // 2. Prepare Tags (include author tag)
-        const tagsToConnect = data.tags.map(tag => ({
-            tag: {
-                connectOrCreate: {
-                    where: {
-                        category_value: {
-                            category: tag.category || 'tag',
-                            value: tag.displayName.toLowerCase().replace(/\s+/g, '_')
-                        }
-                    },
-                    create: {
-                        category: tag.category || 'tag',
-                        value: tag.displayName.toLowerCase().replace(/\s+/g, '_'),
-                        displayName: tag.displayName,
-                        color: tag.color
-                    }
-                }
-            }
-        }));
-
-        // Add author tag
-        tagsToConnect.push({
-            tag: {
-                connectOrCreate: {
-                    where: {
-                        category_value: {
-                            category: 'author',
-                            value: authorTag.value
-                        }
-                    },
-                    create: {
-                        category: 'author',
-                        value: authorTag.value,
-                        displayName: authorTag.displayName,
-                        color: authorTag.color
-                    }
-                }
-            }
-        });
 
         // Create the mod
         await prisma.mod.create({
@@ -90,18 +79,19 @@ export async function createMod(data: ModData) {
                 author: data.author,
                 description: data.description,
                 status: data.status,
-                gameVersion: data.gameVersion,
+                gameVersion: normalizeGameVersion(data.gameVersion),
                 bannerUrl: data.bannerUrl || null,
                 isSaveBreaking: data.isSaveBreaking,
                 features: data.features,
                 tags: {
-                    create: tagsToConnect
+                    create: tagLinks
                 },
                 installationSteps: data.installationSteps,
-                links: data.links as any, // Cast to any for Json compatibility
-                videos: data.videos as any,
-                changelog: data.changelog as any,
-                localizations: data.localizations as any,
+                // Zod validates these, Prisma accepts them as Json
+                links: data.links,
+                videos: data.videos,
+                changelog: data.changelog,
+                localizations: data.localizations,
 
                 // Stats are individual columns
                 rating: data.stats.rating,
@@ -144,9 +134,9 @@ export async function createMod(data: ModData) {
         revalidatePath(ROUTES.mods);
         revalidatePath(`/mod/${data.slug}`);
 
-        return { success: true, slug: data.slug };
+        return ok({ slug: data.slug });
     } catch (error) {
         console.error("Failed to create mod:", error);
-        return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
+        return err(error instanceof Error ? error.message : "Unknown error");
     }
 }

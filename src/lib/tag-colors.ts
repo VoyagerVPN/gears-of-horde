@@ -9,8 +9,24 @@
  * Priority: DB color > Category:Value config > Category config > Fallback
  */
 
-// Default color for tags without a specific category color
+// ============================================================================
+// COLOR CONSTANTS (use these instead of hardcoding hex values)
+// ============================================================================
+
+/** Default color for tags without a specific category color */
 export const FALLBACK_TAG_COLOR = '#a1a1a1'; // gray
+
+/** Color for author tags */
+export const AUTHOR_TAG_COLOR = '#3b82f6'; // blue-500
+
+/** Color for primary/accent elements */
+export const PRIMARY_COLOR = '#ce4729';
+
+/** Game version gradient colors */
+export const GAME_VERSION_COLORS = {
+    oldest: '#ef4444', // red-500 (RGB: 239, 68, 68)
+    newest: '#22c55e', // green-500 (RGB: 34, 197, 94)
+} as const;
 
 /**
  * Category-specific default colors
@@ -21,10 +37,15 @@ export const FALLBACK_TAG_COLOR = '#a1a1a1'; // gray
  */
 export const TAG_CATEGORY_COLORS: Record<string, string> = {
     // === AUTHOR ===
-    'author': '#3b82f6', // blue-500
+    'author': AUTHOR_TAG_COLOR,
 
     // === GENERIC TAGS ===
     'tag': '#a1a1a1', // gray (neutral)
+
+    // === GAME VERSIONS ===
+    // Default to newest green as fallback
+    // (actual colors are calculated dynamically via recalculateGameVersionColors)
+    'gamever': GAME_VERSION_COLORS.newest,
 
     // === STATUS ===
     'status:active': '#22c55e',      // green-500
@@ -42,6 +63,7 @@ export const TAG_CATEGORY_COLORS: Record<string, string> = {
     // === LANGUAGE (special handling) ===
     // - builtin: uses 'muted' styling (gray, non-clickable)
     // - external: uses 'accent' styling (primary color, clickable)
+    'lang': '#71717a',       // Default zinc-500 for language tags
     'lang:builtin': '#71717a',  // zinc-500
     'lang:external': '#ce4729', // primary
 
@@ -106,7 +128,6 @@ export function colorToTagStyles(hex: string): React.CSSProperties {
     return {
         color: hex,
         backgroundColor: `${hex}1a`, // ~10% opacity
-        borderColor: `${hex}33`,     // ~20% opacity
     };
 }
 

@@ -59,13 +59,13 @@ export default function Tag({
 }: TagProps) {
     // Legacy variant styles (for backward compatibility)
     const variantStyles = {
-        default: "bg-white/5 text-textMain border-white/10",
-        category: "bg-green-500/10 text-green-400 border-green-500/20",
-        warning: "bg-red-500/10 text-red-400 border-red-500/20 font-bold",
+        default: "bg-white/5 text-white",
+        category: "bg-green-500/10 text-green-400",
+        warning: "bg-red-500/10 text-red-400",
         version: "font-mono font-bold tracking-wide",
-        muted: "bg-white/5 text-textMuted border-white/5 opacity-60",
-        accent: "bg-primary/10 text-primary border-primary/20",
-        author: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+        muted: "bg-white/5 text-textMuted opacity-60",
+        accent: "bg-primary/10 text-primary",
+        author: "bg-blue-500/10 text-blue-400",
     };
 
     // Determine the final color to use
@@ -86,9 +86,9 @@ export default function Tag({
     const baseClasses = cn(
         // Core styling - unified across all tags
         "inline-flex items-center justify-center gap-1",
-        "border transition-colors whitespace-nowrap",
+        "transition-colors whitespace-nowrap",
         // Hardcoded sizing for reliability
-        "text-[9px] font-medium rounded",
+        "text-[11px] font-bold rounded-md",
         "capitalize", // Title case, not uppercase
         // Apply variant styles only if no dynamic color
         !dynamicStyle && variantStyles[variant],
@@ -96,7 +96,7 @@ export default function Tag({
     );
 
     // Padding classes - hardcoded
-    const paddingClasses = "px-1.5 py-0.5";
+    const paddingClasses = "px-2 py-1";
 
     // 1. Split Action Tag (Link + Button)
     if (href && onAction) {

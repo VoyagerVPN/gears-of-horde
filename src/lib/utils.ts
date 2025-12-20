@@ -2,6 +2,46 @@
  * Utility Functions
  */
 
+// ============================================================================
+// GAME VERSION UTILITIES
+// ============================================================================
+
+/**
+ * Normalize game version to always have "V" prefix
+ * Examples:
+ *   "2.2" → "V2.2"
+ *   "v2.2" → "V2.2"
+ *   "V2.2" → "V2.2"
+ *   "1.0" → "V1.0"
+ */
+export function normalizeGameVersion(version: string): string {
+    if (!version) return version;
+    
+    // Remove any existing V/v prefix, then add uppercase V
+    const cleaned = version.trim().replace(/^[vV]/, '');
+    return `V${cleaned}`;
+}
+
+/**
+ * Convert game version to tag value format for database storage
+ * Examples:
+ *   "V2.2" → "2_2"
+ *   "2.2" → "2_2"
+ *   "v1.0" → "1_0"
+ */
+export function gameVersionToTagValue(version: string): string {
+    if (!version) return version;
+    
+    return version
+        .trim()
+        .replace(/^[vV]/, '')  // Remove V prefix
+        .replace(/\./g, '_');   // Replace dots with underscores
+}
+
+// ============================================================================
+// GENERAL UTILITIES
+// ============================================================================
+
 // Classname merging utility
 export function cn(...classes: (string | undefined | null | false)[]) {
     return classes.filter(Boolean).join(' ');

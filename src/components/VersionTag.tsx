@@ -1,5 +1,6 @@
 import { Gamepad2, Settings } from "lucide-react";
 import Tag from "@/components/ui/Tag";
+import { normalizeGameVersion } from "@/lib/utils";
 
 interface VersionTagProps {
     type: 'game' | 'mod';
@@ -23,6 +24,9 @@ export default function VersionTag({ type, version, className, color }: VersionT
 
     const isGame = type === 'game';
     const Icon = isGame ? Gamepad2 : Settings;
+    
+    // Normalize game versions to always display with "V" prefix
+    const displayVersion = isGame ? normalizeGameVersion(version) : version;
 
     // Game versions use DB color via Tag's dynamic color prop
     // Mod versions use neutral styling via category
@@ -33,7 +37,7 @@ export default function VersionTag({ type, version, className, color }: VersionT
             className={`${className || ''} font-mono font-bold tracking-wide gap-1.5`}
         >
             <Icon size={12} className={isGame ? undefined : "text-zinc-400"} />
-            {version}
+            {displayVersion}
         </Tag>
     );
 }

@@ -102,7 +102,7 @@
         "name": "Название",
         "url": "URL",
         "noLinksAdded": "Ссылки не добавлены",
-        "localizations": "Локализации",
+        "localizations": "Доступные языки",
         "community": "Сообщество",
         "supportCreator": "Поддержать автора",
         "changelogEditor": "Редактор изменений",
@@ -132,7 +132,9 @@
         "remove": "Удалить",
         "version": "Версия",
         "subscribe": "Подписаться",
-        "unsubscribe": "Отписаться"
+        "unsubscribe": "Отписаться",
+        "noLanguagesAdded": "Языки не добавлены",
+        "external": "Внешний"
     },
     "Admin": {
         "pendingTranslations": "Ожидающие переводы",
@@ -243,7 +245,8 @@
         "rejectionReasonPlaceholder": "Укажите причину отклонения...",
         "note": "Примечание",
         "submissionApproved": "Заявка одобрена",
-        "submissionRejected": "Заявка отклонена"
+        "submissionRejected": "Заявка отклонена",
+        "confirm": "Подтвердить"
     },
     "ModCard": {
         "by": "от",
@@ -354,6 +357,8 @@
         "hide": "Скрыть",
         "publish": "Опубликовать",
         "subscribe": "Подписаться",
-        "unsubscribe": "Отписаться"
+        "unsubscribe": "Отписаться",
+        "createMod": "Создать мод",
+        "createFirstMod": "Создайте свой первый мод"
     }
 }

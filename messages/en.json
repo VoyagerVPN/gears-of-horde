@@ -102,7 +102,7 @@
         "name": "Name",
         "url": "URL",
         "noLinksAdded": "No links added",
-        "localizations": "Localizations",
+        "localizations": "Available languages",
         "community": "Community",
         "supportCreator": "Support the Creator",
         "changelogEditor": "Changelog Editor",
@@ -132,7 +132,9 @@
         "remove": "Remove",
         "version": "Version",
         "subscribe": "Subscribe",
-        "unsubscribe": "Unsubscribe"
+        "unsubscribe": "Unsubscribe",
+        "noLanguagesAdded": "No languages added",
+        "external": "External"
     },
     "Admin": {
         "pendingTranslations": "Pending Translations",
@@ -243,7 +245,8 @@
         "rejectionReasonPlaceholder": "Enter a reason for rejection...",
         "note": "Note",
         "submissionApproved": "Submission approved successfully",
-        "submissionRejected": "Submission rejected"
+        "submissionRejected": "Submission rejected",
+        "confirm": "Confirm"
     },
     "ModCard": {
         "by": "by",
@@ -354,6 +357,8 @@
         "hide": "Hide",
         "publish": "Publish",
         "subscribe": "Subscribe",
-        "unsubscribe": "Unsubscribe"
+        "unsubscribe": "Unsubscribe",
+        "createMod": "Create Mod",
+        "createFirstMod": "Create your first mod"
     }
 }
