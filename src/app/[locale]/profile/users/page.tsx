@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react"
 import { useTranslations } from 'next-intl'
 import { Ban, RefreshCw, Check, ChevronDown } from "lucide-react"
 import { fetchAllUsers, updateUserRole, toggleUserBan, UserData } from "@/app/actions/user-actions"
-import { UserRole } from "@prisma/client"
+import { UserRole } from "@/generated/prisma"
 import SearchBar from "@/components/ui/SearchBar"
 import * as Select from "@radix-ui/react-select"
 

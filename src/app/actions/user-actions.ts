@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db"
 import { auth } from "@/auth"
-import { UserRole } from "@prisma/client"
+import { UserRole } from "@/generated/prisma"
 import { revalidatePath } from "next/cache"
 import { ROUTES } from "@/lib/routes"
 

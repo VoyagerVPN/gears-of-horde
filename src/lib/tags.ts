@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@/generated/prisma'
 import { GAME_VERSION_COLORS } from './tag-colors'
 
 // ============================================================================
