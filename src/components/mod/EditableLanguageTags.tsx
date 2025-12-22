@@ -144,7 +144,7 @@ export default function EditableLanguageTags({ items, onChange }: EditableLangua
                             <div key={originalIdx} className="group flex items-center gap-3 px-3 py-2.5 hover:bg-white/[0.03] transition-colors">
                                 {/* Language Name as Badge */}
                                 <div className="min-w-[100px]">
-                                    <div className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold uppercase tracking-wider ${isExternal ? 'bg-primary/20 text-primary border border-primary/20' : 'bg-zinc-800 text-zinc-400 border border-white/5'}`}>
+                                    <div className={`inline-flex items-center px-2 py-1 rounded text-[12px] font-bold uppercase tracking-wider ${isExternal ? 'bg-primary/20 text-primary border border-primary/20' : 'bg-zinc-800 text-zinc-400 border border-white/5'}`}>
                                         {item.displayName}
                                     </div>
                                 </div>

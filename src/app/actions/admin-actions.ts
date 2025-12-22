@@ -18,7 +18,15 @@ import {
     AUTHOR_TAG_COLOR
 } from "@/lib/tag-utils";
 
-export async function fetchAllMods(): Promise<ModData[]> {
+export interface FetchModsOptions {
+    sortBy?: 'updated' | 'rating' | 'downloads' | 'views';
+    sortDir?: 'asc' | 'desc';
+}
+
+export async function fetchAllMods(options: FetchModsOptions = {}): Promise<ModData[]> {
+    const { sortBy = 'updated', sortDir = 'desc' } = options;
+
+    // Fetch all mods sorted by update date initially
     const mods = await prisma.mod.findMany({
         orderBy: { updatedAt: 'desc' },
         include: {
@@ -30,8 +38,42 @@ export async function fetchAllMods(): Promise<ModData[]> {
         }
     });
 
-    // Map Prisma result to ModData interface
-    return mods.map((mod: PrismaModWithTags) => mapPrismaModToModData(mod));
+    const mappedMods = mods.map((mod: PrismaModWithTags) => mapPrismaModToModData(mod));
+
+    // Perform in-memory sort to handle string-number fields (downloads, views) correctly
+    if (sortBy) {
+        mappedMods.sort((a, b) => {
+            let valA: number | string | Date = 0;
+            let valB: number | string | Date = 0;
+
+            switch (sortBy) {
+                case 'rating':
+                    valA = a.stats.rating;
+                    valB = b.stats.rating;
+                    break;
+                case 'downloads':
+                    valA = parseInt(a.stats.downloads.replace(/[^0-9]/g, '') || '0');
+                    valB = parseInt(b.stats.downloads.replace(/[^0-9]/g, '') || '0');
+                    break;
+                case 'views':
+                    valA = parseInt(a.stats.views.replace(/[^0-9]/g, '') || '0');
+                    valB = parseInt(b.stats.views.replace(/[^0-9]/g, '') || '0');
+                    break;
+                case 'updated':
+                    valA = new Date(a.updatedAt || 0).getTime();
+                    valB = new Date(b.updatedAt || 0).getTime();
+                    break;
+                default:
+                    return 0;
+            }
+
+            if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+            if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+
+    return mappedMods;
 }
 
 export async function fetchModBySlug(slug: string): Promise<ModData | null> {
@@ -153,19 +195,27 @@ export async function updateModAction(slug: string, updates: any) {
             ? updates.changes.map((c: string) => `- ${c}`).join('\n')
             : updates.changes;
 
+        // Get current mod data for frozen snapshot
+        const currentMod = await prisma.mod.findUnique({
+            where: { slug },
+            select: { title: true, gameVersion: true, changelog: true }
+        });
+
         await prisma.news.create({
             data: {
-                title: updates.description || `${updates.version} Released`,
+                modSlug: slug,
+                modName: currentMod?.title || 'Unknown',
+                modVersion: updates.version,
+                gameVersion: currentMod?.gameVersion || undefined,
+                actionText: updates.eventType || 'released',
                 content: newsContent,
+                description: updates.description || `${updates.version} Released`,
                 date: updates.date ? new Date(updates.date) : new Date(),
                 wipeRequired: updates.isSaveBreaking || false,
                 sourceUrl: updates.sourceUrl || null,
-                modId: slug,
-                tags: {
-                    create: {
-                        tagId: tag.id
-                    }
-                }
+                tags: [
+                    { displayName: tag.displayName, color: tag.color, category: tag.category }
+                ]
             }
         });
 

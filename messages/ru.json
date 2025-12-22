@@ -153,6 +153,7 @@
         "lastUpdated": "Обновлено",
         "gameVersion": "Версия игры",
         "dashboard": "Дашборд",
+        "admin": "Админ",
         "settings": "Настройки",
         "logout": "Выйти",
         "deleteModConfirm": "Вы уверены, что хотите удалить этот мод? Это действие нельзя отменить.",
@@ -246,7 +247,11 @@
         "note": "Примечание",
         "submissionApproved": "Заявка одобрена",
         "submissionRejected": "Заявка отклонена",
-        "confirm": "Подтвердить"
+        "confirm": "Подтвердить",
+        "newsManagement": "Новости",
+        "editNews": "Редактировать новость",
+        "deleteNewsConfirm": "Вы уверены, что хотите удалить эту новость?",
+        "noNewsFound": "Новости не найдены"
     },
     "ModCard": {
         "by": "от",
@@ -283,6 +288,31 @@
         "cancel": "Отмена",
         "sending": "Отправка...",
         "submit": "Отправить"
+    },
+    "UpdateModModal": {
+        "title": "Обновить мод",
+        "deployingChangesFor": "Внесение изменений для",
+        "newVersion": "Новая версия",
+        "gameVersion": "Версия игры",
+        "selectVersion": "Выберите версию",
+        "status": "Статус",
+        "releaseDate": "Дата выпуска",
+        "wipeRequired": "Требуется вайп",
+        "updateDescription": "Описание обновления (Лента новостей)",
+        "leaveEmptyForAutoGeneration": "Оставьте пустым для автогенерации",
+        "sourceUrl": "URL источника",
+        "changelogDetails": "Подробности изменений",
+        "changelogPlaceholder": "- Исправлен критический баг\n- Добавлено новое оружие\n- Улучшена производительность",
+        "cancel": "Отмена",
+        "publishUpdate": "Опубликовать обновление",
+        "publishStatusChange": "Опубликовать изменение статуса",
+        "autoDescReleased": "{version} вышла.",
+        "autoDescDevelopment": "Разработка {title} {action}.",
+        "statusActionResumed": "возобновлена",
+        "statusActionPaused": "приостановлена",
+        "statusActionDiscontinued": "прекращена",
+        "statusActionAnnounced": "анонсирована",
+        "statusActionUpdated": "обновлена"
     },
     "NewsItem": {
         "saveWipeRequired": "Требуется вайп сохранений",

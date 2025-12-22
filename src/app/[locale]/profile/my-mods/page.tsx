@@ -6,7 +6,8 @@ import { FileEdit, Plus, Trash2, Eye, Edit } from "lucide-react"
 import { Link } from "@/i18n/routing"
 import UpdateModModal from "@/components/mod/UpdateModModal"
 import { getUserMods, deleteUserMod } from "@/app/actions/profile-actions"
-import { ModData, ModStatusType } from "@/types/mod"
+import { fetchTagsByCategory } from "@/app/actions/tag-actions"
+import { ModData, ModStatusType, TagData } from "@/types/mod"
 
 export default function ProfileMyModsPage() {
     const t = useTranslations('Profile')
@@ -15,9 +16,11 @@ export default function ProfileMyModsPage() {
     const [loading, setLoading] = useState(true)
     const [selectedMod, setSelectedMod] = useState<ModData | null>(null)
     const [showUpdateModal, setShowUpdateModal] = useState(false)
+    const [gameVersionTags, setGameVersionTags] = useState<TagData[]>([])
 
     useEffect(() => {
         loadMods()
+        fetchTagsByCategory('gamever').then(setGameVersionTags)
     }, [])
 
     const loadMods = async () => {
@@ -199,6 +202,8 @@ export default function ProfileMyModsPage() {
                     setSelectedMod(null)
                     await loadMods()
                 }}
+                gameVersionTags={gameVersionTags}
+                onGameVersionTagsRefresh={() => fetchTagsByCategory('gamever').then(setGameVersionTags)}
             />
         </div>
     )

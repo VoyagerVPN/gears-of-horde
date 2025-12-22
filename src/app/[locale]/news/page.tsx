@@ -57,11 +57,14 @@ export default async function NewsPage({ searchParams, params }: NewsPageProps) 
                                         key={item.id}
                                         modName={item.modName}
                                         modSlug={item.modSlug}
+                                        modVersion={item.modVersion}
+                                        gameVersion={item.gameVersion}
+                                        actionText={item.actionText}
                                         description={item.description}
+                                        content={item.content}
                                         date={item.date}
                                         tags={item.tags}
-                                        gameVersion={item.gameVersion}
-                                        isSaveBreaking={item.isSaveBreaking}
+                                        wipeRequired={item.wipeRequired}
                                         sourceUrl={item.sourceUrl}
                                         locale={locale as 'en' | 'ru'}
                                         variant="card"

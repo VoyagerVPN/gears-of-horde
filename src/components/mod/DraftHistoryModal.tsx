@@ -1,10 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { X, History, RotateCcw, Trash2, AlertTriangle } from "lucide-react";
+import { History, RotateCcw, Trash2, AlertTriangle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { DraftData } from "@/hooks/useAutosave";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogBody,
+    DialogFooter,
+    DialogButton,
+} from "@/components/ui/Dialog";
 
 interface DraftHistoryModalProps {
     isOpen: boolean;
@@ -45,21 +53,13 @@ export default function DraftHistoryModal({
     onClearAll,
 }: DraftHistoryModalProps) {
     const t = useTranslations("Admin");
-    const [mounted, setMounted] = useState(false);
     const [confirmClearAll, setConfirmClearAll] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-        return () => setMounted(false);
-    }, []);
 
     useEffect(() => {
         if (!isOpen) {
             setConfirmClearAll(false);
         }
     }, [isOpen]);
-
-    if (!isOpen || !mounted) return null;
 
     const handleRestore = (draftId: string) => {
         onRestore(draftId);
@@ -75,211 +75,79 @@ export default function DraftHistoryModal({
         }
     };
 
-    // Using inline styles for portal content to ensure reliable rendering
-    // (Portal renders outside React tree, which can cause CSS scope issues)
-    const modalContent = (
-        <div
-            style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                zIndex: 99999,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                backdropFilter: 'blur(4px)',
-                padding: '16px',
-            }}
-            onClick={onClose}
-        >
-            <div
-                style={{
-                    width: '100%',
-                    maxWidth: '500px',
-                    backgroundColor: '#1a1a1a',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '16px',
-                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    maxHeight: '80vh',
-                }}
-                onClick={(e) => e.stopPropagation()}
-            >
-                {/* Header */}
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '20px 24px',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <History size={20} style={{ color: '#ce4729' }} />
-                        <h2 style={{
-                            fontSize: '18px',
-                            fontWeight: 'bold',
-                            color: 'white',
-                            margin: 0,
-                            fontFamily: 'Exo 2, sans-serif',
-                        }}>
-                            {t("draftHistory")}
-                        </h2>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            color: '#a1a1a1',
-                            cursor: 'pointer',
-                            padding: '8px',
-                            borderRadius: '8px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <X size={18} />
-                    </button>
-                </div>
+    return (
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent size="lg">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-3">
+                        <History size={20} className="text-primary" />
+                        {t("draftHistory")}
+                    </DialogTitle>
+                </DialogHeader>
 
-                {/* Content */}
-                <div style={{
-                    padding: '24px',
-                    overflowY: 'auto',
-                    flex: 1,
-                }}>
+                <DialogBody>
                     {draftHistory.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '32px 0' }}>
-                            <History size={40} style={{ color: 'rgba(161, 161, 161, 0.3)', marginBottom: '12px' }} />
-                            <p style={{ color: '#a1a1a1', fontSize: '14px', margin: 0 }}>
-                                {t("noDraftsFound")}
-                            </p>
+                        <div className="text-center py-10">
+                            <History size={40} className="text-textMuted/30 mx-auto mb-3" />
+                            <p className="text-textMuted text-sm">{t("noDraftsFound")}</p>
                         </div>
                     ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div className="flex flex-col gap-2">
                             {draftHistory.map((draft, index) => (
                                 <div
                                     key={draft.id}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        padding: '16px',
-                                        backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                                        border: '1px solid rgba(255, 255, 255, 0.05)',
-                                        borderRadius: '12px',
-                                    }}
+                                    className="flex items-center justify-between p-4 bg-black/20 border border-white/5 rounded-xl"
                                 >
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span style={{
-                                                fontSize: '14px',
-                                                fontWeight: 500,
-                                                color: 'white',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap',
-                                            }}>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-medium text-white truncate">
                                                 {draft.data.title || "Untitled"}
                                             </span>
                                             {index === 0 && (
-                                                <span style={{
-                                                    padding: '2px 8px',
-                                                    fontSize: '10px',
-                                                    fontWeight: 'bold',
-                                                    backgroundColor: 'rgba(206, 71, 41, 0.2)',
-                                                    color: '#ce4729',
-                                                    borderRadius: '9999px',
-                                                    textTransform: 'uppercase',
-                                                }}>
+                                                <span className="px-2 py-0.5 text-[10px] font-bold bg-primary/20 text-primary rounded-full uppercase">
                                                     Latest
                                                 </span>
                                             )}
                                         </div>
                                         <p
-                                            style={{
-                                                fontSize: '12px',
-                                                color: '#a1a1a1',
-                                                margin: '4px 0 0 0',
-                                            }}
+                                            className="text-xs text-textMuted mt-1"
                                             title={formatFullDate(draft.savedAt)}
                                         >
                                             {formatRelativeTime(draft.savedAt)}
                                         </p>
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <div className="flex items-center gap-1">
                                         <button
                                             onClick={() => handleRestore(draft.id)}
-                                            style={{
-                                                background: 'none',
-                                                border: 'none',
-                                                padding: '8px',
-                                                borderRadius: '8px',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                            }}
+                                            className="p-2 rounded-lg hover:bg-white/5 transition-colors"
                                             title={t("restoreVersion")}
                                         >
-                                            <RotateCcw size={14} style={{ color: '#4ade80' }} />
+                                            <RotateCcw size={14} className="text-green-400" />
                                         </button>
                                         <button
                                             onClick={() => onDelete(draft.id)}
-                                            style={{
-                                                background: 'none',
-                                                border: 'none',
-                                                padding: '8px',
-                                                borderRadius: '8px',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                            }}
+                                            className="p-2 rounded-lg hover:bg-white/5 transition-colors"
                                             title={t("deleteVersion")}
                                         >
-                                            <Trash2 size={14} style={{ color: '#f87171' }} />
+                                            <Trash2 size={14} className="text-red-400" />
                                         </button>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     )}
-                </div>
+                </DialogBody>
 
-                {/* Footer */}
                 {draftHistory.length > 0 && (
-                    <div style={{
-                        padding: '16px 24px',
-                        borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                    }}>
-                        <span style={{ fontSize: '12px', color: '#a1a1a1' }}>
+                    <DialogFooter className="justify-between">
+                        <span className="text-xs text-textMuted">
                             {draftHistory.length} version{draftHistory.length !== 1 ? "s" : ""} saved
                         </span>
-                        <button
+                        <DialogButton
+                            variant={confirmClearAll ? "danger" : "ghost"}
+                            size="sm"
                             onClick={handleClearAll}
-                            style={{
-                                padding: '8px 16px',
-                                fontSize: '12px',
-                                fontWeight: 'bold',
-                                borderRadius: '8px',
-                                border: confirmClearAll ? 'none' : '1px solid rgba(248, 113, 113, 0.3)',
-                                backgroundColor: confirmClearAll ? '#ef4444' : 'transparent',
-                                color: confirmClearAll ? 'white' : '#f87171',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                            }}
+                            className={!confirmClearAll ? "text-red-400 border border-red-400/30" : ""}
                         >
                             {confirmClearAll ? (
                                 <>
@@ -292,12 +160,10 @@ export default function DraftHistoryModal({
                                     {t("clearAllDrafts")}
                                 </>
                             )}
-                        </button>
-                    </div>
+                        </DialogButton>
+                    </DialogFooter>
                 )}
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
-
-    return createPortal(modalContent, document.body);
 }

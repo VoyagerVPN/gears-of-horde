@@ -107,6 +107,7 @@ model Mod {
   viewHistory      ViewHistory[]
   downloadHistory  DownloadHistory[]
   subscriptions    Subscription[]
+  anonymousViews   AnonymousView[]
   
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -121,7 +122,6 @@ model Tag {
   isExternal  Boolean  @default(false) // Whether this tag represents external content by default
   
   modTags     ModTag[]
-  newsTags    NewsTag[]
   
   @@unique([category, value])
 }
@@ -141,32 +141,30 @@ model ModTag {
 }
 
 model News {
-  id          String   @id @default(cuid())
-  title       String
-  content     String   // Markdown content
-  date        DateTime @default(now())
+  id            String   @id @default(cuid())
   
-  // Specific fields from design doc
-  wipeRequired Boolean @default(false)
-  sourceUrl    String?
+  // Frozen snapshot data (captured at posting time)
+  modSlug       String?  // For linking to mod page
+  modName       String?  // Frozen mod name (temporarily optional for migration)
+  modVersion    String?  // Frozen mod version at posting time
+  gameVersion   String?  // Frozen game version
+  actionText    String   @default("released") // "released", "updated", etc.
   
-  // Relations
-  tags        NewsTag[]
-  modId       String?
-  mod         Mod?     @relation(fields: [modId], references: [slug])
+  content       String   // Markdown content (legacy, still used)
+  description   String?  // Optional short description
+  date          DateTime @default(now())
   
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model NewsTag {
-  newsId String
-  tagId  String
+  wipeRequired  Boolean  @default(false)
+  sourceUrl     String?
   
-  news   News @relation(fields: [newsId], references: [id], onDelete: Cascade)
-  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  // Tags stored as JSON array: [{displayName, color, category}]
+  tags          Json     @default("[]")
   
-  @@id([newsId, tagId])
+  // Relation to mod (for navigation only, not for syncing data)
+  mod           Mod?     @relation(fields: [modSlug], references: [slug])
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model TranslationSuggestion {
@@ -261,4 +259,18 @@ model Subscription {
   mod             Mod      @relation(fields: [modSlug], references: [slug], onDelete: Cascade)
   
   @@unique([userId, modSlug])
+}
+
+// ============ ANONYMOUS VIEW TRACKING ============
+
+model AnonymousView {
+  id        String   @id @default(cuid())
+  modSlug   String
+  sessionId String   // Browser session identifier
+  viewedAt  DateTime @default(now())
+  
+  mod       Mod      @relation(fields: [modSlug], references: [slug], onDelete: Cascade)
+  
+  @@unique([modSlug, sessionId])
+  @@index([viewedAt]) // For cleanup queries
 }

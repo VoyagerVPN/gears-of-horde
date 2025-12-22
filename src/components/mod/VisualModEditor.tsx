@@ -20,7 +20,7 @@ const EMPTY_MOD: ModData = {
     title: "New Mod Title",
     slug: "new-mod",
     version: "v1.0",
-    author: "Author Name",
+    author: "",
     description: "",
     status: "active",
     gameVersion: "V1.0",
@@ -40,7 +40,8 @@ const EMPTY_MOD: ModData = {
     videos: { trailer: "", review: "" },
     screenshots: [],
     changelog: [],
-    localizations: []
+    localizations: [],
+    createdAt: new Date().toISOString().split('T')[0] // Default to today for new mods
 };
 
 interface VisualModEditorProps {
@@ -316,6 +317,12 @@ export default function VisualModEditor({
                     // Auto-generate slug from title for new mods
                     if (isNew && newData.title !== data.title) {
                         newData.slug = slugify(newData.title);
+                    }
+                    // Sync changelog version with mod version - when first changelog entry version changes
+                    if (newData.changelog.length > 0 &&
+                        data.changelog.length > 0 &&
+                        newData.changelog[0].version !== data.changelog[0].version) {
+                        newData.version = newData.changelog[0].version;
                     }
                     setData(newData);
                 }}

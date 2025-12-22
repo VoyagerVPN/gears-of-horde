@@ -2,22 +2,24 @@
 
 import { Link } from "@/i18n/routing";
 import { useTranslations } from 'next-intl';
-import { AlertTriangle, ExternalLink } from "lucide-react";
+import { AlertTriangle, ExternalLink, Settings, Gamepad2 } from "lucide-react";
 import DateDisplay from "@/components/DateDisplay";
-import VersionTag from "@/components/VersionTag";
 import Tag from "@/components/ui/Tag";
-import { TagData } from "@/types/mod";
+import { FrozenTag } from "@/schemas/news.schema";
 import { cn } from "@/lib/utils";
 import { getTagColor } from "@/lib/tag-colors";
 
 interface NewsItemProps {
   modName: string;
-  modSlug: string;
-  description: string;
-  date: string;
-  tags: TagData[];
+  modSlug?: string;
+  modVersion?: string;
   gameVersion?: string;
-  isSaveBreaking?: boolean;
+  actionText?: string;
+  description?: string;
+  content?: string;
+  date: string;
+  tags: FrozenTag[];
+  wipeRequired?: boolean;
   sourceUrl?: string;
   locale?: 'en' | 'ru';
   variant?: 'list' | 'card';
@@ -26,11 +28,14 @@ interface NewsItemProps {
 export default function NewsItem({
   modName,
   modSlug,
+  modVersion,
+  gameVersion,
+  actionText = 'released',
   description,
+  content,
   date,
   tags,
-  gameVersion,
-  isSaveBreaking,
+  wipeRequired,
   sourceUrl,
   locale = 'en',
   variant = 'list'
@@ -39,22 +44,33 @@ export default function NewsItem({
 
   // Find the primary tag for the stripe color (prioritize 'newscat' or take first)
   const primaryTag = tags.find(t => t.category === 'newscat') || tags[0];
-  // Use getTagColor to get proper fallback colors when DB color is null
   const stripeColor = primaryTag
-    ? getTagColor(primaryTag.category || 'tag', primaryTag.value, primaryTag.color)
+    ? getTagColor(primaryTag.category || 'tag', primaryTag.displayName, primaryTag.color)
     : '#a1a1a1';
 
-  // Find gamever tag to get database color (no displayName match needed)
-  const gameVerTag = gameVersion ? tags.find(t => t.category === 'gamever') : null;
-  // Use getTagColor for proper color fallback with gamever
-  const gameVerColor = gameVerTag
-    ? getTagColor('gamever', gameVerTag.value, gameVerTag.color)
+  // Get game version color
+  const gameVerColor = gameVersion
+    ? getTagColor('gamever', gameVersion, undefined)
     : undefined;
+
+  // Filter out gamever tags from display (we show it separately with gamepad icon)
+  const displayTags = tags.filter(t => t.category !== 'gamever');
+
+  // Display text: use description if provided, otherwise fall back to content
+  const displayText = description || content;
 
   if (variant === 'card') {
     return (
       <div className="relative flex flex-col w-full bg-surface rounded-lg overflow-hidden hover:bg-surfaceHover transition-colors group border border-white/5 h-full shadow-sm hover:shadow-md hover:border-white/10">
-        <Link href={`/mod/${modSlug}`} className="absolute inset-0 z-0" aria-label={`View ${modName}`} />
+        <Link href={modSlug ? `/mod/${modSlug}` : '#'} className="absolute inset-0 z-0" aria-label={`View ${modName}`} />
+
+        {/* Wipe Ribbon - Top Left */}
+        {wipeRequired && (
+          <div className="absolute top-0 left-0 z-20 bg-amber-500/90 text-black text-[10px] font-bold uppercase tracking-wider px-2 py-1 flex items-center gap-1 rounded-br">
+            <AlertTriangle size={10} />
+            {t('wipe')}
+          </div>
+        )}
 
         {/* Top Stripe */}
         <div
@@ -63,126 +79,164 @@ export default function NewsItem({
         />
 
         <div className="flex-1 flex flex-col p-4 relative z-10 pointer-events-none">
-          <div className="flex justify-between items-start mb-2 pointer-events-auto">
+          {/* Row 1: Mod Name */}
+          <div className="pointer-events-auto mb-2">
             <Link
-              href={`/mod/${modSlug}`}
+              href={modSlug ? `/mod/${modSlug}` : '#'}
               className="font-bold text-base text-textMain group-hover:text-primary transition-colors line-clamp-1"
             >
               {modName}
             </Link>
           </div>
 
-          <DateDisplay
-            date={date}
-            locale={locale}
-            className="text-xs text-textMuted mb-3 font-mono block"
-          />
+          {/* Row 2: Version Pill + Action + Date */}
+          <div className="flex items-center gap-2 mb-3 pointer-events-auto flex-wrap">
+            {modVersion && (
+              <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-white/10 text-white/80 rounded text-xs font-mono font-bold">
+                <Settings size={12} className="text-zinc-400" />
+                {modVersion}
+              </span>
+            )}
+            <span className="text-sm text-textMuted">{actionText}</span>
+            <DateDisplay
+              date={date}
+              locale={locale}
+              className="text-xs text-textMuted font-mono"
+            />
+          </div>
 
-          <p className="text-sm text-textMuted mb-4 leading-relaxed pointer-events-auto line-clamp-4 flex-grow">
-            {description}
-          </p>
+          {/* Row 3: Description (optional) */}
+          {displayText && (
+            <p className="text-sm text-textMuted mb-4 leading-relaxed pointer-events-auto line-clamp-3">
+              {displayText}
+            </p>
+          )}
 
-          <div className="flex flex-col gap-3 mt-auto pointer-events-auto">
-            <div className="flex flex-wrap gap-1.5">
-              {tags.slice(0, 3).map(tag => (
+          {/* Row 4: Tags + Game Version + Source */}
+          <div className="flex items-center justify-between mt-auto pointer-events-auto">
+            <div className="flex flex-wrap gap-1.5 items-center">
+              {displayTags.slice(0, 3).map((tag, idx) => (
                 <Tag
-                  key={tag.id || tag.displayName}
+                  key={tag.displayName + idx}
                   category={tag.category}
-                  value={tag.value}
                   color={tag.color || undefined}
                   href={`/news?tag=${tag.displayName}`}
                 >
                   {tag.displayName?.toLowerCase()}
                 </Tag>
               ))}
-              {tags.length > 3 && (
-                <span className="text-[10px] text-textMuted self-center">+{tags.length - 3}</span>
+              {displayTags.length > 3 && (
+                <span className="text-[10px] text-textMuted">+{displayTags.length - 3}</span>
               )}
-            </div>
 
-            <div className="flex items-center justify-between border-t border-white/5 pt-3 mt-1">
-              <div className="flex gap-1.5 items-center">
-                {gameVersion && (
-                  <VersionTag type="game" version={gameVersion} color={gameVerColor} />
-                )}
-                {isSaveBreaking && (
-                  <div className="text-amber-500" title={t('saveWipeRequired')}>
-                    <AlertTriangle size={14} />
-                  </div>
-                )}
-              </div>
-
-              {sourceUrl && (
-                <a
-                  href={sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[10px] font-bold text-textMuted hover:text-white transition-colors uppercase tracking-wide bg-white/5 hover:bg-white/10 px-2 py-1 rounded"
-                  onClick={(e) => e.stopPropagation()}
+              {gameVersion && (
+                <Tag
+                  category="gamever"
+                  color={gameVerColor}
+                  className="font-mono font-bold gap-1.5"
                 >
-                  <ExternalLink size={10} />
-                  Source
-                </a>
+                  <Gamepad2 size={12} />
+                  {gameVersion}
+                </Tag>
               )}
             </div>
+
+            {sourceUrl && (
+              <a
+                href={sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-[10px] font-bold text-textMuted hover:text-white transition-colors uppercase tracking-wide bg-white/5 hover:bg-white/10 px-2 py-1 rounded"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <ExternalLink size={10} />
+                Source
+              </a>
+            )}
           </div>
         </div>
       </div>
     );
   }
 
-  // Helper to title case text
-  const toTitleCase = (str: string) => str?.toLowerCase();
-
+  // ========== LIST VARIANT ==========
   return (
     <div className="relative flex w-full bg-surface rounded-lg overflow-hidden hover:bg-surfaceHover transition-colors mb-3 last:mb-0 group border border-white/5 p-3">
-      <Link href={`/mod/${modSlug}`} className="absolute inset-0 z-0" aria-label={`View ${modName}`} />
+      <Link href={modSlug ? `/mod/${modSlug}` : '#'} className="absolute inset-0 z-0" aria-label={`View ${modName}`} />
 
+      {/* Wipe Ribbon - Top Left */}
+      {wipeRequired && (
+        <div className="absolute top-0 left-0 z-20 bg-amber-500/90 text-black text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 flex items-center gap-1 rounded-br">
+          <AlertTriangle size={10} />
+          {t('wipe')}
+        </div>
+      )}
+
+      {/* Left Stripe */}
       <div
         className="absolute left-0 top-0 bottom-0 w-1.5"
         style={{ background: stripeColor }}
       />
 
-      <div className="flex-1 flex flex-col pl-3 relative z-10 pointer-events-none">
-        <div className="flex justify-between items-start mb-1 pointer-events-auto">
+      <div className={cn(
+        "flex-1 flex flex-col pl-3 relative z-10 pointer-events-none",
+        wipeRequired && "pt-4" // Add padding when wipe ribbon is shown
+      )}>
+        {/* Row 1: Mod Name */}
+        <div className="pointer-events-auto mb-1">
           <Link
-            href={`/mod/${modSlug}`}
+            href={modSlug ? `/mod/${modSlug}` : '#'}
             className="font-bold text-sm text-textMain group-hover:text-primary transition-colors line-clamp-1"
           >
             {modName}
           </Link>
+        </div>
+
+        {/* Row 2: Version Pill + Action + Date */}
+        <div className="flex items-center gap-2 mb-2 pointer-events-auto flex-wrap">
+          {modVersion && (
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white/10 text-white/80 rounded text-[11px] font-mono font-bold">
+              <Settings size={10} className="text-zinc-400" />
+              {modVersion}
+            </span>
+          )}
+          <span className="text-xs text-textMuted">{actionText}</span>
           <DateDisplay
             date={date}
             locale={locale}
-            className="text-[10px] text-textMuted whitespace-nowrap ml-2 font-mono pt-0.5"
+            className="text-[10px] text-textMuted font-mono"
           />
         </div>
 
-        <p className="text-xs text-textMuted mb-2.5 leading-relaxed pointer-events-auto">
-          {description}
-        </p>
+        {/* Row 3: Description (optional) */}
+        {displayText && (
+          <p className="text-xs text-textMuted mb-2.5 leading-relaxed pointer-events-auto line-clamp-2">
+            {displayText}
+          </p>
+        )}
 
+        {/* Row 4: Tags + Game Version */}
         <div className="flex items-center justify-between mt-auto pointer-events-auto">
-          <div className="flex flex-wrap gap-1.5">
-            {tags.map(tag => (
+          <div className="flex flex-wrap gap-1.5 items-center">
+            {displayTags.map((tag, idx) => (
               <Tag
-                key={tag.id || tag.displayName}
+                key={tag.displayName + idx}
                 category={tag.category}
-                value={tag.value}
                 color={tag.color || undefined}
                 href={`/news?tag=${tag.displayName}`}
               >
-                {toTitleCase(tag.displayName)}
+                {tag.displayName?.toLowerCase()}
               </Tag>
             ))}
 
             {gameVersion && (
-              <VersionTag type="game" version={gameVersion} color={gameVerColor} />
-            )}
-
-            {isSaveBreaking && (
-              <Tag variant="warning" className="flex items-center gap-1" title={t('saveWipeRequired')}>
-                <AlertTriangle size={10} /> {t('wipe')}
+              <Tag
+                category="gamever"
+                color={gameVerColor}
+                className="font-mono font-bold gap-1.5"
+              >
+                <Gamepad2 size={12} />
+                {gameVersion}
               </Tag>
             )}
           </div>

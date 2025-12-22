@@ -182,6 +182,25 @@ export async function recordDownload(modSlug: string, version: string, sessionId
 // ============ VIEW HISTORY ============
 
 const VIEW_HISTORY_LIMIT = 50
+const VIEW_COOLDOWN_HOURS = 24 // Hours before same user can increment view count again
+
+/**
+ * Helper: Increment view count on a mod
+ */
+async function incrementModViews(modSlug: string) {
+    const mod = await db.mod.findUnique({
+        where: { slug: modSlug },
+        select: { views: true }
+    })
+
+    if (mod) {
+        const currentCount = parseInt(mod.views) || 0
+        await db.mod.update({
+            where: { slug: modSlug },
+            data: { views: (currentCount + 1).toString() }
+        })
+    }
+}
 
 export async function getViewHistory() {
     const session = await auth()
@@ -211,9 +230,28 @@ export async function getViewHistory() {
     }))
 }
 
+/**
+ * Record a view for an authenticated user.
+ * Increments Mod.views only if user hasn't viewed in the last 24 hours.
+ */
 export async function recordView(modSlug: string) {
     const session = await auth()
-    if (!session?.user?.id) return
+    if (!session?.user?.id) return { recorded: false }
+
+    const cooldownDate = new Date()
+    cooldownDate.setHours(cooldownDate.getHours() - VIEW_COOLDOWN_HOURS)
+
+    // Check for existing recent view
+    const existingView = await db.viewHistory.findUnique({
+        where: {
+            userId_modSlug: {
+                userId: session.user.id,
+                modSlug
+            }
+        }
+    })
+
+    const shouldIncrementViews = !existingView || existingView.viewedAt < cooldownDate
 
     // Upsert view - update timestamp if exists, create if not
     await db.viewHistory.upsert({
@@ -232,6 +270,11 @@ export async function recordView(modSlug: string) {
         }
     })
 
+    // Increment view count only if outside cooldown window
+    if (shouldIncrementViews) {
+        await incrementModViews(modSlug)
+    }
+
     // Clean up old entries beyond limit (FIFO)
     const allViews = await db.viewHistory.findMany({
         where: { userId: session.user.id },
@@ -249,6 +292,51 @@ export async function recordView(modSlug: string) {
 
     // Also reset unseen badge on subscription if subscribed
     await markSubscriptionViewed(modSlug)
+
+    return { recorded: true, incremented: shouldIncrementViews }
+}
+
+/**
+ * Record a view for an anonymous (non-authenticated) user.
+ * Uses session ID for deduplication - one view per session per mod.
+ */
+export async function recordAnonymousView(modSlug: string, sessionId: string) {
+    if (!modSlug || !sessionId) return { recorded: false }
+
+    try {
+        // Try to create a new anonymous view record
+        await db.anonymousView.create({
+            data: {
+                modSlug,
+                sessionId
+            }
+        })
+
+        // Successfully created = new view, increment count
+        await incrementModViews(modSlug)
+
+        return { recorded: true, incremented: true }
+    } catch {
+        // Unique constraint violation = already viewed from this session
+        return { recorded: false, incremented: false }
+    }
+}
+
+/**
+ * Cleanup old anonymous views (older than 30 days).
+ * Call this periodically (e.g., via cron job or on admin action).
+ */
+export async function cleanupOldAnonymousViews() {
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+    const deleted = await db.anonymousView.deleteMany({
+        where: {
+            viewedAt: { lt: thirtyDaysAgo }
+        }
+    })
+
+    return { deleted: deleted.count }
 }
 
 // ============ USER MODS (FOR AUTHORS) ============

@@ -6,6 +6,7 @@ import { STATUS_CONFIG, STATUS_OPTIONS } from "@/lib/mod-constants";
 import { Check } from "lucide-react";
 import { TRANSPARENT_INPUT_BASE } from "@/lib/constants/ui-constants";
 import Tag from "@/components/ui/Tag";
+import AuthorTag from "@/components/AuthorTag";
 import TagSelector from "@/components/TagSelector";
 
 interface ModHeaderProps {
@@ -120,12 +121,10 @@ export default function ModHeader({ mod, isEditing = false, initialStatus, onUpd
                             <p className="flex items-center gap-1 flex-wrap">
                                 {t('createdBy')}{' '}
                                 {mod.tags.filter(t => t.category === 'author').map((authorTag) => (
-                                    <Tag key={authorTag.displayName} category="author" href={`/search?tag=${authorTag.displayName}`} className="hover:opacity-80 transition-opacity cursor-pointer">
-                                        {authorTag.displayName}
-                                    </Tag>
+                                    <AuthorTag key={authorTag.displayName} author={authorTag.displayName} href={`/search?tag=${authorTag.displayName}`} className="hover:opacity-80 transition-opacity cursor-pointer" />
                                 ))}
                                 {mod.tags.filter(t => t.category === 'author').length === 0 && (
-                                    <Tag category="author" href={`/search?tag=${mod.author}`} className="hover:opacity-80 transition-opacity cursor-pointer">{mod.author}</Tag>
+                                    <AuthorTag author={mod.author} href={`/search?tag=${mod.author}`} className="hover:opacity-80 transition-opacity cursor-pointer" />
                                 )}
                             </p>
                         )}
@@ -149,7 +148,7 @@ export default function ModHeader({ mod, isEditing = false, initialStatus, onUpd
                                                 const OptionIcon = option.icon;
                                                 const isCurrent = initialStatus === option.value;
                                                 return (
-                                                    <Select.Item key={option.value} value={option.value} className="flex items-center justify-between gap-2 px-2 py-2 text-xs text-textMuted hover:text-white hover:bg-white/10 rounded cursor-pointer outline-none data-[state=checked]:text-white data-[state=checked]:bg-white/5">
+                                                    <Select.Item key={option.value} value={option.value} className="flex items-center justify-between gap-2 px-2 py-2 text-[13px] text-textMuted hover:text-white hover:bg-white/10 rounded cursor-pointer outline-none data-[state=checked]:text-white data-[state=checked]:bg-white/5">
                                                         <Select.ItemText asChild>
                                                             <div className="flex items-center gap-2">
                                                                 <OptionIcon size={14} className={option.color} />
@@ -157,7 +156,7 @@ export default function ModHeader({ mod, isEditing = false, initialStatus, onUpd
                                                             </div>
                                                         </Select.ItemText>
                                                         {isCurrent && (
-                                                            <span className="text-[9px] bg-white/10 text-white/50 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold ml-2">
+                                                            <span className="text-[11px] bg-white/10 text-white/50 px-2 py-0.5 rounded uppercase tracking-wider font-bold ml-2">
                                                                 {t('current')}
                                                             </span>
                                                         )}

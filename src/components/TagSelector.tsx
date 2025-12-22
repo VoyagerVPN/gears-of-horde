@@ -277,9 +277,9 @@ export default function TagSelector({
                         .map(tag => (
                             <span
                                 key={tag.displayName}
-                                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-xs"
+                                className="inline-flex items-center gap-1.5 px-2 py-1 rounded border text-[12px] font-bold"
                                 style={(() => {
-                                    const tagColor = tag.color || (category === 'author' ? '#3b82f6' : null);
+                                    const tagColor = tag.color || (category === 'author' ? '#22d3ee' : null);
                                     return tagColor ? {
                                         color: tagColor,
                                         backgroundColor: `${tagColor}1a`,
@@ -297,7 +297,7 @@ export default function TagSelector({
                                     onClick={() => removeTag(tag.displayName)}
                                     className="text-current opacity-60 hover:opacity-100 hover:text-red-400 transition-all"
                                 >
-                                    <X size={12} />
+                                    <X size={14} />
                                 </button>
                             </span>
                         ))}

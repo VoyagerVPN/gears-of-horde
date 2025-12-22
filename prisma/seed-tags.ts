@@ -56,20 +56,20 @@ async function main() {
     })
     console.log('Created Mod:', mod)
 
-    // 3. Create News with Tags
+    // 3. Create News with frozen snapshot data
     const news = await prisma.news.create({
         data: {
-            title: 'Test News Release',
+            modSlug: mod.slug,
+            modName: mod.title,
+            modVersion: mod.version,
+            gameVersion: mod.gameVersion,
+            actionText: 'released',
             content: 'This is a test news item.',
-            tags: {
-                create: [
-                    { tag: { connect: { id: newsCatTag.id } } },
-                    { tag: { connect: { id: gameVerTag.id } } }
-                ]
-            },
-            mod: {
-                connect: { slug: mod.slug }
-            }
+            description: 'Test news description',
+            tags: [
+                { displayName: newsCatTag.displayName, color: newsCatTag.color, category: newsCatTag.category },
+                { displayName: gameVerTag.displayName, color: gameVerTag.color, category: gameVerTag.category }
+            ]
         }
     })
     console.log('Created News:', news)
@@ -81,11 +81,10 @@ async function main() {
     })
     console.log('Mod with Tags:', JSON.stringify(modWithTags?.tags, null, 2))
 
-    const newsWithTags = await prisma.news.findUnique({
-        where: { id: news.id },
-        include: { tags: { include: { tag: true } } }
+    const newsItem = await prisma.news.findUnique({
+        where: { id: news.id }
     })
-    console.log('News with Tags:', JSON.stringify(newsWithTags?.tags, null, 2))
+    console.log('News with frozen tags:', JSON.stringify(newsItem?.tags, null, 2))
 }
 
 main()

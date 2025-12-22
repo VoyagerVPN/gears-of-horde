@@ -10,10 +10,12 @@ import {
 import SearchBar from "@/components/ui/SearchBar";
 import { fetchAllMods, fetchPendingSuggestions, approveTranslationSuggestion, rejectTranslationSuggestion, updateModAction, deleteModAction } from "@/app/actions/admin-actions";
 import { fetchPendingModSubmissions, rejectModSubmission } from "@/app/actions/mod-submission-actions";
-import { ModData, TranslationSuggestion, ModSubmission } from "@/types/mod";
+import { fetchTagsByCategory } from "@/app/actions/tag-actions";
+import { ModData, TranslationSuggestion, ModSubmission, TagData } from "@/types/mod";
 import Image from "next/image";
 import UpdateModModal from "@/components/mod/UpdateModModal";
 import Tag from "@/components/ui/Tag";
+import AuthorTag from "@/components/AuthorTag";
 import VersionTag from "@/components/VersionTag";
 import DateDisplay from "@/components/DateDisplay";
 
@@ -33,6 +35,7 @@ export default function AdminModsPage() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [rejectingSubmissionId, setRejectingSubmissionId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [gameVersionTags, setGameVersionTags] = useState<TagData[]>([]);
 
   // Sorting state
   const [sortColumn, setSortColumn] = useState<SortColumn>('title');
@@ -40,14 +43,16 @@ export default function AdminModsPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      const [loadedMods, loadedSuggestions, loadedModSubmissions] = await Promise.all([
+      const [loadedMods, loadedSuggestions, loadedModSubmissions, loadedGameVersionTags] = await Promise.all([
         fetchAllMods(),
         fetchPendingSuggestions(),
-        fetchPendingModSubmissions()
+        fetchPendingModSubmissions(),
+        fetchTagsByCategory('gamever')
       ]);
       setMods(loadedMods);
       setSuggestions(loadedSuggestions);
       setModSubmissions(loadedModSubmissions);
+      setGameVersionTags(loadedGameVersionTags);
     };
     loadData();
   }, [refreshTrigger]);
@@ -439,7 +444,7 @@ export default function AdminModsPage() {
                 <tr key={mod.slug} className="hover:bg-white/[0.02] transition-colors group">
                   <td className="px-6 py-4 font-bold text-white text-base">{mod.title}</td>
                   <td className="px-6 py-4">
-                    <Tag category="author" href={`/search?author=${mod.author}`}>{mod.author}</Tag>
+                    <AuthorTag author={mod.author} href={`/search?author=${mod.author}`} />
                   </td>
                   <td className="px-6 py-4">
                     <VersionTag
@@ -517,6 +522,8 @@ export default function AdminModsPage() {
           onClose={() => setIsUpdateModalOpen(false)}
           mod={selectedMod}
           onSave={handleSaveUpdate}
+          gameVersionTags={gameVersionTags}
+          onGameVersionTagsRefresh={() => fetchTagsByCategory('gamever').then(setGameVersionTags)}
         />
       </div>
     </div>

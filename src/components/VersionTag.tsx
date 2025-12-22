@@ -24,7 +24,7 @@ export default function VersionTag({ type, version, className, color }: VersionT
 
     const isGame = type === 'game';
     const Icon = isGame ? Gamepad2 : Settings;
-    
+
     // Normalize game versions to always display with "V" prefix
     const displayVersion = isGame ? normalizeGameVersion(version) : version;
 
@@ -36,7 +36,7 @@ export default function VersionTag({ type, version, className, color }: VersionT
             color={color}
             className={`${className || ''} font-mono font-bold tracking-wide gap-1.5`}
         >
-            <Icon size={12} className={isGame ? undefined : "text-zinc-400"} />
+            <Icon size={14} className={isGame ? undefined : "text-zinc-400"} />
             {displayVersion}
         </Tag>
     );

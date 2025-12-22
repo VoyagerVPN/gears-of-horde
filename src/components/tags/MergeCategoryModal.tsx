@@ -1,9 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { X, AlertTriangle } from "lucide-react";
+import { useState } from "react";
+import { AlertTriangle } from "lucide-react";
 import { useTranslations } from 'next-intl';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogBody,
+    DialogFooter,
+    DialogButton,
+    DialogField,
+    DialogAlert,
+    dialogSelectClass,
+} from "@/components/ui/Dialog";
 
 interface MergeCategoryModalProps {
     isOpen: boolean;
@@ -17,14 +28,8 @@ export default function MergeCategoryModal({ isOpen, onClose, sourceCategory, al
     const t = useTranslations('Admin');
     const [targetCategory, setTargetCategory] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const [mounted, setMounted] = useState(false);
 
-    useEffect(() => {
-        setMounted(true);
-        return () => setMounted(false);
-    }, []);
-
-    if (!isOpen || !sourceCategory || !mounted) return null;
+    if (!sourceCategory) return null;
 
     const availableTargets = allCategories.filter(c => c !== sourceCategory);
 
@@ -43,174 +48,62 @@ export default function MergeCategoryModal({ isOpen, onClose, sourceCategory, al
         }
     };
 
-    const modalContent = (
-        <div
-            style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                zIndex: 99999,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                backdropFilter: 'blur(4px)',
-                padding: '16px',
-            }}
-            onClick={onClose}
-        >
-            <div
-                style={{
-                    width: '100%',
-                    maxWidth: '448px',
-                    backgroundColor: '#1a1a1a',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '12px',
-                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-                }}
-                onClick={(e) => e.stopPropagation()}
-            >
-                {/* Header */}
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '16px',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-                }}>
-                    <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: 'white', margin: 0 }}>
-                        {t('mergeCategories')}
-                    </h2>
-                    <button
-                        onClick={onClose}
-                        style={{ background: 'none', border: 'none', color: '#a1a1a1', cursor: 'pointer', padding: '4px' }}
-                    >
-                        <X size={20} />
-                    </button>
-                </div>
+    return (
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent size="md">
+                <DialogHeader>
+                    <DialogTitle>{t('mergeCategories')}</DialogTitle>
+                </DialogHeader>
 
-                {/* Content */}
-                <div style={{ padding: '16px' }}>
+                <DialogBody className="space-y-5">
                     {/* Warning */}
-                    <div style={{
-                        backgroundColor: 'rgba(234, 179, 8, 0.1)',
-                        border: '1px solid rgba(234, 179, 8, 0.2)',
-                        borderRadius: '8px',
-                        padding: '16px',
-                        display: 'flex',
-                        gap: '12px',
-                        marginBottom: '24px',
-                    }}>
-                        <AlertTriangle style={{ color: '#eab308', flexShrink: 0 }} size={20} />
-                        <div>
-                            <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#fef08a', marginTop: 0, marginBottom: '4px' }}>
-                                {t('warning')}
-                            </p>
-                            <p style={{ fontSize: '12px', color: 'rgba(254, 240, 138, 0.7)', margin: 0 }}>
-                                {t('mergeCategoryWarning', { category: sourceCategory })}
-                            </p>
-                        </div>
-                    </div>
+                    <DialogAlert variant="warning" icon={<AlertTriangle size={20} />}>
+                        <p className="font-bold text-yellow-400 mb-1">{t('warning')}</p>
+                        <p className="text-sm">{t('mergeCategoryWarning', { category: sourceCategory })}</p>
+                    </DialogAlert>
 
                     {/* Source Category */}
-                    <div style={{ marginBottom: '16px' }}>
-                        <label style={{
-                            display: 'block',
-                            fontSize: '10px',
-                            fontWeight: 'bold',
-                            color: '#a1a1a1',
-                            textTransform: 'uppercase',
-                            marginBottom: '4px',
-                        }}>
-                            {t('sourceCategory')}
-                        </label>
-                        <div style={{
-                            width: '100%',
-                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                            border: '1px solid rgba(255, 255, 255, 0.1)',
-                            borderRadius: '8px',
-                            padding: '8px 16px',
-                            color: 'white',
-                            opacity: 0.5,
-                            boxSizing: 'border-box',
-                        }}>
+                    <DialogField label={t('sourceCategory')} smallLabel>
+                        <div className="w-full bg-white/5 border border-white/10 rounded-lg py-2 px-4 text-white opacity-50">
                             {sourceCategory}
                         </div>
-                    </div>
+                    </DialogField>
 
                     {/* Arrow divider */}
-                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
-                        <div style={{ width: '1px', height: '32px', backgroundColor: 'rgba(255, 255, 255, 0.1)' }} />
+                    <div className="flex justify-center">
+                        <div className="w-px h-8 bg-white/10" />
                     </div>
 
                     {/* Target Category */}
-                    <div style={{ marginBottom: '16px' }}>
-                        <label style={{
-                            display: 'block',
-                            fontSize: '10px',
-                            fontWeight: 'bold',
-                            color: '#a1a1a1',
-                            textTransform: 'uppercase',
-                            marginBottom: '4px',
-                        }}>
-                            {t('targetCategory')}
-                        </label>
+                    <DialogField label={t('targetCategory')} smallLabel>
                         <select
                             value={targetCategory}
                             onChange={(e) => setTargetCategory(e.target.value)}
-                            style={{
-                                width: '100%',
-                                backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                                borderRadius: '8px',
-                                padding: '8px 16px',
-                                color: 'white',
-                                fontSize: '14px',
-                                outline: 'none',
-                                boxSizing: 'border-box',
-                            }}
+                            className={dialogSelectClass}
                         >
                             <option value="">{t('selectCategory')}</option>
                             {availableTargets.map(cat => (
-                                <option key={cat} value={cat} style={{ backgroundColor: '#27272a' }}>
-                                    {cat}
-                                </option>
+                                <option key={cat} value={cat}>{cat}</option>
                             ))}
                         </select>
-                    </div>
+                    </DialogField>
+                </DialogBody>
 
-                    {/* Buttons */}
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', paddingTop: '8px' }}>
-                        <button
-                            onClick={onClose}
-                            style={{ padding: '8px 16px', fontSize: '14px', fontWeight: 'bold', color: '#a1a1a1', background: 'none', border: 'none', cursor: 'pointer' }}
-                        >
-                            {t('cancel')}
-                        </button>
-                        <button
-                            onClick={handleMerge}
-                            disabled={isLoading || !targetCategory}
-                            style={{
-                                padding: '8px 16px',
-                                backgroundColor: '#ca8a04',
-                                color: 'white',
-                                fontSize: '14px',
-                                fontWeight: 'bold',
-                                borderRadius: '8px',
-                                border: 'none',
-                                cursor: (isLoading || !targetCategory) ? 'not-allowed' : 'pointer',
-                                opacity: (isLoading || !targetCategory) ? 0.5 : 1,
-                            }}
-                        >
-                            {isLoading ? t('merging') : t('merge')}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+                <DialogFooter>
+                    <DialogButton type="button" variant="ghost" onClick={onClose}>
+                        {t('cancel')}
+                    </DialogButton>
+                    <DialogButton
+                        type="button"
+                        variant="warning"
+                        disabled={!targetCategory}
+                        loading={isLoading}
+                        onClick={handleMerge}
+                    >
+                        {isLoading ? t('merging') : t('merge')}
+                    </DialogButton>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
-
-    return createPortal(modalContent, document.body);
 }

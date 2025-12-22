@@ -55,7 +55,7 @@ export default function AdminSettingsPage() {
                         <ul className="list-disc list-inside text-textMuted space-y-1 ml-2">
                             <li>Create <span className="text-white font-mono">gamever</span> tags for all unique game versions</li>
                             <li>Link <span className="text-white font-mono">gamever</span> tags to mods based on their gameVersion field</li>
-                            <li>Set <span className="text-blue-400">blue color (#3b82f6)</span> for all <span className="text-white font-mono">author</span> tags</li>
+                            <li>Set <span className="text-cyan-400">cyan color (#22d3ee)</span> for all <span className="text-white font-mono">author</span> tags</li>
                             <li>Recalculate <span className="text-white font-mono">gamever</span> colors using <span className="text-red-400">red</span> → <span className="text-green-400">green</span> gradient</li>
                         </ul>
                     </div>
@@ -65,8 +65,8 @@ export default function AdminSettingsPage() {
                             onClick={handleSync}
                             disabled={isSyncing}
                             className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold uppercase tracking-wider transition-all ${isSyncing
-                                    ? 'bg-white/10 text-textMuted cursor-not-allowed'
-                                    : 'bg-primary hover:bg-red-600 text-white shadow-lg shadow-red-900/20'
+                                ? 'bg-white/10 text-textMuted cursor-not-allowed'
+                                : 'bg-primary hover:bg-red-600 text-white shadow-lg shadow-red-900/20'
                                 }`}
                         >
                             <RefreshCw size={18} className={isSyncing ? 'animate-spin' : ''} />
@@ -75,8 +75,8 @@ export default function AdminSettingsPage() {
 
                         {syncResult && (
                             <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${syncResult.success
-                                    ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                                    : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                                ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                                : 'bg-red-500/10 text-red-400 border border-red-500/20'
                                 }`}>
                                 {syncResult.success ? <Check size={16} /> : <AlertCircle size={16} />}
                                 <span className="text-sm font-medium">{syncResult.message}</span>

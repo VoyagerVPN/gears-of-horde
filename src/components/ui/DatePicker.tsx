@@ -12,6 +12,7 @@ interface DatePickerProps {
     onChange: (date?: Date) => void;
     placeholder?: string;
     className?: string;
+    locale?: 'en' | 'ru';
 }
 
 interface CalendarDay {
@@ -20,7 +21,7 @@ interface CalendarDay {
     date: Date;
 }
 
-export default function DatePicker({ value, onChange, placeholder, className }: DatePickerProps) {
+export default function DatePicker({ value, onChange, placeholder, className, locale = 'en' }: DatePickerProps) {
     const t = useTranslations('DatePicker');
     const [isOpen, setIsOpen] = useState(false);
     const [viewDate, setViewDate] = useState(() => value || new Date());
@@ -128,11 +129,11 @@ export default function DatePicker({ value, onChange, placeholder, className }: 
             <Popover.Trigger asChild>
                 <button
                     type="button"
-                    className={`flex items-center gap-2 text-sm font-medium text-white hover:bg-white/5 px-2 py-1 rounded transition-colors outline-none group/date ${className}`}
+                    className={`flex items-center gap-2 text-sm font-medium text-white px-2 py-1 rounded transition-colors outline-none group/date ${className}`}
                 >
                     {value ? (
                         <span className="border-b border-dotted border-white/30 group-hover/date:border-white/60">
-                            <DateDisplay date={value.toISOString()} />
+                            <DateDisplay date={value.toISOString()} locale={locale} />
                         </span>
                     ) : (
                         <span className="text-textMuted italic">{placeholder || t('pickDate')}</span>

@@ -29,6 +29,12 @@ interface TagProps {
     onAction?: (e: React.MouseEvent) => void;
     /** Icon for the action button (split tags) */
     actionIcon?: React.ReactNode;
+    /** Enable custom internal layout (removes default padding/gaps) */
+    customLayout?: boolean;
+}
+
+export function TagDivider() {
+    return <div className="w-px self-stretch bg-current opacity-20 shrink-0" />;
 }
 
 /**
@@ -55,7 +61,8 @@ export default function Tag({
     color,
     href,
     onAction,
-    actionIcon
+    actionIcon,
+    customLayout
 }: TagProps) {
     // Legacy variant styles (for backward compatibility)
     const variantStyles = {
@@ -65,7 +72,7 @@ export default function Tag({
         version: "font-mono font-bold tracking-wide",
         muted: "bg-white/5 text-textMuted opacity-60",
         accent: "bg-primary/10 text-primary",
-        author: "bg-blue-500/10 text-blue-400",
+        author: "bg-cyan-400/15 text-cyan-300",
     };
 
     // Determine the final color to use
@@ -85,10 +92,10 @@ export default function Tag({
     // Base classes - hardcoded for reliability
     const baseClasses = cn(
         // Core styling - unified across all tags
-        "inline-flex items-center justify-center gap-1",
+        "inline-flex items-center justify-center ", // Removed default gap-1
         "transition-colors whitespace-nowrap",
         // Hardcoded sizing for reliability
-        "text-[11px] font-bold rounded-md",
+        "text-[13px] font-bold rounded-md",
         "capitalize", // Title case, not uppercase
         // Apply variant styles only if no dynamic color
         !dynamicStyle && variantStyles[variant],
@@ -108,18 +115,18 @@ export default function Tag({
             >
                 <Link
                     href={href}
-                    className={cn(paddingClasses, "hover:bg-white/10 transition-colors h-full flex items-center")}
+                    className={cn(paddingClasses, "hover:bg-white/10 transition-colors h-full flex items-center pl-1.5 pr-1.5")}
                 >
                     {children}
                 </Link>
-                <div className="w-px self-stretch bg-current opacity-20" />
+                <div className="w-px self-stretch bg-current opacity-20 shrink-0" />
                 <button
                     onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         onAction(e);
                     }}
-                    className="px-1.5 py-0.5 hover:bg-white/10 transition-colors h-full flex items-center justify-center"
+                    className="pl-1.5 pr-1.5 py-1 hover:bg-white/10 transition-colors h-full flex items-center justify-center"
                 >
                     {actionIcon}
                 </button>
@@ -132,7 +139,7 @@ export default function Tag({
         return (
             <Link
                 href={href}
-                className={cn(baseClasses, paddingClasses, "hover:opacity-80 active:scale-95")}
+                className={cn(baseClasses, paddingClasses, "gap-1 hover:opacity-80 active:scale-95")}
                 style={dynamicStyle}
                 title={title}
             >
@@ -141,10 +148,10 @@ export default function Tag({
         );
     }
 
-    // 3. Static Tag (Default)
+    // 3. Static Tag (Default or Custom Layout)
     return (
         <span
-            className={cn(baseClasses, paddingClasses)}
+            className={cn(baseClasses, customLayout ? "p-0 overflow-hidden" : cn(paddingClasses, "gap-1"))}
             style={dynamicStyle}
             title={title}
         >

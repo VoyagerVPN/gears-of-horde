@@ -241,32 +241,10 @@ export async function mergeTags(rawData: unknown): Promise<Result<{ merged: true
             }
         }
 
-        // 3. Do the same for NewsTags
-        const sourceNewsTags = await prisma.newsTag.findMany({
-            where: { tagId: sourceId }
-        });
+        // Note: News now stores tags as JSON, no longer uses NewsTag junction table
+        // So we only need to handle ModTags
 
-        for (const snt of sourceNewsTags) {
-            const existingTarget = await prisma.newsTag.findUnique({
-                where: {
-                    newsId_tagId: {
-                        newsId: snt.newsId,
-                        tagId: targetId
-                    }
-                }
-            });
-
-            if (!existingTarget) {
-                await prisma.newsTag.create({
-                    data: {
-                        newsId: snt.newsId,
-                        tagId: targetId
-                    }
-                });
-            }
-        }
-
-        // 4. Delete source tag (cascades will clean up source ModTags/NewsTags)
+        // 3. Delete source tag (cascades will clean up source ModTags)
         await prisma.tag.delete({
             where: { id: sourceId }
         });

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Download, Heart } from "lucide-react";
 import { Disc as Discord } from "lucide-react";
-import { toggleSubscription, getSubscriptionStatus, recordDownload, recordView } from "@/app/actions/profile-actions";
+import { toggleSubscription, getSubscriptionStatus, recordDownload, recordView, recordAnonymousView } from "@/app/actions/profile-actions";
 import type { ModData } from "@/schemas";
 
 interface ViewModeActionsProps {
@@ -12,8 +12,20 @@ interface ViewModeActionsProps {
 }
 
 /**
+ * Get or create a view session ID for anonymous view tracking
+ */
+function getViewSessionId(): string {
+    let sessionId = sessionStorage.getItem('view_session');
+    if (!sessionId) {
+        sessionId = crypto.randomUUID();
+        sessionStorage.setItem('view_session', sessionId);
+    }
+    return sessionId;
+}
+
+/**
  * View mode action buttons: Download, Discord, and Subscribe
- * Handles download tracking and subscription state
+ * Handles download tracking, view tracking, and subscription state
  */
 export default function ViewModeActions({ mod, t }: ViewModeActionsProps) {
     const [isSubscribed, setIsSubscribed] = useState(false);
@@ -26,7 +38,14 @@ export default function ViewModeActions({ mod, t }: ViewModeActionsProps) {
         });
 
         // Record view when component mounts
-        recordView(mod.slug);
+        // Try authenticated view first, then fall back to anonymous
+        recordView(mod.slug).then((result) => {
+            if (!result?.recorded) {
+                // User not authenticated, record anonymous view
+                const sessionId = getViewSessionId();
+                recordAnonymousView(mod.slug, sessionId);
+            }
+        });
     }, [mod.slug]);
 
     const handleSubscribe = async () => {

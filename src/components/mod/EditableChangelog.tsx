@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { History, Plus, Trash2, Calendar as CalendarIcon } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
 import { ModChangelog } from "@/types/mod";
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface EditableChangelogProps {
   logs: ModChangelog[];
@@ -61,6 +61,7 @@ function ChangelogTextarea({ changes, onChange, placeholder }: ChangelogTextarea
 
 export default function EditableChangelog({ logs, onChange }: EditableChangelogProps) {
   const t = useTranslations('Common');
+  const locale = useLocale() as 'en' | 'ru';
 
   // --- Управление версиями ---
   const addVersion = () => {
@@ -165,6 +166,7 @@ export default function EditableChangelog({ logs, onChange }: EditableChangelogP
                   value={log.date ? new Date(log.date) : undefined}
                   onChange={(date) => updateVersionHeader(vIdx, 'date', date ? date.toISOString() : "")}
                   placeholder={t('pickDate')}
+                  locale={locale}
                 />
               </div>
             </div>

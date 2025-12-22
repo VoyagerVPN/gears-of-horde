@@ -153,6 +153,7 @@
         "lastUpdated": "Last Updated",
         "gameVersion": "Game Version",
         "dashboard": "Dashboard",
+        "admin": "Admin",
         "settings": "Settings",
         "logout": "Logout",
         "deleteModConfirm": "Are you sure you want to delete this mod? This action cannot be undone.",
@@ -246,7 +247,11 @@
         "note": "Note",
         "submissionApproved": "Submission approved successfully",
         "submissionRejected": "Submission rejected",
-        "confirm": "Confirm"
+        "confirm": "Confirm",
+        "newsManagement": "News",
+        "editNews": "Edit News",
+        "deleteNewsConfirm": "Are you sure you want to delete this news item?",
+        "noNewsFound": "No news items found"
     },
     "ModCard": {
         "by": "by",
@@ -283,6 +288,31 @@
         "cancel": "Cancel",
         "sending": "Sending...",
         "submit": "Submit"
+    },
+    "UpdateModModal": {
+        "title": "Update Mod",
+        "deployingChangesFor": "Deploying changes for",
+        "newVersion": "New Version",
+        "gameVersion": "Game Version",
+        "selectVersion": "Select version",
+        "status": "Status",
+        "releaseDate": "Release Date",
+        "wipeRequired": "Wipe Required",
+        "updateDescription": "Update Description (News Feed)",
+        "leaveEmptyForAutoGeneration": "Leave empty for auto-generation",
+        "sourceUrl": "Source URL",
+        "changelogDetails": "Changelog Details",
+        "changelogPlaceholder": "- Fixed critical bug\n- Added new weapon\n- Improved performance",
+        "cancel": "Cancel",
+        "publishUpdate": "Publish Update",
+        "publishStatusChange": "Publish Status Change",
+        "autoDescReleased": "{version} released.",
+        "autoDescDevelopment": "Development of {title} {action}.",
+        "statusActionResumed": "resumed",
+        "statusActionPaused": "paused",
+        "statusActionDiscontinued": "discontinued",
+        "statusActionAnnounced": "announced",
+        "statusActionUpdated": "updated"
     },
     "NewsItem": {
         "saveWipeRequired": "Save Wipe Required",

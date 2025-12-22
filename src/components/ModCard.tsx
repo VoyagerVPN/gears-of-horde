@@ -6,6 +6,7 @@ import { Star, Download, Calendar, Eye } from "lucide-react";
 import DateDisplay from "@/components/DateDisplay";
 import VersionTag from "@/components/VersionTag";
 import Tag from "@/components/ui/Tag";
+import AuthorTag from "@/components/AuthorTag";
 import { TagData } from "@/types/mod";
 
 interface ModCardProps {
@@ -79,15 +80,13 @@ export default function ModCard({
             <div className="flex items-center gap-1">
               {tags.filter(t => t.category === 'author').length > 0 ? (
                 tags.filter(t => t.category === 'author').map((authorTag) => (
-                  <Tag
+                  <AuthorTag
                     key={authorTag.displayName}
-                    category="author"
-                  >
-                    {authorTag.displayName}
-                  </Tag>
+                    author={authorTag.displayName}
+                  />
                 ))
               ) : (
-                <Tag category="author">{author}</Tag>
+                <AuthorTag author={author} />
               )}
             </div>
 

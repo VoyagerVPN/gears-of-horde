@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useTranslations } from 'next-intl';
-import { Plus, Trash2, Merge, RefreshCw, FolderEdit, FolderX, Gamepad2, Check } from "lucide-react";
+import { Plus, Merge, RefreshCw, FolderEdit, FolderX, Gamepad2, Check, X, CircleUser } from "lucide-react";
 import SearchBar from "@/components/ui/SearchBar";
 import { fetchAllTags, createTag, updateTag, deleteTag, mergeTags, renameCategory, deleteCategory, TagData } from "@/app/actions/tag-actions";
 import TagModal from "@/components/tags/TagModal";
@@ -201,15 +201,15 @@ export default function AdminTagsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-zinc-950 pb-20">
+        <div className="min-h-screen bg-zinc-950 pb-20 font-exo2">
             <div className="max-w-[1600px] w-full mx-auto px-6 py-8 space-y-8">
 
                 {/* Header */}
                 <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold text-white font-exo2">{t('tagsManagement')}</h1>
+                    <h1 className="text-3xl font-bold text-white uppercase tracking-wide">{t('tagsManagement')}</h1>
                     <button
                         onClick={() => handleCreateTag()}
-                        className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-red-600 text-white text-sm font-bold rounded-lg transition-colors shadow-lg shadow-red-900/20 uppercase tracking-wider font-exo2"
+                        className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-red-600 text-white text-sm font-bold rounded-lg transition-colors shadow-lg shadow-red-900/20 uppercase tracking-wider"
                     >
                         <Plus size={18} /> {t('createTag')}
                     </button>
@@ -257,7 +257,7 @@ export default function AdminTagsPage() {
                             {/* Category Header */}
                             <div className="px-6 py-4 bg-white/5 border-b border-white/5 flex items-center justify-between group">
                                 <div className="flex items-center gap-3">
-                                    <h2 className="text-xl font-bold text-white font-exo2 capitalize">
+                                    <h2 className="text-xl font-bold text-white capitalize">
                                         {getCategoryDisplayName(category)}
                                     </h2>
                                     <span className="px-2 py-0.5 bg-white/10 rounded text-xs font-mono text-textMuted">
@@ -300,76 +300,72 @@ export default function AdminTagsPage() {
                                         const isConfirming = deleteConfirmId === tag.id;
 
                                         return (
-                                            <div
+                                            <Tag
                                                 key={tag.id}
-                                                className="group relative"
+                                                variant="default"
+                                                className={`items-stretch border leading-none transition-none ${isConfirming ? 'border-dashed border-red-500/50' : 'border-transparent'}`}
+                                                color={tag.color || undefined}
+                                                customLayout
                                             >
-                                                <Tag
-                                                    variant="default"
-                                                    className={`transition-all h-8 text-sm pr-1 ${isConfirming ? 'bg-black/40 border-primary/50' : 'hover:bg-white/10 hover:border-white/20'}`}
-                                                    color={isConfirming ? undefined : (tag.color || undefined)}
+                                                <div
+                                                    className="px-2 py-1 hover:bg-white/10 transition-colors cursor-pointer flex items-center h-full"
+                                                    onClick={() => handleEditTag(tag)}
                                                 >
-                                                    {category === 'gamever' && <Gamepad2 size={14} />}
-                                                    <span
-                                                        className="cursor-pointer"
-                                                        onClick={() => handleEditTag(tag)}
-                                                    >
-                                                        {tag.displayName}
-                                                    </span>
+                                                    {category === 'gamever' && <Gamepad2 size={14} className="mr-1.5" />}
+                                                    {category === 'author' && <CircleUser size={14} className="mr-1.5" />}
+                                                    <span className="leading-none">{tag.displayName}</span>
                                                     {category !== 'newscat' && (
-                                                        <span className="opacity-50 cursor-pointer" onClick={() => handleEditTag(tag)}>({tag.usageCount})</span>
+                                                        <span className="opacity-50 ml-1 leading-none">({tag.usageCount})</span>
                                                     )}
+                                                </div>
 
-                                                    {/* Controls Divider */}
-                                                    <div className="h-4 w-px bg-white/10 mx-1" />
+                                                <div className="w-px self-stretch bg-current opacity-20 shrink-0" />
 
-                                                    {/* Tag Actions */}
-                                                    <div className="flex items-center gap-0.5">
-                                                        {!isConfirming ? (
-                                                            <>
-                                                                <button
-                                                                    onClick={(e) => { e.stopPropagation(); handleMergeTagClick(e, tag); }}
-                                                                    className="p-1 hover:text-yellow-400 text-textMuted/50 transition-colors"
-                                                                    title={t('merge')}
-                                                                >
-                                                                    <Merge size={12} />
-                                                                </button>
-                                                                <button
-                                                                    onClick={(e) => { e.stopPropagation(); handleDeleteTag(e, tag); }}
-                                                                    className="p-1 hover:text-red-400 text-textMuted/50 transition-colors"
-                                                                    title={t('delete')}
-                                                                >
-                                                                    <Trash2 size={12} />
-                                                                </button>
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <button
-                                                                    onClick={(e) => { e.stopPropagation(); handleConfirmDelete(e, tag); }}
-                                                                    className="p-1 text-primary hover:scale-110 transition-transform"
-                                                                    title={t('confirm')}
-                                                                >
-                                                                    <Check size={12} />
-                                                                </button>
-                                                                <button
-                                                                    disabled
-                                                                    className="p-1 text-textMuted/30 cursor-not-allowed"
-                                                                >
-                                                                    <Trash2 size={12} />
-                                                                </button>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                </Tag>
-                                            </div>
+                                                {/* Action Slot 1: Merge or Confirm */}
+                                                {isConfirming ? (
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleConfirmDelete(e, tag); }}
+                                                        className="px-2 py-1 hover:bg-white/10 hover:text-green-400 transition-colors flex items-center justify-center h-full"
+                                                        title={t('confirm')}
+                                                    >
+                                                        <Check size={14} />
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleMergeTagClick(e, tag); }}
+                                                        className="px-2 py-1 hover:bg-white/10 hover:text-yellow-400 transition-colors flex items-center justify-center h-full"
+                                                        title={t('merge')}
+                                                    >
+                                                        <Merge size={14} />
+                                                    </button>
+                                                )}
+
+                                                <div className="w-px self-stretch bg-current opacity-20 shrink-0" />
+
+                                                {/* Action Slot 2: Delete or Cancel */}
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (isConfirming) {
+                                                            setDeleteConfirmId(null);
+                                                        } else {
+                                                            handleDeleteTag(e, tag);
+                                                        }
+                                                    }}
+                                                    className="px-2 py-1 hover:bg-white/10 transition-colors flex items-center justify-center h-full hover:text-red-400"
+                                                    title={isConfirming ? t('cancel') : t('delete')}
+                                                >
+                                                    <X size={14} className={isConfirming ? 'text-zinc-500' : ''} />
+                                                </button>
+                                            </Tag>
                                         );
                                     })}
                                     <button
                                         onClick={() => handleCreateTag(category)}
-                                        className="h-8 px-3 rounded border border-dashed border-white/20 text-textMuted hover:text-white hover:border-white/40 hover:bg-white/5 transition-all text-xs font-bold flex items-center gap-1"
+                                        className="inline-flex items-center justify-center px-2 py-1 gap-1 text-[13px] font-bold rounded-md border border-dashed border-white/20 text-textMuted hover:text-white hover:bg-white/5 transition-all active:scale-95 capitalize leading-none"
                                     >
                                         <Plus size={14} />
-                                        {t('add')}
+                                        <span className="leading-none">{t('add')}</span>
                                     </button>
                                 </div>
                             </div>

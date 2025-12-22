@@ -84,27 +84,25 @@ export interface PrismaTagWithCount {
     color: string | null;
     _count: {
         modTags?: number;
-        newsTags?: number;
     };
 }
 
 /**
- * News item with tags from Prisma query
+ * News item with frozen snapshot data
  */
-export interface PrismaNewsWithTags {
+export interface PrismaNewsWithFrozenData {
     id: string;
-    title: string;
+    modSlug: string | null;
+    modName: string | null;
+    modVersion: string | null;
+    gameVersion: string | null;
+    actionText: string;
     content: string;
+    description: string | null;
     date: Date;
     wipeRequired: boolean;
     sourceUrl: string | null;
-    modId: string | null;
-    mod: {
-        slug: string;
-        title: string;
-        gameVersion: string;
-    } | null;
-    tags: PrismaTagWithRelation[];
+    tags: unknown; // JSON array of frozen tag data
     createdAt: Date;
     updatedAt: Date;
 }
@@ -215,7 +213,7 @@ export function mapPrismaTagWithCountToTagData(tag: PrismaTagWithCount): TagData
         value: tag.value,
         displayName: tag.displayName,
         color: tag.color,
-        usageCount: tag._count.modTags ?? tag._count.newsTags ?? 0
+        usageCount: tag._count.modTags ?? 0
     };
 }
 

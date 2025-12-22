@@ -7,5 +7,7 @@ export const ROUTES = {
     tags: '/profile/tags',
     users: '/profile/users',
     settings: '/profile/settings',
+    news: '/profile/news',
     myMods: '/profile/my-mods',
 } as const;
+

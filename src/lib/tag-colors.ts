@@ -17,7 +17,7 @@
 export const FALLBACK_TAG_COLOR = '#a1a1a1'; // gray
 
 /** Color for author tags */
-export const AUTHOR_TAG_COLOR = '#3b82f6'; // blue-500
+export const AUTHOR_TAG_COLOR = '#22d3ee'; // cyan-400 - higher contrast for better readability
 
 /** Color for primary/accent elements */
 export const PRIMARY_COLOR = '#ce4729';
@@ -32,7 +32,7 @@ export const GAME_VERSION_COLORS = {
  * Category-specific default colors
  * 
  * Supports both:
- * - category-only: 'author' -> blue
+ * - category-only: 'author' -> cyan
  * - category:value: 'status:active' -> green
  */
 export const TAG_CATEGORY_COLORS: Record<string, string> = {
@@ -81,7 +81,7 @@ export const TAG_CATEGORY_COLORS: Record<string, string> = {
  * @returns Hex color string
  * 
  * @example
- * getTagColor('author', 'khaine')       // '#3b82f6' (blue)
+ * getTagColor('author', 'khaine')       // '#22d3ee' (cyan)
  * getTagColor('status', 'active')       // '#22c55e' (green)
  * getTagColor('gamever', '1_0', '#ef4444') // '#ef4444' (from DB)
  */
@@ -136,9 +136,9 @@ export function colorToTagStyles(hex: string): React.CSSProperties {
  * These match the CSS variables in globals.css for consistency
  */
 export const TAG_STYLES = {
-    borderRadius: '4px',      // --tag-radius
-    fontSize: '10px',         // --tag-font-size
-    paddingX: '0.5rem',       // --tag-padding-x
+    borderRadius: '6px',      // --tag-radius
+    fontSize: '12px',         // --tag-font-size
+    paddingX: '0.75rem',      // --tag-padding-x
     paddingY: '0.25rem',      // --tag-padding-y
-    fontWeight: 500,          // --tag-font-weight
+    fontWeight: 600,          // --tag-font-weight
 } as const;

@@ -6,7 +6,7 @@
  * This script:
  * 1. Creates gamever tags for all unique gameVersion values
  * 2. Links gamever tags to mods based on gameVersion field
- * 3. Sets blue color (#3b82f6) for all author tags
+ * 3. Sets cyan color (#22d3ee) for all author tags
  * 4. Recalculates gamever colors using gradient (red->green)
  */
 

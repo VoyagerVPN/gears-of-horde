@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { Link } from "@/i18n/routing";
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import Image from "next/image";
 import { toggleSubscription, getSubscriptionStatus, recordDownload, recordView } from "@/app/actions/profile-actions";
 
@@ -57,7 +57,6 @@ interface UnifiedModLayoutProps {
     mod: ModData;
     isEditing?: boolean;
     onUpdate?: (data: ModData) => void;
-    locale?: 'en' | 'ru';
     initialStatus?: ModStatusType;
     isNew?: boolean;
     gameVersionTags?: TagData[];
@@ -68,13 +67,13 @@ export default function UnifiedModLayout({
     mod,
     isEditing = false,
     onUpdate,
-    locale = 'en',
     initialStatus,
     isNew = false,
     gameVersionTags = [],
     onGameVersionTagsRefresh
 }: UnifiedModLayoutProps) {
     const t = useTranslations('Common');
+    const locale = useLocale() as 'en' | 'ru';
 
     // Find gamever tag to get database color for Technical Specs (no displayName match needed)
     const gameVerTag = mod.tags.find(t => t.category === 'gamever');
@@ -148,8 +147,8 @@ export default function UnifiedModLayout({
                     </h3>
                     <div className="space-y-2 mt-1">
                         <div className="flex justify-between items-center">
-                            <span className="text-[10px] font-bold text-textMuted">{t('links')}</span>
-                            <button type="button" onClick={() => addLinkItem(category)} className="text-primary hover:text-white flex items-center gap-1 text-[10px] uppercase font-bold"><Plus size={12} /> {t('add')}</button>
+                            <span className="text-xs font-bold text-textMuted font-exo2">{t('links')}</span>
+                            <button type="button" onClick={() => addLinkItem(category)} className="text-primary hover:text-white flex items-center gap-1 text-xs uppercase font-bold font-exo2"><Plus size={12} /> {t('add')}</button>
                         </div>
                         {links.map((link, idx) => (
                             <div key={idx} className="flex gap-2 group items-center">
@@ -159,7 +158,7 @@ export default function UnifiedModLayout({
                             </div>
                         ))}
                         {links.length === 0 && (
-                            <div className="text-[10px] text-textMuted italic opacity-50 text-center py-2">{t('noLinksAdded')}</div>
+                            <div className="text-xs text-textMuted italic opacity-50 text-center py-2">{t('noLinksAdded')}</div>
                         )}
                     </div>
                 </div>
@@ -260,7 +259,7 @@ export default function UnifiedModLayout({
                             {/* Videos */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-textMuted uppercase">{t('trailerUrl')}</label>
+                                    <label className="text-xs font-bold text-textMuted uppercase font-exo2">{t('trailerUrl')}</label>
                                     <input
                                         type="text"
                                         value={mod.videos?.trailer || ''}
@@ -282,7 +281,7 @@ export default function UnifiedModLayout({
                                     )}
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-textMuted uppercase">{t('reviewUrl')}</label>
+                                    <label className="text-xs font-bold text-textMuted uppercase font-exo2">{t('reviewUrl')}</label>
                                     <input
                                         type="text"
                                         value={mod.videos?.review || ''}
@@ -307,7 +306,7 @@ export default function UnifiedModLayout({
 
                             {/* Screenshots - Horizontal Carousel with Drag & Drop */}
                             <div className="space-y-3">
-                                <label className="text-[10px] font-bold text-textMuted uppercase">{t('screenshots')}</label>
+                                <label className="text-xs font-bold text-textMuted uppercase font-exo2">{t('screenshots')}</label>
 
                                 <DragDropContext onDragEnd={onScreenshotDragEnd}>
                                     <Droppable droppableId="screenshots" direction="horizontal">
@@ -326,7 +325,7 @@ export default function UnifiedModLayout({
                                                                 className={`flex-shrink-0 w-64 space-y-2 ${snapshot.isDragging ? 'opacity-90 scale-105' : ''}`}
                                                             >
                                                                 {/* Preview Card */}
-                                                                <div className="relative aspect-[16/9] bg-black/40 rounded-lg border border-white/10 overflow-hidden group">
+                                                                <div key={url} className="relative aspect-[16/9] bg-black/40 rounded-lg border border-white/10 overflow-hidden group">
                                                                     {url ? (
                                                                         <>
                                                                             <img
@@ -340,12 +339,12 @@ export default function UnifiedModLayout({
                                                                             />
                                                                             <div className="hidden absolute inset-0 flex-col items-center justify-center text-red-400/60 bg-black/60">
                                                                                 <XIcon size={24} className="mb-1" />
-                                                                                <span className="text-[10px] uppercase font-bold">{t('invalidUrl')}</span>
+                                                                                <span className="text-xs uppercase font-bold font-exo2">{t('invalidUrl')}</span>
                                                                             </div>
                                                                         </>
                                                                     ) : (
                                                                         <div className="absolute inset-0 flex flex-col items-center justify-center text-white/20">
-                                                                            <span className="text-[10px] uppercase font-bold tracking-wider">{t('pasteUrl')}</span>
+                                                                            <span className="text-xs uppercase font-bold tracking-wider font-exo2">{t('pasteUrl')}</span>
                                                                         </div>
                                                                     )}
 
@@ -369,7 +368,7 @@ export default function UnifiedModLayout({
                                                                     </button>
 
                                                                     {/* Index Badge */}
-                                                                    <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-black/60 backdrop-blur-sm rounded text-[10px] font-bold text-white/60 font-mono">
+                                                                    <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-black/60 backdrop-blur-sm rounded text-xs font-bold text-white/60 font-mono">
                                                                         #{idx + 1}
                                                                     </div>
                                                                 </div>
@@ -383,7 +382,7 @@ export default function UnifiedModLayout({
                                                                         newScreens[idx] = e.target.value;
                                                                         updateField('screenshots', newScreens);
                                                                     }}
-                                                                    className="w-full bg-black/40 border border-white/10 rounded px-2 py-1.5 text-[10px] text-white/80 outline-none focus:border-primary/50 placeholder:text-white/20 truncate"
+                                                                    className="w-full bg-black/40 border border-white/10 rounded px-2 py-1.5 text-xs text-white/80 outline-none focus:border-primary/50 placeholder:text-white/20 truncate"
                                                                     placeholder={t('pasteUrl')}
                                                                 />
                                                             </div>
@@ -398,7 +397,7 @@ export default function UnifiedModLayout({
                                                     className="flex-shrink-0 w-48 aspect-[16/9] border-2 border-dashed border-white/10 rounded-lg flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group"
                                                 >
                                                     <Plus size={24} className="text-white/20 group-hover:text-primary transition-colors" />
-                                                    <span className="text-[10px] text-textMuted group-hover:text-white transition-colors uppercase font-bold">{t('add')}</span>
+                                                    <span className="text-xs text-textMuted group-hover:text-white transition-colors uppercase font-bold font-exo2">{t('add')}</span>
                                                 </div>
                                             </div>
                                         )}
@@ -422,7 +421,7 @@ export default function UnifiedModLayout({
                                 <span className="flex items-center gap-2">
                                     <History size={20} className="text-primary" /> {t('changelog')}
                                 </span>
-                                <div className="flex items-center gap-2 text-[10px] text-textMuted font-normal normal-case tracking-normal">
+                                <div className="flex items-center gap-2 text-xs text-textMuted font-normal normal-case tracking-normal">
                                     {t('lastUpdated')}: <DateDisplay date={mod.changelog[0]?.date || new Date().toISOString()} locale={locale} />
                                 </div>
                             </h2>
@@ -481,7 +480,7 @@ export default function UnifiedModLayout({
                                     </h3>
                                     <button
                                         onClick={() => updateField('isSaveBreaking', !mod.isSaveBreaking)}
-                                        className={`flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider transition-all border ${mod.isSaveBreaking ? 'bg-red-500 text-white border-red-500 hover:bg-red-600 shadow-lg shadow-red-900/20' : 'bg-transparent text-textMuted border-white/10 hover:text-white hover:border-white/30'}`}
+                                        className={`inline-flex items-center gap-1.5 px-2 py-1 rounded border text-[12px] font-bold ${mod.isSaveBreaking ? 'bg-red-500 text-white border-red-500 hover:bg-red-600 shadow-lg shadow-red-900/20' : 'bg-transparent text-textMuted border-white/10 hover:text-white hover:border-white/30'}`}
                                     >
                                         <AlertTriangle size={12} className={mod.isSaveBreaking ? "fill-white" : ""} />
                                         Wipe {mod.isSaveBreaking ? 'Required' : '?'}
@@ -489,7 +488,7 @@ export default function UnifiedModLayout({
                                 </div>
                                 <div className="space-y-3">
                                     <div className="space-y-1">
-                                        <label className="text-[10px] font-bold text-textMuted uppercase">{t('downloadUrl')}</label>
+                                        <label className="text-xs font-bold text-textMuted uppercase font-exo2">{t('downloadUrl')}</label>
                                         <div className="relative">
                                             <input
                                                 type="text"
@@ -502,7 +501,7 @@ export default function UnifiedModLayout({
                                         </div>
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] font-bold text-textMuted uppercase">{t('discordUrl')}</label>
+                                        <label className="text-xs font-bold text-textMuted uppercase font-exo2">{t('discordUrl')}</label>
                                         <div className="relative">
                                             <input
                                                 type="text"
@@ -607,7 +606,7 @@ export default function UnifiedModLayout({
                                                     variant="accent"
                                                     href={`/search?lang=${loc.value}`}
                                                     onAction={() => window.open(loc.externalLink, '_blank')}
-                                                    actionIcon={<Download size={12} />}
+                                                    actionIcon={<Download size={14} />}
                                                 >
                                                     {displayName}
                                                 </Tag>
@@ -632,30 +631,31 @@ export default function UnifiedModLayout({
                         <h3 className={SIDEBAR_HEADER_STYLE}>
                             <LinkIcon size={16} className="text-primary" /> {t('technicalSpecs')}
                         </h3>
-                        <div className="space-y-3 text-xs">
+                        <div className="space-y-3 text-sm">
                             <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                                <span className="text-textMuted uppercase tracking-wider font-bold">{t('modVersion')}:</span>
+                                <span className="text-textMuted uppercase tracking-wider font-bold font-exo2">{t('modVersion')}:</span>
                                 {isEditing ? (
-                                    <input type="text" value={mod.version} onChange={e => updateField('version', e.target.value)} className="bg-black/40 border border-white/10 rounded px-2 py-1 text-white font-mono text-[10px] w-20 text-right outline-none focus:border-primary" />
+                                    <input type="text" value={mod.version} onChange={e => updateField('version', e.target.value)} className="bg-black/40 border border-white/10 rounded px-2.5 py-1 text-white font-mono text-[13px] font-bold w-24 text-right outline-none focus:border-primary" />
                                 ) : (
                                     <VersionTag type="mod" version={mod.version} />
                                 )}
                             </div>
                             <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                                <span className="text-textMuted uppercase tracking-wider font-bold">{t('gameVersion')}:</span>
+                                <span className="text-textMuted uppercase tracking-wider font-bold font-exo2">{t('gameVersion')}:</span>
                                 {isEditing ? (
                                     <GameVersionSelector
                                         value={mod.gameVersion}
                                         onChange={(value) => updateField('gameVersion', value)}
                                         gameVersionTags={gameVersionTags}
                                         onTagsRefresh={onGameVersionTagsRefresh}
+                                        compact
                                     />
                                 ) : (
                                     <VersionTag type="game" version={mod.gameVersion} color={gameVerTag?.color || undefined} />
                                 )}
                             </div>
                             <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                                <span className="text-textMuted uppercase tracking-wider font-bold">{t('updated')}:</span>
+                                <span className="text-textMuted uppercase tracking-wider font-bold font-exo2">{t('updated')}:</span>
                                 {isEditing ? (
                                     <DatePicker
                                         value={mod.changelog[0]?.date ? new Date(mod.changelog[0].date) : undefined}
@@ -666,22 +666,24 @@ export default function UnifiedModLayout({
                                                 updateField('changelog', newLogs);
                                             }
                                         }}
-                                        className="text-[10px] py-0.5"
+                                        className="text-xs py-0.5"
+                                        locale={locale}
                                     />
                                 ) : (
-                                    <DateDisplay date={mod.changelog[0]?.date || new Date().toISOString()} locale={locale} className="font-mono text-textMain font-bold" />
+                                    <DateDisplay date={mod.changelog[0]?.date || new Date().toISOString()} locale={locale} className="font-mono text-textMain font-bold text-[13px]" />
                                 )}
                             </div>
                             <div className="flex items-center justify-between">
-                                <span className="text-textMuted uppercase tracking-wider font-bold">{t('created')}:</span>
+                                <span className="text-textMuted uppercase tracking-wider font-bold font-exo2">{t('created')}:</span>
                                 {isEditing ? (
                                     <DatePicker
                                         value={mod.createdAt ? new Date(mod.createdAt) : undefined}
                                         onChange={(date) => updateField('createdAt', date ? date.toISOString() : undefined)}
-                                        className="text-[10px] py-0.5"
+                                        className="text-xs py-0.5"
+                                        locale={locale}
                                     />
                                 ) : (
-                                    mod.createdAt && <DateDisplay date={mod.createdAt} locale={locale} className="font-mono text-textMain font-bold" />
+                                    mod.createdAt && <DateDisplay date={mod.createdAt} locale={locale} className="font-mono text-textMain font-bold text-[13px]" />
                                 )}
                             </div>
                         </div>

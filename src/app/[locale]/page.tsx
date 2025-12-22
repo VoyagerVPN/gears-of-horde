@@ -1,19 +1,32 @@
 import ModCard from "@/components/ModCard";
 import NewsItem from "@/components/NewsItem";
-import { RotateCw, Tag as TagIcon, Flame, Clock, Star, Grid } from "lucide-react";
+import SortToolbar from "@/components/SortToolbar";
+import { RotateCw, Tag as TagIcon } from "lucide-react";
 import { fetchLatestNews } from "@/app/actions/news-actions";
 import { fetchAllMods } from "@/app/actions/admin-actions";
 import { fetchPopularTags } from "@/app/actions/tag-actions";
 import { getTranslations, getLocale } from 'next-intl/server';
 import Tag from "@/components/ui/Tag";
-
 import { Link } from '@/i18n/routing';
 
-export default async function Home() {
-  const locale = await getLocale();
+type Props = {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default async function Home({ params, searchParams }: Props) {
+  // Await params and searchParams for Next.js 15+ compatibility
+  const { locale } = await params;
+  const { sort, dir } = await searchParams;
+
   const t = await getTranslations('HomePage');
   const news = await fetchLatestNews(5);
-  const mods = await fetchAllMods();
+
+  // Cast sort/dir safely
+  const sortBy = (typeof sort === 'string' ? sort : undefined) as any;
+  const sortDir = (typeof dir === 'string' ? dir : undefined) as any;
+
+  const mods = await fetchAllMods({ sortBy, sortDir });
   const popularTags = await fetchPopularTags(10);
 
   // === DEMO DATES ===
@@ -60,22 +73,7 @@ export default async function Home() {
         {/* === CENTER === */}
         <div className="lg:col-span-7 xl:col-span-8 space-y-6">
 
-          <div className="flex items-center justify-between bg-surface/50 backdrop-blur-sm p-1.5 rounded-lg border border-white/5">
-            <div className="flex gap-1">
-              <button className="flex items-center gap-2 px-4 py-2 bg-white/10 text-white text-xs font-bold rounded-md hover:bg-white/20 transition-colors uppercase tracking-wide">
-                <Clock size={14} /> {t('updated')}
-              </button>
-              <button className="flex items-center gap-2 px-4 py-2 text-textMuted hover:text-white text-xs font-bold rounded-md hover:bg-white/5 transition-colors uppercase tracking-wide">
-                <Flame size={14} /> {t('featured')}
-              </button>
-              <button className="flex items-center gap-2 px-4 py-2 text-textMuted hover:text-white text-xs font-bold rounded-md hover:bg-white/5 transition-colors uppercase tracking-wide">
-                <Star size={14} /> {t('topRated')}
-              </button>
-            </div>
-            <div className="flex items-center px-3">
-              <Grid size={18} className="text-primary cursor-pointer hover:text-white transition-colors" />
-            </div>
-          </div>
+          <SortToolbar />
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             {mods.map((mod) => (
@@ -119,11 +117,14 @@ export default async function Home() {
                     key={item.id}
                     modName={item.modName}
                     modSlug={item.modSlug}
+                    modVersion={item.modVersion}
+                    gameVersion={item.gameVersion}
+                    actionText={item.actionText}
                     description={item.description}
+                    content={item.content}
                     date={item.date}
                     tags={item.tags}
-                    gameVersion={item.gameVersion}
-                    isSaveBreaking={item.isSaveBreaking}
+                    wipeRequired={item.wipeRequired}
                     sourceUrl={item.sourceUrl}
                     locale={locale as 'en' | 'ru'}
                   />
