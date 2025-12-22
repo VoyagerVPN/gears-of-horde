@@ -156,7 +156,7 @@ export default function ProfileMyModsPage() {
                                 {/* Actions */}
                                 <div className="flex items-center gap-2 shrink-0">
                                     <Link
-                                        href={`/mod/${mod.slug}`}
+                                        href={`/${mod.slug}`}
                                         className="p-2 text-textMuted hover:text-white hover:bg-white/5 rounded-lg transition-colors"
                                         title={tCommon('view')}
                                     >

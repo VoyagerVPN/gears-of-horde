@@ -62,7 +62,7 @@ export default function NewsItem({
   if (variant === 'card') {
     return (
       <div className="relative flex flex-col w-full bg-surface rounded-lg overflow-hidden hover:bg-surfaceHover transition-colors group border border-white/5 h-full shadow-sm hover:shadow-md hover:border-white/10">
-        <Link href={modSlug ? `/mod/${modSlug}` : '#'} className="absolute inset-0 z-0" aria-label={`View ${modName}`} />
+        <Link href={modSlug ? `/${modSlug}` : '#'} className="absolute inset-0 z-0" aria-label={`View ${modName}`} />
 
         {/* Wipe Ribbon - Top Left */}
         {wipeRequired && (
@@ -82,7 +82,7 @@ export default function NewsItem({
           {/* Row 1: Mod Name */}
           <div className="pointer-events-auto mb-2">
             <Link
-              href={modSlug ? `/mod/${modSlug}` : '#'}
+              href={modSlug ? `/${modSlug}` : '#'}
               className="font-bold text-base text-textMain group-hover:text-primary transition-colors line-clamp-1"
             >
               {modName}
@@ -162,7 +162,7 @@ export default function NewsItem({
   // ========== LIST VARIANT ==========
   return (
     <div className="relative flex w-full bg-surface rounded-lg overflow-hidden hover:bg-surfaceHover transition-colors mb-3 last:mb-0 group border border-white/5 p-3">
-      <Link href={modSlug ? `/mod/${modSlug}` : '#'} className="absolute inset-0 z-0" aria-label={`View ${modName}`} />
+      <Link href={modSlug ? `/${modSlug}` : '#'} className="absolute inset-0 z-0" aria-label={`View ${modName}`} />
 
       {/* Wipe Ribbon - Top Left */}
       {wipeRequired && (
@@ -185,7 +185,7 @@ export default function NewsItem({
         {/* Row 1: Mod Name */}
         <div className="pointer-events-auto mb-1">
           <Link
-            href={modSlug ? `/mod/${modSlug}` : '#'}
+            href={modSlug ? `/${modSlug}` : '#'}
             className="font-bold text-sm text-textMain group-hover:text-primary transition-colors line-clamp-1"
           >
             {modName}

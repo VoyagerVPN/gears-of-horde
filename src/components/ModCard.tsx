@@ -108,7 +108,7 @@ export default function ModCard({
             <span className="text-[10px] text-textMuted/60 self-center mr-1">
               {t('tagsLabel')}
             </span>
-            {tags.filter(t => t.category !== 'author' && t.category !== 'gamever').slice(0, 4).map(tag => (
+            {tags.filter(t => t.category !== 'author' && t.category !== 'gamever' && t.category !== 'language').slice(0, 4).map(tag => (
               <Tag
                 key={tag.id || tag.displayName}
                 color={tag.color || undefined}
@@ -154,7 +154,7 @@ export default function ModCard({
       </div>
 
       {/* Main Card Link - Overlay */}
-      <Link href={`/mod/${slug}`} className="absolute inset-0 z-10" aria-label={`View ${title}`} />
+      <Link href={`/${slug}`} className="absolute inset-0 z-10" aria-label={`View ${title}`} />
     </div>
   );
 }

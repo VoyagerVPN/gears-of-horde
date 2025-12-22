@@ -271,7 +271,7 @@ export async function createMod(rawData: unknown): Promise<Result<{ slug: string
         }
 
         revalidatePath(ROUTES.mods);
-        revalidatePath(`/mod/${data.slug}`);
+        revalidatePath(`/${data.slug}`);
 
         return ok({ slug: data.slug });
     } catch (error) {

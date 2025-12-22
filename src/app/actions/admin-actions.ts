@@ -357,7 +357,7 @@ export async function updateModAction(slug: string, updates: any) {
     await batchLinkTagsToMod(slug, tagIdsToLink);
 
     revalidatePath(ROUTES.mods);
-    revalidatePath(`/mod/${slug}`);
+    revalidatePath(`/${slug}`);
 }
 
 export async function deleteModAction(slug: string) {

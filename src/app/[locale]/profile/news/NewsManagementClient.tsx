@@ -98,7 +98,7 @@ export default function NewsManagementClient({ initialNews }: NewsManagementClie
                                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         {item.modSlug && (
                                             <a
-                                                href={`/mod/${item.modSlug}`}
+                                                href={`/${item.modSlug}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="p-2 text-textMuted hover:text-white hover:bg-white/10 rounded transition-colors"

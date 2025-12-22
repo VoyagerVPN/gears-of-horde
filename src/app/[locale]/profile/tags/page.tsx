@@ -10,6 +10,7 @@ import MergeTagModal from "@/components/tags/MergeTagModal";
 import CategoryEditModal from "@/components/tags/CategoryEditModal";
 import MergeCategoryModal from "@/components/tags/MergeCategoryModal";
 import Tag from "@/components/ui/Tag";
+import { LANG_BUILTIN_COLOR } from "@/lib/tag-colors";
 
 export default function AdminTagsPage() {
     const t = useTranslations('Admin');
@@ -304,7 +305,7 @@ export default function AdminTagsPage() {
                                                 key={tag.id}
                                                 variant="default"
                                                 className={`items-stretch border leading-none transition-none ${isConfirming ? 'border-dashed border-red-500/50' : 'border-transparent'}`}
-                                                color={tag.color || undefined}
+                                                color={tag.category === 'lang' ? LANG_BUILTIN_COLOR : (tag.color || undefined)}
                                                 customLayout
                                             >
                                                 <div

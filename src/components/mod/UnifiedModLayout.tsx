@@ -596,25 +596,19 @@ export default function UnifiedModLayout({
                                         .filter(t => t.category === 'lang')
                                         .map((loc, idx) => {
                                             const displayName = loc.displayName || 'Unknown';
-                                            return !loc.isExternal ? (
-                                                <Tag key={idx} variant="muted">
-                                                    {displayName}
-                                                </Tag>
-                                            ) : loc.externalLink ? (
-                                                <Tag
-                                                    key={idx}
-                                                    variant="accent"
-                                                    href={`/search?lang=${loc.value}`}
-                                                    onAction={() => window.open(loc.externalLink, '_blank')}
-                                                    actionIcon={<Download size={14} />}
-                                                >
+                                            const hasExternalLink = loc.externalLink && loc.externalLink.trim().length > 0;
+                                            return !hasExternalLink ? (
+                                                <Tag key={idx} category="lang" value="builtin">
                                                     {displayName}
                                                 </Tag>
                                             ) : (
                                                 <Tag
                                                     key={idx}
-                                                    variant="accent"
+                                                    category="lang"
+                                                    value="external"
                                                     href={`/search?lang=${loc.value}`}
+                                                    onAction={() => window.open(loc.externalLink, '_blank')}
+                                                    actionIcon={<Download size={14} />}
                                                 >
                                                     {displayName}
                                                 </Tag>

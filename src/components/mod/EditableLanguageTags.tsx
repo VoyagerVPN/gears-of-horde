@@ -5,6 +5,7 @@ import { Trash2 } from 'lucide-react';
 import { TagData } from '@/types/mod';
 import TagSelector from '@/components/TagSelector';
 import { useTranslations } from 'next-intl';
+import { LANG_BUILTIN_COLOR, PRIMARY_COLOR } from '@/lib/tag-colors';
 
 interface EditableLanguageTagsProps {
     items: TagData[];
@@ -144,7 +145,14 @@ export default function EditableLanguageTags({ items, onChange }: EditableLangua
                             <div key={originalIdx} className="group flex items-center gap-3 px-3 py-2.5 hover:bg-white/[0.03] transition-colors">
                                 {/* Language Name as Badge */}
                                 <div className="min-w-[100px]">
-                                    <div className={`inline-flex items-center px-2 py-1 rounded text-[12px] font-bold uppercase tracking-wider ${isExternal ? 'bg-primary/20 text-primary border border-primary/20' : 'bg-zinc-800 text-zinc-400 border border-white/5'}`}>
+                                    <div
+                                        className="inline-flex items-center px-2 py-1 rounded text-[12px] font-bold uppercase tracking-wider border"
+                                        style={{
+                                            color: isExternal ? PRIMARY_COLOR : LANG_BUILTIN_COLOR,
+                                            backgroundColor: isExternal ? `${PRIMARY_COLOR}20` : `${LANG_BUILTIN_COLOR}20`,
+                                            borderColor: isExternal ? `${PRIMARY_COLOR}33` : `${LANG_BUILTIN_COLOR}33`,
+                                        }}
+                                    >
                                         {item.displayName}
                                     </div>
                                 </div>

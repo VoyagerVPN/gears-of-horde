@@ -482,7 +482,7 @@ export default function AdminModsPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
-                      <Link href={`/mod/${mod.slug}`} target="_blank">
+                      <Link href={`/${mod.slug}`} target="_blank">
                         <button className="p-2 hover:bg-white/10 rounded text-textMuted hover:text-blue-400 transition-colors" title={t('viewLive')}>
                           <Eye size={16} />
                         </button>

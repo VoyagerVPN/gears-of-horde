@@ -12,6 +12,42 @@
         "latestNews": "Latest News",
         "newsArchive": "News Archive"
     },
+    "HeroSection": {
+        "avatarCaption": "hey that's me again",
+        "spinWheel": "Spin the Wheel",
+        "spinWheelDesc": "Can't decide what to play?",
+        "rollRandom": "Roll Random",
+        "whoAmI": {
+            "title": "Who am I?",
+            "content": "Hi! I'm the sole creator and contributor of this website, Ranazy. I live in Russia and I love playing 7 Days to Die. I can speak English fluently, so feel free to DM me (ranazy)"
+        },
+        "whatIsGoH": {
+            "title": "What is Gears of Horde?",
+            "content": "Gears of Horde is a passion project of mine. It's a website that allows people to search for any 7 Days To Die overhaul mods and find all information about them. It provides links for users to download mods, it doesn't host anything. If you want your mod removed - DM me"
+        },
+        "whyGoH": {
+            "title": "Why does GoH exist?",
+            "content": "I often find myself not knowing what should I do next in my favourite survival game. Overhaul mods are scattered around the web, there is no website that accommodates them all. So I decided to gather up all the mods in one place for easy access."
+        },
+        "whyNotNexus": {
+            "title": "Why not Nexus or 7dtdmods?",
+            "content": "Simply because not all overhauls are listed there. GoH, on the other hand, has them ALL."
+        },
+        "support": {
+            "title": "If you want to support me",
+            "shareText": "Just tell other people about this page! Also any feedback is welcome.",
+            "donateText": "If you really like what I'm doing and live in Russia - here's a",
+            "donateLink": "link to the donation page"
+        },
+        "thanks": {
+            "title": "Special thanks",
+            "snowbeeIntro": "This project is possible thanks to SnowBee. Go check out his",
+            "and": "and",
+            "snowbeeOutro": ", he makes lots of cool content, such as mod reviews, tips & tricks, guides, and more. GoH wouldn't be here if SnowBee didn't inspire me",
+            "bromeIntro": "Thanks to Brome, because of him I know about Notion in the first place.",
+            "bromeOutro": "was the basis I used when creating my page."
+        }
+    },
     "Navigation": {
         "home": "Home",
         "mods": "Mods",

@@ -61,7 +61,7 @@ export async function toggleSubscription(modSlug: string) {
         await db.subscription.delete({
             where: { id: existing.id }
         })
-        revalidatePath(`/mod/${modSlug}`)
+        revalidatePath(`/${modSlug}`)
         return { subscribed: false }
     } else {
         await db.subscription.create({
@@ -70,7 +70,7 @@ export async function toggleSubscription(modSlug: string) {
                 modSlug
             }
         })
-        revalidatePath(`/mod/${modSlug}`)
+        revalidatePath(`/${modSlug}`)
         return { subscribed: true }
     }
 }
@@ -388,7 +388,7 @@ export async function toggleModVisibility(slug: string) {
     })
 
     revalidatePath('/profile/my-mods')
-    revalidatePath(`/mod/${slug}`)
+    revalidatePath(`/${slug}`)
 
     return { status: newStatus }
 }
