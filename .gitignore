@@ -59,3 +59,6 @@ yarn-error.log*
 *.bak
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel
+.env*.local
