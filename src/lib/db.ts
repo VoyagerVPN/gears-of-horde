@@ -2,6 +2,7 @@ import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@/generated/prisma'
 
+// Use pooled connection for better performance in serverless environments
 const connectionString = process.env.DATABASE_URL
 
 const pool = new Pool({ connectionString })
