@@ -23,7 +23,7 @@ export const TagCreateSchema = z.object({
     category: z.string().min(1, "Category is required"),
     value: z.string().min(1, "Value is required")
         .regex(/^[a-z0-9_-]+$/i, "Value must be alphanumeric with underscores/hyphens"),
-    displayName: z.string().min(1, "Display name is required").max(50, "Display name too long"),
+    displayName: z.string().min(1, "Display name is required").max(25, "Display name too long (max 25 characters)"),
     color: z.string()
         .regex(/^#[0-9a-fA-F]{6}$/, "Color must be a valid hex color (e.g., #FF5500)")
         .optional()
@@ -37,7 +37,7 @@ export const TagUpdateSchema = z.object({
     value: z.string().min(1)
         .regex(/^[a-z0-9_-]+$/i, "Value must be alphanumeric with underscores/hyphens")
         .optional(),
-    displayName: z.string().min(1).max(50).optional(),
+    displayName: z.string().min(1).max(25).optional(),
     color: z.string()
         .regex(/^#[0-9a-fA-F]{6}$/, "Invalid hex color")
         .optional()

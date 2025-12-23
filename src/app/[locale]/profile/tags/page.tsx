@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useTranslations } from 'next-intl';
-import { Plus, Merge, RefreshCw, FolderEdit, FolderX, Gamepad2, Check, X, CircleUser } from "lucide-react";
+import { Plus, Merge, RefreshCw, FolderEdit, FolderX, Check, X } from "lucide-react";
 import SearchBar from "@/components/ui/SearchBar";
 import { fetchAllTags, createTag, updateTag, deleteTag, mergeTags, renameCategory, deleteCategory, TagData } from "@/app/actions/tag-actions";
 import TagModal from "@/components/tags/TagModal";
@@ -300,64 +300,50 @@ export default function AdminTagsPage() {
                                     {(groupedTags[category] || []).map(tag => {
                                         const isConfirming = deleteConfirmId === tag.id;
 
+                                        // Define actions based on state
+                                        const tagActions = [];
+
+                                        if (isConfirming) {
+                                            tagActions.push({
+                                                icon: <Check size={14} />,
+                                                onClick: (e: React.MouseEvent) => { e.stopPropagation(); handleConfirmDelete(e, tag); },
+                                                variant: 'confirm' as const,
+                                                title: t('confirm')
+                                            });
+                                            tagActions.push({
+                                                icon: <X size={14} className="text-zinc-500" />,
+                                                onClick: (e: React.MouseEvent) => { e.stopPropagation(); setDeleteConfirmId(null); },
+                                                title: t('cancel')
+                                            });
+                                        } else {
+                                            tagActions.push({
+                                                icon: <Merge size={14} />,
+                                                onClick: (e: React.MouseEvent) => { e.stopPropagation(); handleMergeTagClick(e, tag); },
+                                                variant: 'warning' as const,
+                                                title: t('merge')
+                                            });
+                                            tagActions.push({
+                                                icon: <X size={14} />,
+                                                onClick: (e: React.MouseEvent) => { e.stopPropagation(); handleDeleteTag(e, tag); },
+                                                variant: 'destructive' as const,
+                                                title: t('delete')
+                                            });
+                                        }
+
                                         return (
                                             <Tag
                                                 key={tag.id}
                                                 variant="default"
-                                                className={`items-stretch border leading-none transition-none ${isConfirming ? 'border-dashed border-red-500/50' : 'border-transparent'}`}
+                                                className={`transition-none ${isConfirming ? 'border-dashed !border-red-500/50' : ''}`}
                                                 color={tag.category === 'lang' ? LANG_BUILTIN_COLOR : (tag.color || undefined)}
-                                                customLayout
+                                                showIcon={true}
+                                                onContentClick={() => handleEditTag(tag)}
+                                                actions={tagActions}
                                             >
-                                                <div
-                                                    className="px-2 py-1 hover:bg-white/10 transition-colors cursor-pointer flex items-center h-full"
-                                                    onClick={() => handleEditTag(tag)}
-                                                >
-                                                    {category === 'gamever' && <Gamepad2 size={14} className="mr-1.5" />}
-                                                    {category === 'author' && <CircleUser size={14} className="mr-1.5" />}
-                                                    <span className="leading-none">{tag.displayName}</span>
-                                                    {category !== 'newscat' && (
-                                                        <span className="opacity-50 ml-1 leading-none">({tag.usageCount})</span>
-                                                    )}
-                                                </div>
-
-                                                <div className="w-px self-stretch bg-current opacity-20 shrink-0" />
-
-                                                {/* Action Slot 1: Merge or Confirm */}
-                                                {isConfirming ? (
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); handleConfirmDelete(e, tag); }}
-                                                        className="px-2 py-1 hover:bg-white/10 hover:text-green-400 transition-colors flex items-center justify-center h-full"
-                                                        title={t('confirm')}
-                                                    >
-                                                        <Check size={14} />
-                                                    </button>
-                                                ) : (
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); handleMergeTagClick(e, tag); }}
-                                                        className="px-2 py-1 hover:bg-white/10 hover:text-yellow-400 transition-colors flex items-center justify-center h-full"
-                                                        title={t('merge')}
-                                                    >
-                                                        <Merge size={14} />
-                                                    </button>
+                                                <span className="leading-none">{tag.displayName}</span>
+                                                {category !== 'newscat' && (
+                                                    <span className="opacity-50 ml-1 leading-none">({tag.usageCount})</span>
                                                 )}
-
-                                                <div className="w-px self-stretch bg-current opacity-20 shrink-0" />
-
-                                                {/* Action Slot 2: Delete or Cancel */}
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        if (isConfirming) {
-                                                            setDeleteConfirmId(null);
-                                                        } else {
-                                                            handleDeleteTag(e, tag);
-                                                        }
-                                                    }}
-                                                    className="px-2 py-1 hover:bg-white/10 transition-colors flex items-center justify-center h-full hover:text-red-400"
-                                                    title={isConfirming ? t('cancel') : t('delete')}
-                                                >
-                                                    <X size={14} className={isConfirming ? 'text-zinc-500' : ''} />
-                                                </button>
                                             </Tag>
                                         );
                                     })}

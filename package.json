@@ -33,6 +33,7 @@
     "react-day-picker": "^9.11.2",
     "react-dom": "^19.2.3",
     "react-hook-form": "^7.68.0",
+    "simple-icons": "^16.2.0",
     "zod": "^4.2.1"
   },
   "devDependencies": {

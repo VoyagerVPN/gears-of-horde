@@ -26,6 +26,7 @@ type SortDirection = 'asc' | 'desc';
 
 export default function AdminModsPage() {
   const t = useTranslations('Admin');
+  const t_common = useTranslations('Common');
   const [selectedMod, setSelectedMod] = useState<ModData | null>(null);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -370,11 +371,11 @@ export default function AdminModsPage() {
 
         {/* Table */}
         <div className="bg-surface border border-white/5 rounded-xl overflow-hidden shadow-sm">
-          <table className="w-full text-sm text-left">
+          <table className="w-full text-sm text-left table-fixed">
             <thead className="bg-white/5 text-textMuted uppercase text-xs font-bold tracking-wider">
               <tr>
                 <th
-                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none"
+                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[20%]"
                   onClick={() => handleSort('title')}
                 >
                   <div className="flex items-center gap-2">
@@ -383,7 +384,7 @@ export default function AdminModsPage() {
                   </div>
                 </th>
                 <th
-                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none"
+                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[10%]"
                   onClick={() => handleSort('author')}
                 >
                   <div className="flex items-center gap-2">
@@ -392,7 +393,7 @@ export default function AdminModsPage() {
                   </div>
                 </th>
                 <th
-                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none"
+                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[8%]"
                   onClick={() => handleSort('gameVersion')}
                 >
                   <div className="flex items-center gap-2">
@@ -401,7 +402,7 @@ export default function AdminModsPage() {
                   </div>
                 </th>
                 <th
-                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none"
+                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[8%]"
                   onClick={() => handleSort('version')}
                 >
                   <div className="flex items-center gap-2">
@@ -410,7 +411,7 @@ export default function AdminModsPage() {
                   </div>
                 </th>
                 <th
-                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none"
+                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[15%]"
                   onClick={() => handleSort('tags')}
                 >
                   <div className="flex items-center gap-2">
@@ -419,7 +420,7 @@ export default function AdminModsPage() {
                   </div>
                 </th>
                 <th
-                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none"
+                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[8%]"
                   onClick={() => handleSort('status')}
                 >
                   <div className="flex items-center gap-2">
@@ -428,7 +429,7 @@ export default function AdminModsPage() {
                   </div>
                 </th>
                 <th
-                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none"
+                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[10%]"
                   onClick={() => handleSort('updatedAt')}
                 >
                   <div className="flex items-center gap-2">
@@ -436,13 +437,13 @@ export default function AdminModsPage() {
                     <SortIcon column="updatedAt" />
                   </div>
                 </th>
-                <th className="px-6 py-4 text-right">{t('actions')}</th>
+                <th className="px-6 py-4 text-right w-[140px]">{t('actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {filteredAndSortedMods.map((mod) => (
                 <tr key={mod.slug} className="hover:bg-white/[0.02] transition-colors group">
-                  <td className="px-6 py-4 font-bold text-white text-base">{mod.title}</td>
+                  <td className="px-6 py-4 font-bold text-white text-base truncate max-w-0" title={mod.title}>{mod.title}</td>
                   <td className="px-6 py-4">
                     <AuthorTag author={mod.author} href={`/search?author=${mod.author}`} />
                   </td>
@@ -456,21 +457,21 @@ export default function AdminModsPage() {
                   <td className="px-6 py-4">
                     <VersionTag type="mod" version={mod.version} />
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-wrap gap-1">
+                  <td className="px-6 py-4 overflow-hidden">
+                    <div className="flex flex-nowrap gap-1 overflow-hidden">
                       {mod.tags.filter(tag => tag.category !== 'author' && tag.category !== 'gamever').slice(0, 3).map(tag => (
-                        <Tag key={tag.id || tag.displayName} color={tag.color || undefined} className="text-[10px] px-1.5 py-0.5">
+                        <Tag key={tag.id || tag.displayName} color={tag.color || undefined} className="text-[10px] px-1.5 py-0.5 whitespace-nowrap">
                           {tag.displayName}
                         </Tag>
                       ))}
                       {mod.tags.filter(t => t.category !== 'author' && t.category !== 'gamever').length > 3 && (
-                        <span className="text-[10px] text-textMuted self-center">+{mod.tags.filter(t => t.category !== 'author' && t.category !== 'gamever').length - 3}</span>
+                        <span className="text-[10px] text-textMuted self-center whitespace-nowrap">+{mod.tags.filter(t => t.category !== 'author' && t.category !== 'gamever').length - 3}</span>
                       )}
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <Tag category="status" value={mod.status}>
-                      {mod.status.replace('_', ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')}
+                      {t_common(`statuses.${mod.status}`)}
                     </Tag>
                   </td>
                   <td className="px-6 py-4 text-textMuted text-xs">

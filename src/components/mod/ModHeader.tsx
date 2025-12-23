@@ -87,7 +87,13 @@ export default function ModHeader({ mod, isEditing = false, initialStatus, onUpd
                             <input
                                 type="text"
                                 value={mod.slug}
-                                onChange={(e) => updateField('slug', e.target.value)}
+                                onChange={(e) => {
+                                    // Sanitize slug: only a-z, 0-9, and -
+                                    const sanitized = e.target.value
+                                        .toLowerCase()
+                                        .replace(/[^a-z0-9-]/g, '');
+                                    updateField('slug', sanitized);
+                                }}
                                 className={`bg-transparent border-b border-white/10 outline-none transition-colors min-w-[200px] ${isNew ? 'hover:border-white/30 focus:border-primary text-primary' : 'text-textMuted cursor-not-allowed border-transparent'}`}
                                 placeholder={t('slug')}
                                 disabled={!isNew}
@@ -98,24 +104,46 @@ export default function ModHeader({ mod, isEditing = false, initialStatus, onUpd
 
                     <div className={`flex items-center gap-2 text-sm ${isEditing ? '' : 'text-textMuted'}`}>
                         {isEditing ? (
-                            <div className="flex items-center gap-2">
-                                <span className="text-textMuted">{t('createdBy')}</span>
-                                <TagSelector
-                                    selectedTags={mod.tags.filter(t => t.category === 'author')}
-                                    onTagsChange={(tags) => {
-                                        // Merge non-author tags with new author tags
-                                        const nonAuthorTags = mod.tags.filter(t => t.category !== 'author');
-                                        const authorTags = tags.map(t => ({
-                                            displayName: t.displayName,
-                                            category: 'author' as const
-                                        }));
-                                        updateField('tags', [...nonAuthorTags, ...authorTags]);
-                                    }}
-                                    category="author"
-                                    placeholder={t('searchAuthors')}
-                                    showPopular={false}
-                                    className="min-w-[200px]"
-                                />
+                            <div className="flex flex-col gap-2">
+                                <span className="text-textMuted text-xs uppercase tracking-wider font-bold">{t('createdBy')}</span>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    {/* Show selected author tags as split pills */}
+                                    {mod.tags.filter(t => t.category === 'author').map((authorTag) => (
+                                        <Tag
+                                            key={authorTag.displayName}
+                                            category="author"
+                                            showIcon={true}
+                                            onRemove={() => {
+                                                const newTags = mod.tags.filter(t =>
+                                                    !(t.category === 'author' && t.displayName === authorTag.displayName)
+                                                );
+                                                updateField('tags', newTags);
+                                            }}
+                                        >
+                                            {authorTag.displayName}
+                                        </Tag>
+                                    ))}
+                                    {/* Add input - only show if under max */}
+                                    {mod.tags.filter(t => t.category === 'author').length < 5 && (
+                                        <TagSelector
+                                            selectedTags={mod.tags.filter(t => t.category === 'author')}
+                                            onTagsChange={(tags) => {
+                                                const nonAuthorTags = mod.tags.filter(t => t.category !== 'author');
+                                                const authorTags = tags.map(t => ({
+                                                    displayName: t.displayName,
+                                                    category: 'author' as const
+                                                }));
+                                                updateField('tags', [...nonAuthorTags, ...authorTags]);
+                                            }}
+                                            category="author"
+                                            placeholder={mod.tags.filter(t => t.category === 'author').length > 0 ? '+' : t('searchAuthors')}
+                                            showPopular={false}
+                                            maxTags={5}
+                                            hideSelectedTags={true}
+                                            className="min-w-[120px] max-w-[180px]"
+                                        />
+                                    )}
+                                </div>
                             </div>
                         ) : (
                             <p className="flex items-center gap-1 flex-wrap">
@@ -152,7 +180,7 @@ export default function ModHeader({ mod, isEditing = false, initialStatus, onUpd
                                                         <Select.ItemText asChild>
                                                             <div className="flex items-center gap-2">
                                                                 <OptionIcon size={14} className={option.color} />
-                                                                {option.label}
+                                                                {t(`statuses.${option.value}`)}
                                                             </div>
                                                         </Select.ItemText>
                                                         {isCurrent && (
@@ -170,7 +198,7 @@ export default function ModHeader({ mod, isEditing = false, initialStatus, onUpd
                                     </Select.Content>
                                 </Select.Root>
                             ) : null}
-                            <span className="text-xl font-bold uppercase">{statusInfo.label}</span>
+                            <span className="text-xl font-bold uppercase">{t(`statuses.${mod.status}`)}</span>
                         </div>
                         <div className="text-[10px] text-textMuted uppercase tracking-wider font-exo2">
                             {isEditing ? t('clickToChange') : t('status')}

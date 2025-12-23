@@ -44,7 +44,7 @@ export default function HeroSection() {
             {/* Header */}
             <div className="flex items-center gap-2 mb-3">
                 <Info size={16} className="text-primary" />
-                <h2 className="text-sm font-bold text-white uppercase tracking-wider font-exo2">Info</h2>
+                <h2 className="text-sm font-bold text-white uppercase tracking-wider font-exo2">{t('info')}</h2>
             </div>
 
             {/* Bento Grid */}

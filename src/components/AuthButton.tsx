@@ -3,6 +3,7 @@
 import { signIn, signOut, useSession } from "next-auth/react"
 import { LogIn, LogOut, User } from "lucide-react"
 import { Link } from "@/i18n/routing"
+import { siDiscord } from "simple-icons/icons"
 
 export default function AuthButton() {
     const { data: session, status } = useSession()
@@ -48,7 +49,9 @@ export default function AuthButton() {
             onClick={() => signIn("discord")}
             className="flex items-center gap-2 px-4 py-2 bg-[#5865F2] hover:bg-[#4752C4] text-white text-sm font-bold rounded-lg transition-colors"
         >
-            <LogIn size={16} />
+            <svg role="img" viewBox="0 0 24 24" className="w-4 h-4 text-white fill-current" xmlns="http://www.w3.org/2000/svg">
+                <path d={siDiscord.path} />
+            </svg>
             <span className="hidden md:inline">Sign In</span>
         </button>
     )

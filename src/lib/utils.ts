@@ -16,7 +16,7 @@
  */
 export function normalizeGameVersion(version: string): string {
     if (!version) return version;
-    
+
     // Remove any existing V/v prefix, then add uppercase V
     const cleaned = version.trim().replace(/^[vV]/, '');
     return `V${cleaned}`;
@@ -31,7 +31,7 @@ export function normalizeGameVersion(version: string): string {
  */
 export function gameVersionToTagValue(version: string): string {
     if (!version) return version;
-    
+
     return version
         .trim()
         .replace(/^[vV]/, '')  // Remove V prefix
@@ -97,8 +97,8 @@ export function slugify(text: string): string {
         .map(char => ru[char] || char)
         .join('')
         .replace(/\s+/g, '-')        // Replace spaces with -
-        .replace(/[^\w\-]+/g, '')    // Remove all non-word chars
-        .replace(/\-\-+/g, '-')      // Replace multiple - with single -
+        .replace(/[^-a-z0-9]+/g, '') // Remove all non-alphanumeric (latin only) and non-hyphen chars
+        .replace(/-+/g, '-')         // Replace multiple - with single -
         .replace(/^-+/, '')          // Trim - from start of text
         .replace(/-+$/, '');         // Trim - from end of text
 }

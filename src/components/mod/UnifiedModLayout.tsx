@@ -483,7 +483,7 @@ export default function UnifiedModLayout({
                                         className={`inline-flex items-center gap-1.5 px-2 py-1 rounded border text-[12px] font-bold ${mod.isSaveBreaking ? 'bg-red-500 text-white border-red-500 hover:bg-red-600 shadow-lg shadow-red-900/20' : 'bg-transparent text-textMuted border-white/10 hover:text-white hover:border-white/30'}`}
                                     >
                                         <AlertTriangle size={12} className={mod.isSaveBreaking ? "fill-white" : ""} />
-                                        Wipe {mod.isSaveBreaking ? 'Required' : '?'}
+                                        {mod.isSaveBreaking ? t('wipeRequired') : `${t('wipeRequired')}?`}
                                     </button>
                                 </div>
                                 <div className="space-y-3">

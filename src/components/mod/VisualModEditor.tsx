@@ -236,7 +236,7 @@ export default function VisualModEditor({
             )}
 
             {/* === ADMIN TOP BAR === */}
-            <div className="flex items-center justify-between mb-8 sticky top-4 z-50 bg-[#191919]/90 backdrop-blur-md py-4 border-b border-white/10 px-6 rounded-xl shadow-2xl">
+            <div className="flex items-center justify-between mb-8 sticky top-20 z-40 bg-[#191919]/90 backdrop-blur-md py-4 border-b border-white/10 mx-6 px-6 rounded-xl shadow-2xl">
                 <div className="flex items-center gap-4">
                     <button onClick={() => router.back()} className="p-2 hover:bg-white/5 rounded-lg text-textMuted hover:text-white transition-colors">
                         <ArrowLeft size={20} />

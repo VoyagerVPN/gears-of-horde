@@ -10,9 +10,11 @@
         "topRated": "Top Rated",
         "loadMore": "Load More Mods",
         "latestNews": "Latest News",
-        "newsArchive": "News Archive"
+        "newsArchive": "News Archive",
+        "noNewsYet": "No news yet."
     },
     "HeroSection": {
+        "info": "Info",
         "avatarCaption": "hey that's me again",
         "spinWheel": "Spin the Wheel",
         "spinWheelDesc": "Can't decide what to play?",
@@ -140,9 +142,16 @@
         "noLinksAdded": "No links added",
         "localizations": "Available languages",
         "community": "Community",
-        "supportCreator": "Support the Creator",
+        "supportCreator": "Support the Mod",
         "changelogEditor": "Changelog Editor",
         "status": "Status",
+        "statuses": {
+            "active": "Active",
+            "on_hold": "On Hold",
+            "discontinued": "Discontinued",
+            "upcoming": "Upcoming",
+            "unknown": "Unknown"
+        },
         "trailerUrl": "Trailer URL",
         "reviewUrl": "Review URL",
         "addScreenshot": "Add Screenshot",
@@ -167,10 +176,13 @@
         "invalidUrl": "Invalid URL",
         "remove": "Remove",
         "version": "Version",
-        "subscribe": "Subscribe",
-        "unsubscribe": "Unsubscribe",
+        "subscribe": "Favorite",
+        "unsubscribe": "Unfavorite",
         "noLanguagesAdded": "No languages added",
-        "external": "External"
+        "external": "External",
+        "slugInvalid": "Slug can only contain Latin letters, numbers, and hyphens",
+        "tagTooLong": "Tag too long (max 25 characters)",
+        "maxAuthors": "Maximum 5 authors per mod"
     },
     "Admin": {
         "pendingTranslations": "Pending Translations",
@@ -352,7 +364,8 @@
     },
     "NewsItem": {
         "saveWipeRequired": "Save Wipe Required",
-        "wipe": "WIPE"
+        "wipe": "WIPE",
+        "source": "Source"
     },
     "DatePicker": {
         "pickDate": "Pick a date...",
@@ -403,9 +416,9 @@
         "commentLikes": "Comment Likes",
         "viewAll": "View All",
         "sortByUpdate": "By Update",
-        "sortBySubscribed": "By Subscribed",
-        "noSubscriptions": "No Subscriptions",
-        "noSubscriptionsDesc": "Subscribe to mods to track updates here.",
+        "sortBySubscribed": "By Favorite",
+        "noSubscriptions": "No Favorites",
+        "noSubscriptionsDesc": "Favorite mods to track updates here.",
         "noDownloads": "No Downloads",
         "noDownloadsDesc": "Your download history will appear here.",
         "noHistory": "No History",
@@ -422,9 +435,19 @@
         "statusReview": "Under Review",
         "hide": "Hide",
         "publish": "Publish",
-        "subscribe": "Subscribe",
-        "unsubscribe": "Unsubscribe",
+        "subscribe": "Favorite",
+        "unsubscribe": "Unfavorite",
         "createMod": "Create Mod",
         "createFirstMod": "Create your first mod"
+    },
+    "AuthModal": {
+        "title": "Join the Squad",
+        "description": "Unlock the full potential of Gears of Horde with a free account.",
+        "signInDiscord": "Sign in with Discord",
+        "benefitsTitle": "Member Benefits",
+        "benefit1": "Track updates for your favorite mods",
+        "benefit2": "Get notified about new versions",
+        "benefit3": "Rate mods and leave feedback",
+        "close": "Close"
     }
 }

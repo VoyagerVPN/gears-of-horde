@@ -97,7 +97,7 @@ export default async function Home({ params, searchParams }: Props) {
                 ))
               ) : (
                 <div className="text-textMuted text-xs italic py-4 text-center">
-                  No news yet.
+                  {t('noNewsYet')}
                 </div>
               )}
             </div>

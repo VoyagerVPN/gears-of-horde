@@ -77,7 +77,7 @@ export const ModStatusSchema = z.enum([
 export const TagDataSchema = z.object({
     id: z.string().optional(),
     value: z.string().optional(),
-    displayName: z.string().min(1, "Display name is required"),
+    displayName: z.string().min(1, "Display name is required").max(25, "Display name too long (max 25 characters)"),
     color: z.string().nullable().optional(),
     category: z.string().optional(),
     usageCount: z.number().int().optional(),
@@ -97,7 +97,7 @@ export const ModDataSchema = z.object({
     slug: z.string()
         .min(1, "Slug is required")
         .max(50, "Slug too long")
-        .regex(/^[a-z0-9-]+$/, "Slug must be lowercase letters, numbers, and hyphens only"),
+        .regex(/^[a-z0-9-]+$/, "Slug can only contain Latin letters, numbers, and hyphens"),
     version: z.string().min(1, "Version is required"),
     author: z.string().min(1, "Author is required"),
     description: z.string().default(""),

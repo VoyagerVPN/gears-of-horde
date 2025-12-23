@@ -17,7 +17,7 @@ import {
 export const ModSubmissionSchema = z.object({
     id: z.string(),
     title: z.string().min(1, "Title is required").max(100),
-    slug: z.string().min(1).regex(/^[a-z0-9-]+$/),
+    slug: z.string().min(1, "Slug is required").regex(/^[a-z0-9-]+$/, "Slug can only contain Latin letters, numbers, and hyphens"),
     version: z.string().min(1),
     author: z.string().min(1),
     description: z.string(),

@@ -56,6 +56,7 @@ export default function UpdateModModal({
 }: UpdateModModalProps) {
   const t = useTranslations('Common');
   const t_modal = useTranslations('UpdateModModal');
+  const t_common = useTranslations('Common');
   const locale = useLocale() as 'en' | 'ru';
   const [formData, setFormData] = useState({
     version: "",
@@ -181,7 +182,7 @@ export default function UpdateModModal({
                   <Select.Value asChild>
                     <div className="flex items-center gap-2">
                       <StatusIcon size={16} className={currentStatusConfig?.color} />
-                      <span>{currentStatusConfig?.label}</span>
+                      <span>{t_common(`statuses.${formData.status}`)}</span>
                     </div>
                   </Select.Value>
                   <Select.Icon>
@@ -200,7 +201,7 @@ export default function UpdateModModal({
                             <Select.ItemText asChild>
                               <div className="flex items-center gap-2">
                                 <OptionIcon size={16} className={option.color} />
-                                {option.label}
+                                {t_common(`statuses.${option.value}`)}
                               </div>
                             </Select.ItemText>
                             <div className="flex items-center gap-2">

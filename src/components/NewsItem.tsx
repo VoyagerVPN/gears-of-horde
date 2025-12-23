@@ -150,7 +150,7 @@ export default function NewsItem({
                 onClick={(e) => e.stopPropagation()}
               >
                 <ExternalLink size={10} />
-                Source
+                {t('source')}
               </a>
             )}
           </div>
@@ -248,7 +248,7 @@ export default function NewsItem({
               rel="noopener noreferrer"
               className="absolute bottom-3 right-3 p-1.5 text-textMuted hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded transition-colors"
               onClick={(e) => e.stopPropagation()}
-              title="Source"
+              title={t('source')}
             >
               <ExternalLink size={12} />
             </a>

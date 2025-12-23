@@ -3,9 +3,15 @@
  * Run with: npx ts-node scripts/sync-tags.ts
  */
 
+import 'dotenv/config';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma';
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DATABASE_URL;
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 // Author tag color (blue-500)
 const AUTHOR_COLOR = '#3b82f6';
@@ -162,6 +168,12 @@ async function main() {
     console.log('Results:', results);
 
     await prisma.$disconnect();
+    await pool.end();
 }
 
-main().catch(console.error);
+main().catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    await pool.end();
+    process.exit(1);
+});

@@ -132,6 +132,7 @@ export default function TagModal({ isOpen, onClose, tag, onSave, initialCategory
                                 onChange={(e) => setDisplayName(e.target.value)}
                                 placeholder="e.g. Survival Mode"
                                 required
+                                maxLength={25}
                                 className={dialogInputClass}
                             />
                         </DialogField>

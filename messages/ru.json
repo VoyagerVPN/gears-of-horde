@@ -10,9 +10,11 @@
         "topRated": "Рейтинг",
         "loadMore": "Загрузить еще",
         "latestNews": "Последние новости",
-        "newsArchive": "Архив новостей"
+        "newsArchive": "Архив новостей",
+        "noNewsYet": "Новостей пока нет."
     },
     "HeroSection": {
+        "info": "Информация",
         "avatarCaption": "привет, это снова я",
         "spinWheel": "Колесо Удачи",
         "spinWheelDesc": "Не можете выбрать во что играть?",
@@ -140,7 +142,7 @@
         "noLinksAdded": "Ссылки не добавлены",
         "localizations": "Доступные языки",
         "community": "Сообщество",
-        "supportCreator": "Поддержать автора",
+        "supportCreator": "Поддержать мод",
         "changelogEditor": "Редактор изменений",
         "newVersion": "Новая версия",
         "deleteVersion": "Удалить версию",
@@ -152,6 +154,13 @@
         "saveWipeRequired": "Требуется вайп сохранений",
         "mediaGallery": "Медиа галерея",
         "status": "Статус",
+        "statuses": {
+            "active": "Активен",
+            "on_hold": "Приостановлен",
+            "discontinued": "Заброшен",
+            "upcoming": "В разработке",
+            "unknown": "Неизвестно"
+        },
         "trailerUrl": "URL трейлера",
         "reviewUrl": "URL обзора",
         "addScreenshot": "Добавить скриншот",
@@ -167,10 +176,13 @@
         "invalidUrl": "Неверный URL",
         "remove": "Удалить",
         "version": "Версия",
-        "subscribe": "Подписаться",
-        "unsubscribe": "Отписаться",
+        "subscribe": "В избранное",
+        "unsubscribe": "Удалить",
         "noLanguagesAdded": "Языки не добавлены",
-        "external": "Внешний"
+        "external": "Внешний",
+        "slugInvalid": "Slug может содержать только латинские буквы, цифры и дефис",
+        "tagTooLong": "Тег слишком длинный (макс. 25 символов)",
+        "maxAuthors": "Максимум 5 авторов на мод"
     },
     "Admin": {
         "pendingTranslations": "Ожидающие переводы",
@@ -352,7 +364,8 @@
     },
     "NewsItem": {
         "saveWipeRequired": "Требуется вайп сохранений",
-        "wipe": "ВАЙП"
+        "wipe": "ВАЙП",
+        "source": "Источник"
     },
     "DatePicker": {
         "pickDate": "Выберите дату...",
@@ -403,9 +416,9 @@
         "commentLikes": "Лайки комментариев",
         "viewAll": "Все",
         "sortByUpdate": "По обновлению",
-        "sortBySubscribed": "По подписке",
-        "noSubscriptions": "Нет подписок",
-        "noSubscriptionsDesc": "Подпишитесь на моды, чтобы отслеживать обновления.",
+        "sortBySubscribed": "По дате добавления",
+        "noSubscriptions": "Нет избранного",
+        "noSubscriptionsDesc": "Добавьте моды в избранное, чтобы отслеживать обновления.",
         "noDownloads": "Нет загрузок",
         "noDownloadsDesc": "Ваша история загрузок появится здесь.",
         "noHistory": "Нет истории",
@@ -422,9 +435,19 @@
         "statusReview": "На проверке",
         "hide": "Скрыть",
         "publish": "Опубликовать",
-        "subscribe": "Подписаться",
-        "unsubscribe": "Отписаться",
+        "subscribe": "В избранное",
+        "unsubscribe": "Удалить",
         "createMod": "Создать мод",
         "createFirstMod": "Создайте свой первый мод"
+    },
+    "AuthModal": {
+        "title": "Вступай в отряд",
+        "description": "Раскрой полный потенциал Gears of Horde с бесплатным аккаунтом.",
+        "signInDiscord": "Войти через Discord",
+        "benefitsTitle": "Преимущества",
+        "benefit1": "Отслеживай обновления любимых модов",
+        "benefit2": "Получай уведомления о новых версиях",
+        "benefit3": "Оценивай моды и оставляй отзывы",
+        "close": "Закрыть"
     }
 }

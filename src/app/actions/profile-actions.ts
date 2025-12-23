@@ -3,6 +3,8 @@
 import { db } from "@/lib/db"
 import { auth } from "@/auth"
 import { revalidatePath } from "next/cache"
+import { headers } from "next/headers"
+import { createHash } from "crypto"
 import { UserBioUpdateSchema } from "@/schemas"
 import { validate, ok, err, type Result } from "@/lib/result"
 import {
@@ -109,6 +111,42 @@ export async function markSubscriptionViewed(modSlug: string) {
 
 // ============ DOWNLOADS ============
 
+const DOWNLOAD_COOLDOWN_HOURS = 24 // Hours before same user/IP can increment download count again
+
+/**
+ * Helper: Get client IP address from request headers (hashed for privacy)
+ */
+async function getHashedClientIP(): Promise<string> {
+    const headersList = await headers()
+    // Try various headers that might contain the real IP
+    const forwardedFor = headersList.get('x-forwarded-for')
+    const realIp = headersList.get('x-real-ip')
+    const cfConnectingIp = headersList.get('cf-connecting-ip')
+
+    const ip = forwardedFor?.split(',')[0]?.trim() || realIp || cfConnectingIp || 'unknown'
+
+    // Hash the IP for privacy
+    return createHash('sha256').update(ip).digest('hex').substring(0, 32)
+}
+
+/**
+ * Helper: Increment download count on a mod
+ */
+async function incrementModDownloads(modSlug: string) {
+    const mod = await db.mod.findUnique({
+        where: { slug: modSlug },
+        select: { downloads: true }
+    })
+
+    if (mod) {
+        const currentCount = parseInt(mod.downloads) || 0
+        await db.mod.update({
+            where: { slug: modSlug },
+            data: { downloads: (currentCount + 1).toString() }
+        })
+    }
+}
+
 export async function getDownloadHistory(page: number = 1, pageSize: number = 20) {
     const session = await auth()
     if (!session?.user?.id) return { downloads: [], hasMore: false }
@@ -146,9 +184,26 @@ export async function getDownloadHistory(page: number = 1, pageSize: number = 20
 
 export async function recordDownload(modSlug: string, version: string, sessionId: string) {
     const session = await auth()
-    if (!session?.user?.id) return
+    if (!session?.user?.id) {
+        // Not authenticated - use anonymous download tracking
+        return recordAnonymousDownload(modSlug)
+    }
 
-    // Upsert - only create if doesn't exist for this session
+    const cooldownDate = new Date()
+    cooldownDate.setHours(cooldownDate.getHours() - DOWNLOAD_COOLDOWN_HOURS)
+
+    // Check for existing recent download
+    const existingDownload = await db.downloadHistory.findFirst({
+        where: {
+            userId: session.user.id,
+            modSlug,
+            downloadedAt: { gte: cooldownDate }
+        }
+    })
+
+    const shouldIncrementDownloads = !existingDownload
+
+    // Create download history entry
     try {
         await db.downloadHistory.create({
             data: {
@@ -158,25 +213,16 @@ export async function recordDownload(modSlug: string, version: string, sessionId
                 sessionId
             }
         })
-
-        // On successful record, increment the total download count on the Mod
-        const mod = await db.mod.findUnique({
-            where: { slug: modSlug },
-            select: { downloads: true }
-        })
-
-        if (mod) {
-            // downloads is a String in schema, so we parse, increment, and stringify
-            const currentCount = parseInt(mod.downloads) || 0
-            await db.mod.update({
-                where: { slug: modSlug },
-                data: { downloads: (currentCount + 1).toString() }
-            })
-        }
-    } catch (error) {
-        // Unique constraint violation usually, or other error
-        // console.log("Download already recorded for this session or error:", error)
+    } catch {
+        // Unique constraint violation - already downloaded this session
     }
+
+    // Increment download count only if outside cooldown window
+    if (shouldIncrementDownloads) {
+        await incrementModDownloads(modSlug)
+    }
+
+    return { recorded: true, incremented: shouldIncrementDownloads }
 }
 
 // ============ VIEW HISTORY ============
@@ -298,45 +344,134 @@ export async function recordView(modSlug: string) {
 
 /**
  * Record a view for an anonymous (non-authenticated) user.
- * Uses session ID for deduplication - one view per session per mod.
+ * Uses IP address for deduplication with 24-hour cooldown.
  */
-export async function recordAnonymousView(modSlug: string, sessionId: string) {
-    if (!modSlug || !sessionId) return { recorded: false }
+export async function recordAnonymousView(modSlug: string) {
+    if (!modSlug) return { recorded: false }
+
+    const ipHash = await getHashedClientIP()
+    const cooldownDate = new Date()
+    cooldownDate.setHours(cooldownDate.getHours() - VIEW_COOLDOWN_HOURS)
 
     try {
-        // Try to create a new anonymous view record
-        await db.anonymousView.create({
-            data: {
-                modSlug,
-                sessionId
+        // Check for existing recent view from this IP
+        const existingView = await db.anonymousView.findUnique({
+            where: {
+                modSlug_ipAddress: {
+                    modSlug,
+                    ipAddress: ipHash
+                }
             }
         })
 
-        // Successfully created = new view, increment count
-        await incrementModViews(modSlug)
+        const shouldIncrementViews = !existingView || existingView.viewedAt < cooldownDate
 
-        return { recorded: true, incremented: true }
+        // Upsert view - update timestamp if exists, create if not
+        await db.anonymousView.upsert({
+            where: {
+                modSlug_ipAddress: {
+                    modSlug,
+                    ipAddress: ipHash
+                }
+            },
+            update: {
+                viewedAt: new Date()
+            },
+            create: {
+                modSlug,
+                ipAddress: ipHash
+            }
+        })
+
+        // Increment view count only if outside cooldown window
+        if (shouldIncrementViews) {
+            await incrementModViews(modSlug)
+        }
+
+        return { recorded: true, incremented: shouldIncrementViews }
     } catch {
-        // Unique constraint violation = already viewed from this session
+        // Error during view recording
         return { recorded: false, incremented: false }
     }
 }
 
 /**
- * Cleanup old anonymous views (older than 30 days).
+ * Record a download for an anonymous (non-authenticated) user.
+ * Uses IP address for deduplication with 24-hour cooldown.
+ */
+export async function recordAnonymousDownload(modSlug: string) {
+    if (!modSlug) return { recorded: false }
+
+    const ipHash = await getHashedClientIP()
+    const cooldownDate = new Date()
+    cooldownDate.setHours(cooldownDate.getHours() - DOWNLOAD_COOLDOWN_HOURS)
+
+    try {
+        // Check for existing recent download from this IP
+        const existingDownload = await db.anonymousDownload.findUnique({
+            where: {
+                modSlug_ipAddress: {
+                    modSlug,
+                    ipAddress: ipHash
+                }
+            }
+        })
+
+        const shouldIncrementDownloads = !existingDownload || existingDownload.downloadedAt < cooldownDate
+
+        // Upsert download - update timestamp if exists, create if not
+        await db.anonymousDownload.upsert({
+            where: {
+                modSlug_ipAddress: {
+                    modSlug,
+                    ipAddress: ipHash
+                }
+            },
+            update: {
+                downloadedAt: new Date()
+            },
+            create: {
+                modSlug,
+                ipAddress: ipHash
+            }
+        })
+
+        // Increment download count only if outside cooldown window
+        if (shouldIncrementDownloads) {
+            await incrementModDownloads(modSlug)
+        }
+
+        return { recorded: true, incremented: shouldIncrementDownloads }
+    } catch {
+        // Error during download recording
+        return { recorded: false, incremented: false }
+    }
+}
+
+/**
+ * Cleanup old anonymous views and downloads (older than 30 days).
  * Call this periodically (e.g., via cron job or on admin action).
  */
-export async function cleanupOldAnonymousViews() {
+export async function cleanupOldAnonymousData() {
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-    const deleted = await db.anonymousView.deleteMany({
+    const deletedViews = await db.anonymousView.deleteMany({
         where: {
             viewedAt: { lt: thirtyDaysAgo }
         }
     })
 
-    return { deleted: deleted.count }
+    const deletedDownloads = await db.anonymousDownload.deleteMany({
+        where: {
+            downloadedAt: { lt: thirtyDaysAgo }
+        }
+    })
+
+    return {
+        deletedViews: deletedViews.count,
+        deletedDownloads: deletedDownloads.count
+    }
 }
 
 // ============ USER MODS (FOR AUTHORS) ============

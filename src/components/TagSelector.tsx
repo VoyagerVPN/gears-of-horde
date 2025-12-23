@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, X, Plus, Tag as TagIcon, TrendingUp, Check } from 'lucide-react';
+import { Search, X, Plus, Tag as TagIcon, TrendingUp, Check, CircleUser } from 'lucide-react';
 import { searchTags, fetchPopularTags, TagData } from '@/app/actions/tag-actions';
 import Tag from '@/components/ui/Tag';
 import { cn } from '@/lib/utils';
@@ -163,7 +163,11 @@ export default function TagSelector({
             {/* Input ... (same) */}
             <div className="relative">
                 <div className="relative flex items-center">
-                    <Search size={14} className="absolute left-3 text-textMuted pointer-events-none" />
+                    {category === 'author' ? (
+                        <CircleUser size={14} className="absolute left-3 text-cyan-400 pointer-events-none" />
+                    ) : (
+                        <Search size={14} className="absolute left-3 text-textMuted pointer-events-none" />
+                    )}
                     <input
                         ref={inputRef}
                         type="text"
@@ -176,6 +180,7 @@ export default function TagSelector({
                         onKeyDown={handleKeyDown}
                         className="w-full bg-black/40 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white outline-none focus:border-primary placeholder:text-white/30 transition-colors"
                         placeholder={placeholder || t('searchOrAddTags')}
+                        maxLength={25}
                     />
                     {isLoading && (
                         <div className="absolute right-3">
@@ -270,14 +275,14 @@ export default function TagSelector({
 
             {/* Selected tags */}
             {!hideSelectedTags && selectedTags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-2">
                     {selectedTags
                         .filter(t => t.category === category || !t.category)
                         .sort((a, b) => a.displayName.localeCompare(b.displayName))
                         .map(tag => (
                             <span
                                 key={tag.displayName}
-                                className="inline-flex items-center gap-1.5 px-2 py-1 rounded border text-[12px] font-bold"
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[12px] font-bold transition-colors hover:brightness-110"
                                 style={(() => {
                                     const tagColor = tag.color || (category === 'author' ? '#22d3ee' : null);
                                     return tagColor ? {
@@ -291,11 +296,12 @@ export default function TagSelector({
                                     };
                                 })()}
                             >
+                                {category === 'author' && <CircleUser size={14} />}
                                 {tag.displayName}
                                 <button
                                     type="button"
                                     onClick={() => removeTag(tag.displayName)}
-                                    className="text-current opacity-60 hover:opacity-100 hover:text-red-400 transition-all"
+                                    className="text-current opacity-60 hover:opacity-100 hover:text-red-400 transition-all ml-0.5"
                                 >
                                     <X size={14} />
                                 </button>

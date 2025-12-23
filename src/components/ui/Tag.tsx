@@ -1,6 +1,14 @@
 import { cn } from "@/lib/utils";
 import { Link } from "@/i18n/routing";
-import { getTagColor, colorToTagStyles, TAG_STYLES } from "@/lib/tag-colors";
+import { getTagColor, colorToTagStyles } from "@/lib/tag-colors";
+import { X, CircleUser, Gamepad2, Settings } from "lucide-react";
+
+interface TagAction {
+    icon: React.ReactNode;
+    onClick: (e: React.MouseEvent) => void;
+    title?: string;
+    variant?: 'default' | 'destructive' | 'confirm' | 'warning';
+}
 
 interface TagProps {
     /** 
@@ -31,6 +39,14 @@ interface TagProps {
     actionIcon?: React.ReactNode;
     /** Enable custom internal layout (removes default padding/gaps) */
     customLayout?: boolean;
+    /** Remove callback - creates a split pill with X button */
+    onRemove?: () => void;
+    /** List of actions to display (split pill design) */
+    actions?: TagAction[];
+    /** Show category-specific icon (author, gamever, etc.) */
+    showIcon?: boolean;
+    /** Callback for clicking the main content area (e.g. to edit) */
+    onContentClick?: (e: React.MouseEvent) => void;
 }
 
 export function TagDivider() {
@@ -43,7 +59,7 @@ export function TagDivider() {
  * Supports multiple modes:
  * 1. Static Tag - displays text only
  * 2. Link Tag - clickable, navigates to href
- * 3. Split Action Tag - link part + action button (for localizations with download)
+ * 3. Split Action Tag - Actions (remove/merge/etc) are split by dividers
  * 
  * Color Priority:
  * 1. `color` prop (direct override, typically from DB)
@@ -62,7 +78,11 @@ export default function Tag({
     href,
     onAction,
     actionIcon,
-    customLayout
+    customLayout,
+    onRemove,
+    actions = [],
+    showIcon = false,
+    onContentClick
 }: TagProps) {
     // Legacy variant styles (for backward compatibility)
     const variantStyles = {
@@ -87,49 +107,123 @@ export default function Tag({
         const categoryColor = getTagColor(category, value);
         dynamicStyle = colorToTagStyles(categoryColor);
     }
-    // If neither, variantStyles will be applied via className
 
-    // Base classes - hardcoded for reliability
+    // Add border color if dynamic style exists (defaults to ~20% opacity of key color)
+    if (dynamicStyle && dynamicStyle.color) {
+        dynamicStyle.borderColor = `${dynamicStyle.color}33`;
+    }
+
+    // Get category icon
+    const getCategoryIcon = () => {
+        switch (category) {
+            case 'author': return <CircleUser size={14} className="mr-1.5" />;
+            case 'gamever': return <Gamepad2 size={14} className="mr-1.5" />;
+            case 'modver': return <Settings size={14} className="mr-1.5" />;
+            default: return null;
+        }
+    };
+
+    // Combine onRemove and legacy onAction into generic actions array
+    const allActions = [...actions];
+    if (onRemove) {
+        allActions.push({
+            icon: <X size={14} />,
+            onClick: (e) => { e.preventDefault(); e.stopPropagation(); onRemove(); },
+            variant: 'destructive',
+            title: 'Remove'
+        });
+    }
+
+    // Base classes - unified styling
     const baseClasses = cn(
-        // Core styling - unified across all tags
-        "inline-flex items-center justify-center ", // Removed default gap-1
+        "inline-flex items-center justify-center",
         "transition-colors whitespace-nowrap",
-        // Hardcoded sizing for reliability
         "text-[13px] font-bold rounded-md",
-        "capitalize", // Title case, not uppercase
-        // Apply variant styles only if no dynamic color
+        "capitalize",
+        "cursor-default",
+        // Apply variant styles ONLY if no dynamic color
         !dynamicStyle && variantStyles[variant],
         className
     );
 
-    // Padding classes - hardcoded
     const paddingClasses = "px-2 py-1";
+    const icon = showIcon ? getCategoryIcon() : null;
 
-    // 1. Split Action Tag (Link + Button)
-    if (href && onAction) {
+    // 4. Split Action Tag (including onRemove)
+    // Matches the "amazing" styling from the tags panel
+    if (allActions.length > 0 || (href && onAction)) {
+        // Handle legacy onAction (Link + Action)
+        if (href && onAction) {
+            return (
+                <span
+                    className={cn(baseClasses, "p-0 overflow-hidden border items-stretch leading-none group", dynamicStyle ? "" : "border-white/10")}
+                    style={dynamicStyle}
+                    title={title}
+                >
+                    <Link
+                        href={href}
+                        className={cn(paddingClasses, "hover:bg-white/10 transition-colors h-full flex items-center pl-1.5 pr-1.5")}
+                    >
+                        {children}
+                    </Link>
+                    <TagDivider />
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onAction(e);
+                        }}
+                        className="pl-1.5 pr-1.5 py-1 hover:bg-white/10 transition-colors h-full flex items-center justify-center"
+                    >
+                        {actionIcon}
+                    </button>
+                </span>
+            );
+        }
+
+        // Generic Actions List
         return (
             <span
-                className={cn(baseClasses, "p-0 overflow-hidden group")}
+                className={cn(baseClasses, "p-0 overflow-hidden border items-stretch leading-none", dynamicStyle ? "" : "border-white/10")}
                 style={dynamicStyle}
                 title={title}
             >
-                <Link
-                    href={href}
-                    className={cn(paddingClasses, "hover:bg-white/10 transition-colors h-full flex items-center pl-1.5 pr-1.5")}
-                >
-                    {children}
-                </Link>
-                <div className="w-px self-stretch bg-current opacity-20 shrink-0" />
-                <button
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        onAction(e);
-                    }}
-                    className="pl-1.5 pr-1.5 py-1 hover:bg-white/10 transition-colors h-full flex items-center justify-center"
-                >
-                    {actionIcon}
-                </button>
+                {/* Content side */}
+                {onContentClick ? (
+                    <button
+                        type="button"
+                        onClick={onContentClick}
+                        className={cn(paddingClasses, "flex items-center h-full hover:bg-white/10 transition-colors text-left")}
+                    >
+                        {icon}
+                        <span className="leading-none pt-0.5">{children}</span>
+                    </button>
+                ) : (
+                    <span className={cn(paddingClasses, "flex items-center h-full")}>
+                        {icon}
+                        <span className="leading-none pt-0.5">{children}</span>
+                    </span>
+                )}
+
+                {allActions.map((action, idx) => (
+                    <div key={idx} className="flex h-full items-stretch">
+                        <TagDivider />
+                        <button
+                            type="button"
+                            onClick={action.onClick}
+                            className={cn(
+                                "px-1.5 py-1 transition-colors h-full flex items-center justify-center min-w-[28px]",
+                                action.variant === 'destructive' ? "hover:bg-red-500/20 hover:text-red-400" :
+                                    action.variant === 'confirm' ? "hover:bg-green-500/20 hover:text-green-400" :
+                                        action.variant === 'warning' ? "hover:bg-yellow-500/20 hover:text-yellow-400" :
+                                            "hover:bg-white/10"
+                            )}
+                            title={action.title}
+                        >
+                            {action.icon}
+                        </button>
+                    </div>
+                ))}
             </span>
         );
     }
@@ -139,10 +233,11 @@ export default function Tag({
         return (
             <Link
                 href={href}
-                className={cn(baseClasses, paddingClasses, "gap-1 hover:opacity-80 active:scale-95")}
+                className={cn(baseClasses, paddingClasses, "gap-1 hover:opacity-80 active:scale-95 border border-transparent")}
                 style={dynamicStyle}
                 title={title}
             >
+                {icon}
                 {children}
             </Link>
         );
@@ -151,10 +246,11 @@ export default function Tag({
     // 3. Static Tag (Default or Custom Layout)
     return (
         <span
-            className={cn(baseClasses, customLayout ? "p-0 overflow-hidden" : cn(paddingClasses, "gap-1"))}
+            className={cn(baseClasses, customLayout ? "p-0 overflow-hidden" : cn(paddingClasses, "gap-1 border border-transparent"))}
             style={dynamicStyle}
             title={title}
         >
+            {icon}
             {children}
         </span>
     );

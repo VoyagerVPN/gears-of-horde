@@ -3,6 +3,7 @@
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Clock, Flame, Star } from "lucide-react";
 import { useCallback } from "react";
+import { useTranslations } from 'next-intl';
 
 type SortOption = 'updated' | 'rating' | 'downloads' | 'views';
 
@@ -10,6 +11,7 @@ export default function SortToolbar() {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const t = useTranslations('HomePage');
 
     const currentSort = (searchParams.get('sort') as SortOption) || 'updated';
 
@@ -23,9 +25,9 @@ export default function SortToolbar() {
     }, [pathname, router, searchParams]);
 
     const buttons = [
-        { key: 'updated', label: 'Updated', icon: Clock },
-        { key: 'downloads', label: 'Featured', icon: Flame },
-        { key: 'rating', label: 'Top Rated', icon: Star },
+        { key: 'updated', label: t('updated'), icon: Clock },
+        { key: 'downloads', label: t('featured'), icon: Flame },
+        { key: 'rating', label: t('topRated'), icon: Star },
     ];
 
     return (
