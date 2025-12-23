@@ -131,6 +131,20 @@ function preprocessModData(rawData: unknown): unknown {
             }
             return tag;
         });
+
+        // If author field is empty but author tags exist, populate author from first author tag
+        // This ensures Zod validation passes when author is set via TagSelector
+        const tagsArray = data.tags as Array<{ category?: string; displayName?: string }>;
+        const authorTags = tagsArray.filter((tag) => tag && tag.category === 'author');
+        if (authorTags.length > 0) {
+            const firstAuthorName = authorTags[0]?.displayName;
+            if (firstAuthorName && typeof firstAuthorName === 'string') {
+                // Only override if author is empty or placeholder
+                if (!data.author || data.author === '' || data.author === 'Author Name') {
+                    data.author = firstAuthorName;
+                }
+            }
+        }
     }
 
     return data;
