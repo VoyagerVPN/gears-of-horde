@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Providers from "@/components/Providers";
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 // Настройка основного шрифта Exo 2
 const exo2 = Exo_2({
@@ -38,6 +39,7 @@ export default async function RootLayout({
             </main>
           </NextIntlClientProvider>
         </Providers>
+        <SpeedInsights />
       </body>
     </html>
   );
