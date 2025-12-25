@@ -106,6 +106,8 @@
         "modTitle": "Mod Title",
         "authorName": "Author Name",
         "aboutThisMod": "About this mod",
+        "description": "Description",
+        "bannerUrl": "Banner URL",
         "writeDescriptionPlaceholder": "Write a detailed description here...",
         "media": "Media",
         "watchTrailer": "Watch Trailer",
@@ -140,6 +142,8 @@
         "name": "Name",
         "url": "URL",
         "noLinksAdded": "No links added",
+        "availableVersions": "Available Versions",
+        "addVersion": "Add Version",
         "localizations": "Available languages",
         "community": "Community",
         "supportCreator": "Support the Mod",
@@ -172,6 +176,7 @@
         "createTag": "Create tag",
         "popularTags": "Popular Tags",
         "noTagsFound": "No tags found",
+        "searchingFor": "Searching for",
         "searchAuthors": "Search or add authors...",
         "invalidUrl": "Invalid URL",
         "remove": "Remove",
@@ -182,7 +187,30 @@
         "external": "External",
         "slugInvalid": "Slug can only contain Latin letters, numbers, and hyphens",
         "tagTooLong": "Tag too long (max 25 characters)",
-        "maxAuthors": "Maximum 5 authors per mod"
+        "maxAuthors": "Maximum 5 authors per mod",
+        "signIn": "Sign In",
+        "signOut": "Sign Out",
+        "addNewVersion": "Add New Version",
+        "showPreviousVersions": "Show previous versions",
+        "hideHistory": "Hide history",
+        "expand": "Expand",
+        "collapse": "Collapse",
+        "mustPickDateBeforeNewVersion": "Please select a release date for the current version first.",
+        "uploadBanner": "Upload Banner",
+        "dropOrClick": "Drop or click to upload",
+        "cropImage": "Crop Image",
+        "zoom": "Zoom",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "uploading": "Uploading...",
+        "bannerUploaded": "Banner uploaded successfully!",
+        "uploadFailed": "Upload failed. Please try again.",
+        "invalidFileType": "Invalid file type. Please use JPG, PNG or WebP.",
+        "fileTooLarge": "File is too large. Maximum size is 4.5MB.",
+        "screenshotsUploaded": "{count} screenshot(s) uploaded!",
+        "dropHere": "Drop here",
+        "maxScreenshotsReached": "Maximum 10 screenshots allowed.",
+        "someShotsSkipped": "{count} screenshot(s) skipped (maximum 10)."
     },
     "Admin": {
         "pendingTranslations": "Pending Translations",
@@ -299,7 +327,24 @@
         "newsManagement": "News",
         "editNews": "Edit News",
         "deleteNewsConfirm": "Are you sure you want to delete this news item?",
-        "noNewsFound": "No news items found"
+        "noNewsFound": "No news items found",
+        "modCreatedSuccess": "Mod created successfully!",
+        "modCreateFailed": "Failed to create mod",
+        "modUpdatedSuccess": "Mod updated successfully!",
+        "saveError": "An error occurred while saving.",
+        "updateModError": "Failed to update mod",
+        "deleteTagError": "Failed to delete tag",
+        "updateTagError": "Failed to update tag",
+        "createTagError": "Failed to create tag",
+        "mergeTagsError": "Failed to merge tags",
+        "validationErrors": {
+            "Author is required": "Author is required",
+            "Title is required": "Title is required",
+            "Slug is required": "Slug is required",
+            "Version is required": "Version is required",
+            "Game version is required": "Game version is required",
+            "Date is required": "Date is required"
+        }
     },
     "ModCard": {
         "by": "by",
@@ -449,5 +494,13 @@
         "benefit2": "Get notified about new versions",
         "benefit3": "Rate mods and leave feedback",
         "close": "Close"
+    },
+    "Accessibility": {
+        "skipToContent": "Skip to main content",
+        "mainNavigation": "Main navigation",
+        "openMenu": "Open menu",
+        "closeMenu": "Close menu",
+        "searchSuggestions": "Search suggestions",
+        "removeTag": "Remove {tag}"
     }
 }

@@ -3,17 +3,20 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { ModData } from "@/types/mod";
 
-export interface DraftData {
+export interface DraftData<T = Record<string, unknown>> {
     id: string;
     data: ModData;
+    extraData?: T;
     savedAt: string;
 }
 
-export interface UseAutosaveOptions {
+export interface UseAutosaveOptions<T = Record<string, unknown>> {
     /** Unique key for this draft (e.g., mod slug or 'new') */
     draftKey: string;
     /** Current mod data to autosave */
     data: ModData;
+    /** Optional extra data to save (e.g., temp tags) */
+    extraData?: T;
     /** Server's updatedAt timestamp (for existing mods) */
     serverUpdatedAt?: string;
     /** Interval in milliseconds for autosave (default: 5 minutes) */
@@ -24,15 +27,15 @@ export interface UseAutosaveOptions {
     onSaved?: () => void;
 }
 
-export interface UseAutosaveReturn {
+export interface UseAutosaveReturn<T = Record<string, unknown>> {
     /** Whether any drafts exist in localStorage */
     hasDraft: boolean;
     /** All saved draft versions (newest first) */
-    draftHistory: DraftData[];
+    draftHistory: DraftData<T>[];
     /** Whether currently saving */
     isSaving: boolean;
     /** Load a specific draft into state (defaults to latest) */
-    restoreDraft: (draftId?: string) => ModData | null;
+    restoreDraft: (draftId?: string) => { data: ModData; extraData?: T } | null;
     /** Delete a specific draft by ID */
     deleteDraft: (draftId: string) => void;
     /** Clear all drafts for this mod */
@@ -56,18 +59,19 @@ function generateDraftId(): string {
  * Hook for autosaving mod data to localStorage with interval-based saving
  * and multi-version draft history support
  */
-export function useAutosave({
+export function useAutosave<T = Record<string, unknown>>({
     draftKey,
     data,
+    extraData,
     serverUpdatedAt,
     intervalMs = 5 * 60 * 1000, // 5 minutes default
     maxVersions = 10,
     onSaved,
-}: UseAutosaveOptions): UseAutosaveReturn {
+}: UseAutosaveOptions<T>): UseAutosaveReturn<T> {
     const storageKey = `${DRAFT_PREFIX}${draftKey}`;
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const [isSaving, setIsSaving] = useState(false);
-    const [draftHistory, setDraftHistory] = useState<DraftData[]>([]);
+    const [draftHistory, setDraftHistory] = useState<DraftData<T>[]>([]);
     const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
     const lastSavedData = useRef<string>("");
     const isInitialMount = useRef(true);
@@ -98,7 +102,7 @@ export function useAutosave({
                     }
                 }
 
-                setDraftHistory(validDrafts);
+                setDraftHistory(validDrafts as DraftData<T>[]);
                 if (validDrafts.length > 0) {
                     setLastSavedAt(validDrafts[0].savedAt);
                 }
@@ -113,7 +117,7 @@ export function useAutosave({
     const saveDraft = useCallback(() => {
         if (typeof window === "undefined") return;
 
-        const dataString = JSON.stringify(data);
+        const dataString = JSON.stringify({ data, extraData });
 
         // Don't save if data hasn't changed
         if (dataString === lastSavedData.current) {
@@ -123,9 +127,10 @@ export function useAutosave({
         setIsSaving(true);
 
         try {
-            const newDraft: DraftData = {
+            const newDraft: DraftData<T> = {
                 id: generateDraftId(),
                 data,
+                extraData,
                 savedAt: new Date().toISOString(),
             };
 
@@ -146,7 +151,7 @@ export function useAutosave({
         } finally {
             setIsSaving(false);
         }
-    }, [data, draftHistory, storageKey, maxVersions, onSaved]);
+    }, [data, extraData, draftHistory, storageKey, maxVersions, onSaved]);
 
     // Interval-based autosave
     useEffect(() => {
@@ -175,7 +180,7 @@ export function useAutosave({
     }, [data, intervalMs, saveDraft]);
 
     // Restore a specific draft or the latest one
-    const restoreDraft = useCallback((draftId?: string): ModData | null => {
+    const restoreDraft = useCallback((draftId?: string): { data: ModData; extraData?: T } | null => {
         if (draftHistory.length === 0) return null;
 
         const targetDraft = draftId
@@ -183,7 +188,7 @@ export function useAutosave({
             : draftHistory[0];
 
         if (targetDraft) {
-            return targetDraft.data;
+            return { data: targetDraft.data, extraData: targetDraft.extraData };
         }
         return null;
     }, [draftHistory]);

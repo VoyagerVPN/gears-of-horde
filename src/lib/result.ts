@@ -45,13 +45,16 @@ export function validate<T>(
         return ok(result.data);
     }
 
-    // Get the first error message for simple display
-    const firstError = result.error.issues[0]?.message ?? 'Validation failed';
+    // Get all unique error messages with field paths for context
+    const allErrors = [...new Set(result.error.issues.map(issue => {
+        const path = issue.path.length > 0 ? `${issue.path.join('.')}: ` : '';
+        return `${path}${issue.message}`;
+    }))];
 
     // Flatten field errors for form integration
     const fieldErrors = result.error.flatten().fieldErrors as Record<string, string[]>;
 
-    return err(firstError, fieldErrors);
+    return err(allErrors.join('\n'), fieldErrors);
 }
 
 /**

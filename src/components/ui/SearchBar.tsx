@@ -37,6 +37,7 @@ export default function SearchBar({
     locale = 'en',
 }: SearchBarProps) {
     const t = useTranslations('Common');
+    const tA11y = useTranslations('Accessibility');
     const router = useRouter();
     const inputRef = useRef<HTMLInputElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -233,6 +234,7 @@ export default function SearchBar({
                         height: '16px',
                         zIndex: 1
                     }}
+                    aria-hidden="true"
                 />
 
                 {/* Selected tags chips */}
@@ -251,14 +253,17 @@ export default function SearchBar({
                             type="button"
                             onClick={(e) => { e.stopPropagation(); removeTag(tag.displayName); }}
                             className="opacity-60 hover:opacity-100 hover:text-red-400 transition-all"
+                            aria-label={tA11y('removeTag', { tag: tag.displayName })}
                         >
-                            <X size={10} />
+                            <X size={10} aria-hidden="true" />
                         </button>
                     </span>
                 ))}
 
                 {/* Input field */}
                 <input
+                    id="search-input"
+                    name="q"
                     ref={inputRef}
                     type="text"
                     value={currentValue}
@@ -267,6 +272,11 @@ export default function SearchBar({
                     onFocus={() => showTagSuggestions && setIsOpen(true)}
                     placeholder={selectedTags.length > 0 ? '' : placeholder}
                     className="flex-1 min-w-[80px] bg-transparent outline-none text-sm text-white placeholder:text-white/30"
+                    role={showTagSuggestions ? "combobox" : undefined}
+                    aria-expanded={showTagSuggestions ? isOpen : undefined}
+                    aria-haspopup={showTagSuggestions ? "listbox" : undefined}
+                    aria-controls={showTagSuggestions ? "search-suggestions" : undefined}
+                    aria-autocomplete={showTagSuggestions ? "list" : undefined}
                 />
             </div>
 
@@ -287,7 +297,7 @@ export default function SearchBar({
                         padding: 0,
                         zIndex: 1
                     }}
-                    aria-label="Clear search"
+                    aria-label={tA11y('removeTag', { tag: 'all' })}
                 >
                     <X size={14} />
                 </button>
@@ -306,6 +316,9 @@ export default function SearchBar({
             {/* Tag suggestions dropdown */}
             {shouldShowDropdown && (
                 <div
+                    id="search-suggestions"
+                    role="listbox"
+                    aria-label={tA11y('searchSuggestions')}
                     className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-white/10 rounded-lg shadow-xl z-50 max-h-64 overflow-y-auto"
                 >
                     {/* Search results */}
@@ -318,6 +331,8 @@ export default function SearchBar({
                                 <button
                                     key={tag.id}
                                     onClick={() => selectTag(tag)}
+                                    role="option"
+                                    aria-selected={idx === highlightIndex}
                                     className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left transition-colors ${idx === highlightIndex ? 'bg-white/10' : 'hover:bg-white/5'
                                         }`}
                                 >
@@ -344,6 +359,8 @@ export default function SearchBar({
                                     <button
                                         key={tag.id}
                                         onClick={() => selectTag(tag)}
+                                        role="option"
+                                        aria-selected={idx === highlightIndex}
                                         className={`transition-transform hover:scale-105 active:scale-95 ${idx === highlightIndex ? 'ring-1 ring-primary' : ''
                                             }`}
                                     >

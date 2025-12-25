@@ -38,6 +38,77 @@ export function gameVersionToTagValue(version: string): string {
         .replace(/\./g, '_');   // Replace dots with underscores
 }
 
+/**
+ * Compare two game versions (e.g. "V1.0" vs "V1.1")
+ * Returns: < 0 if v1 < v2, 0 if v1 == v2, > 0 if v1 > v2
+ */
+export function compareGameVersions(v1: string, v2: string): number {
+    const v1Clean = (v1 || '').replace(/^[vV]/, '');
+    const v2Clean = (v2 || '').replace(/^[vV]/, '');
+    const v1Parts = v1Clean.split('.').map(Number);
+    const v2Parts = v2Clean.split('.').map(Number);
+
+    for (let i = 0; i < Math.max(v1Parts.length, v2Parts.length); i++) {
+        const p1 = v1Parts[i] || 0;
+        const p2 = v2Parts[i] || 0;
+        if (p1 !== p2) return p1 - p2;
+    }
+    return 0;
+}
+
+/**
+ * Get the latest game version from a list of tags
+ */
+export function getLatestGameVersion(tags: { displayName: string }[], defaultVersion = 'V1.4'): string {
+    if (!tags || tags.length === 0) return defaultVersion;
+
+    const sorted = [...tags].sort((a, b) => compareGameVersions(b.displayName, a.displayName));
+    return sorted[0]?.displayName || defaultVersion;
+}
+
+/**
+ * Calculate the gradient color for a game version based on its position among all versions.
+ * Uses the same red-to-green gradient as the server-side recalculateGameVersionColors.
+ * 
+ * @param version - The version to calculate color for (e.g., "V2.6")
+ * @param allVersions - List of all versions (including the new one)
+ * @returns Hex color string
+ */
+export function calculateGameVersionColor(
+    version: string,
+    allVersions: string[]
+): string {
+    const OLDEST_COLOR = '#ef4444'; // red-500
+    const NEWEST_COLOR = '#22c55e'; // green-500
+
+    if (allVersions.length === 0) return NEWEST_COLOR;
+    if (allVersions.length === 1) return NEWEST_COLOR;
+
+    // Sort versions oldest to newest
+    const sorted = [...allVersions].sort((a, b) => compareGameVersions(a, b));
+
+    // Find position of this version
+    const index = sorted.findIndex(v => v === version);
+    if (index === -1) return NEWEST_COLOR;
+
+    const count = sorted.length;
+    const ratio = index / (count - 1);
+
+    // Interpolate between red and green
+    const startR = parseInt(OLDEST_COLOR.slice(1, 3), 16);
+    const startG = parseInt(OLDEST_COLOR.slice(3, 5), 16);
+    const startB = parseInt(OLDEST_COLOR.slice(5, 7), 16);
+    const endR = parseInt(NEWEST_COLOR.slice(1, 3), 16);
+    const endG = parseInt(NEWEST_COLOR.slice(3, 5), 16);
+    const endB = parseInt(NEWEST_COLOR.slice(5, 7), 16);
+
+    const r = Math.round(startR + (endR - startR) * ratio);
+    const g = Math.round(startG + (endG - startG) * ratio);
+    const b = Math.round(startB + (endB - startB) * ratio);
+
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
 // ============================================================================
 // GENERAL UTILITIES
 // ============================================================================

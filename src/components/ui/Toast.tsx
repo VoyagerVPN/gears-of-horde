@@ -1,90 +1,84 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, Check, Info, AlertTriangle, Cloud } from "lucide-react";
+import { X, Check, Info, AlertTriangle, Cloud, XCircle } from "lucide-react";
 
-export type ToastVariant = "success" | "info" | "warning" | "autosave";
+export type ToastVariant = "success" | "info" | "warning" | "error" | "autosave";
 
-interface ToastProps {
+interface ToastItem {
+    id: number;
     message: string;
-    variant?: ToastVariant;
-    duration?: number;
-    isVisible: boolean;
-    onClose: () => void;
+    variant: ToastVariant;
 }
+
+interface ToastContextValue {
+    showToast: (message: string, variant?: ToastVariant) => void;
+}
+
+const ToastContext = createContext<ToastContextValue | null>(null);
 
 const variantConfig: Record<ToastVariant, { bg: string; border: string; iconColor: string; Icon: typeof Check }> = {
     success: {
-        bg: "rgba(34, 197, 94, 0.1)",
-        border: "rgba(34, 197, 94, 0.3)",
+        bg: "#1a2e1a",
+        border: "#2d4a2d",
         iconColor: "#4ade80",
         Icon: Check,
     },
     info: {
-        bg: "rgba(59, 130, 246, 0.1)",
-        border: "rgba(59, 130, 246, 0.3)",
+        bg: "#1a1a2e",
+        border: "#2d2d4a",
         iconColor: "#60a5fa",
         Icon: Info,
     },
     warning: {
-        bg: "rgba(245, 158, 11, 0.1)",
-        border: "rgba(245, 158, 11, 0.3)",
+        bg: "#2e2a1a",
+        border: "#4a3d2d",
         iconColor: "#fbbf24",
         Icon: AlertTriangle,
     },
+    error: {
+        bg: "#2e1a1a",
+        border: "#4a2d2d",
+        iconColor: "#f87171",
+        Icon: XCircle,
+    },
     autosave: {
-        bg: "rgba(16, 185, 129, 0.1)",
-        border: "rgba(16, 185, 129, 0.3)",
+        bg: "#1a2e2a",
+        border: "#2d4a3d",
         iconColor: "#34d399",
         Icon: Cloud,
     },
 };
 
-export function Toast({
-    message,
-    variant = "info",
-    duration = 3000,
-    isVisible,
+function ToastItemComponent({
+    toast,
     onClose,
-}: ToastProps) {
-    const [mounted, setMounted] = useState(false);
+}: {
+    toast: ToastItem;
+    onClose: (id: number) => void;
+}) {
     const [isShowing, setIsShowing] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
-        return () => setMounted(false);
-    }, []);
+        // Animate in
+        requestAnimationFrame(() => setIsShowing(true));
 
-    useEffect(() => {
-        if (isVisible && mounted) {
-            // Small delay for enter animation
-            requestAnimationFrame(() => setIsShowing(true));
-
-            const timer = setTimeout(() => {
-                setIsShowing(false);
-                setTimeout(onClose, 200); // Wait for exit animation
-            }, duration);
-
-            return () => clearTimeout(timer);
-        } else {
+        // Auto-dismiss after 4 seconds
+        const timer = setTimeout(() => {
             setIsShowing(false);
-        }
-    }, [isVisible, duration, onClose, mounted]);
+            setTimeout(() => onClose(toast.id), 200);
+        }, 4000);
 
-    if (!isVisible || !mounted) return null;
+        return () => clearTimeout(timer);
+    }, [toast.id, onClose]);
 
-    const config = variantConfig[variant];
+    const config = variantConfig[toast.variant];
     const IconComponent = config.Icon;
 
-    // Using inline styles for portal content to ensure reliable rendering
-    const toastContent = (
+    return (
         <div
             style={{
-                position: 'fixed',
-                top: '16px',
-                right: '16px',
-                zIndex: 100000,
                 display: 'flex',
                 alignItems: 'center',
                 gap: '10px',
@@ -92,21 +86,21 @@ export function Toast({
                 borderRadius: '12px',
                 backgroundColor: config.bg,
                 border: `1px solid ${config.border}`,
-                backdropFilter: 'blur(8px)',
-                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3)',
+                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
                 transform: isShowing ? 'translateX(0)' : 'translateX(20px)',
                 opacity: isShowing ? 1 : 0,
                 transition: 'all 200ms ease-out',
+                marginBottom: '8px',
             }}
         >
-            <IconComponent size={16} style={{ color: config.iconColor }} />
+            <IconComponent size={16} style={{ color: config.iconColor, flexShrink: 0 }} />
             <span style={{ fontSize: '14px', color: 'white', fontWeight: 500 }}>
-                {message}
+                {toast.message}
             </span>
             <button
                 onClick={() => {
                     setIsShowing(false);
-                    setTimeout(onClose, 200);
+                    setTimeout(() => onClose(toast.id), 200);
                 }}
                 style={{
                     marginLeft: '8px',
@@ -118,31 +112,66 @@ export function Toast({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    flexShrink: 0,
                 }}
             >
                 <X size={14} style={{ color: '#a1a1a1' }} />
             </button>
         </div>
     );
-
-    return createPortal(toastContent, document.body);
 }
 
-// Hook for easier toast management
+let toastIdCounter = 0;
+
+export function ToastProvider({ children }: { children: React.ReactNode }) {
+    const [toasts, setToasts] = useState<ToastItem[]>([]);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
+
+    const showToast = useCallback((message: string, variant: ToastVariant = "info") => {
+        const id = ++toastIdCounter;
+        setToasts((prev) => [{ id, message, variant }, ...prev]);
+    }, []);
+
+    const removeToast = useCallback((id: number) => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, []);
+
+    const toastContainer = mounted && toasts.length > 0 ? createPortal(
+        <div
+            style={{
+                position: 'fixed',
+                top: '16px',
+                right: '16px',
+                zIndex: 100000,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+            }}
+        >
+            {toasts.map((toast) => (
+                <ToastItemComponent key={toast.id} toast={toast} onClose={removeToast} />
+            ))}
+        </div>,
+        document.body
+    ) : null;
+
+    return (
+        <ToastContext.Provider value={{ showToast }}>
+            {children}
+            {toastContainer}
+        </ToastContext.Provider>
+    );
+}
+
 export function useToast() {
-    const [toast, setToast] = useState<{
-        message: string;
-        variant: ToastVariant;
-        key: number;
-    } | null>(null);
-
-    const showToast = (message: string, variant: ToastVariant = "info") => {
-        setToast({ message, variant, key: Date.now() });
-    };
-
-    const hideToast = () => {
-        setToast(null);
-    };
-
-    return { toast, showToast, hideToast };
+    const context = useContext(ToastContext);
+    if (!context) {
+        throw new Error("useToast must be used within a ToastProvider");
+    }
+    return context;
 }

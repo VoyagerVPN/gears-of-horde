@@ -1,4 +1,7 @@
+"use client";
+
 import SectionHeader from "@/components/ui/SectionHeader";
+import RichTextEditor from "@/components/ui/RichTextEditor";
 import { Info } from "lucide-react";
 
 interface ModAboutSectionProps {
@@ -12,20 +15,22 @@ import { useTranslations } from 'next-intl';
 export default function ModAboutSection({ description, isEditing = false, onUpdate }: ModAboutSectionProps) {
     const t = useTranslations('Common');
     return (
-        <section className={`bg-surface rounded-xl p-6 border border-white/5 ${isEditing ? 'group focus-within:border-primary/30 transition-colors' : ''}`}>
+        <section className={`bg-surface rounded-xl p-6 border border-white/5`}>
             <SectionHeader icon={Info}>{t('aboutThisMod')}</SectionHeader>
             {isEditing ? (
-                <textarea
-                    rows={8}
+                <RichTextEditor
+                    id="mod-about-text"
+                    name="about"
                     value={description}
-                    onChange={(e) => onUpdate?.(e.target.value)}
-                    className="w-full bg-transparent text-textMuted leading-relaxed text-sm outline-none resize-y placeholder:text-white/10 focus:text-white transition-colors"
+                    onChange={(value) => onUpdate?.(value)}
                     placeholder={t('writeDescriptionPlaceholder')}
+                    minHeight="150px"
                 />
             ) : (
-                <div className="text-textMuted leading-relaxed space-y-4 text-sm">
-                    <p>{description}</p>
-                </div>
+                <div
+                    className="text-textMuted leading-relaxed space-y-4 text-sm prose prose-invert prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{ __html: description }}
+                />
             )}
         </section>
     );

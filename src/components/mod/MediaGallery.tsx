@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Film, Image as ImageIcon, Youtube } from "lucide-react";
+import Image from "next/image";
 import ImageViewer from "@/components/ImageViewer";
 import { useTranslations } from 'next-intl';
 
@@ -99,20 +100,20 @@ export default function MediaGallery({ screenshots, videos }: MediaGalleryProps)
       <h3 className="text-sm font-bold text-textMuted uppercase tracking-wider mb-3 font-exo2 flex items-center gap-2">
         <ImageIcon size={16} className="text-primary" /> {t('screenshots')}
       </h3>
-      <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent hover:scrollbar-thumb-primary/50">
-        {screenshots.map((url, idx) => (
+      <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
+        {screenshots.filter(url => url.trim() !== '').map((url, idx) => (
           <div
             key={idx}
             onClick={() => openLightbox(idx)}
             className="flex-shrink-0 aspect-[16/9] w-64 bg-zinc-900 rounded-lg border border-white/5 relative overflow-hidden group cursor-zoom-in hover:border-primary/50 transition-all"
           >
-            {url ? (
-              <img src={url} alt={`Screenshot ${idx + 1}`} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center text-white/10 text-xs font-bold uppercase group-hover:text-white/30 transition-colors">
-                {t('clickToExpandScreen')} {idx + 1}
-              </div>
-            )}
+            <Image
+              src={url}
+              alt={`Screenshot ${idx + 1}`}
+              fill
+              className="object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+              sizes="256px"
+            />
           </div>
         ))}
       </div>

@@ -10,9 +10,9 @@ import UnifiedModLayout from "@/components/mod/UnifiedModLayout";
 import { createMod } from "@/app/actions/mod-actions";
 import { updateModAction } from "@/app/actions/admin-actions";
 import { fetchTagsByCategory } from "@/app/actions/tag-actions";
-import { slugify } from "@/lib/utils";
+import { slugify, getLatestGameVersion, gameVersionToTagValue, calculateGameVersionColor } from "@/lib/utils";
 import { useAutosave, clearModDraft } from "@/hooks/useAutosave";
-import { Toast } from "@/components/ui/Toast";
+import { useToast } from "@/components/ui/Toast";
 import DraftHistoryModal from "./DraftHistoryModal";
 import { approveModSubmission } from "@/app/actions/mod-submission-actions";
 
@@ -69,6 +69,7 @@ export default function VisualModEditor({
     submissionId
 }: VisualModEditorProps) {
     const t = useTranslations("Admin");
+    const tCommon = useTranslations("Common");
 
     const [data, setData] = useState<ModData>(() => {
         const base = initialData || EMPTY_MOD;
@@ -85,10 +86,10 @@ export default function VisualModEditor({
 
     const [isSaving, setIsSaving] = useState(false);
     const [gameVersionTags, setGameVersionTags] = useState<TagData[]>([]);
+    const [tempGameVersionTags, setTempGameVersionTags] = useState<TagData[]>([]);
     const [showDraftBanner, setShowDraftBanner] = useState(true);
     const [showHistoryModal, setShowHistoryModal] = useState(false);
-    const [showToast, setShowToast] = useState(false);
-    const [lastToastKey, setLastToastKey] = useState<string | null>(null);
+    const { showToast } = useToast();
     const router = useRouter();
 
     // Autosave hook
@@ -102,42 +103,117 @@ export default function VisualModEditor({
         clearAllDrafts,
         saveNow,
         lastSavedAt,
-    } = useAutosave({
+    } = useAutosave<{ tempGameVersionTags?: TagData[] }>({
         draftKey,
         data,
+        extraData: { tempGameVersionTags },
         serverUpdatedAt: initialData?.updatedAt,
         intervalMs: 5 * 60 * 1000, // 5 minutes
     });
 
     // Fetch game version tags on mount
     const refreshGameVersionTags = () => {
-        fetchTagsByCategory('gamever').then(setGameVersionTags);
+        fetchTagsByCategory('gamever').then((tags) => {
+            setGameVersionTags(tags);
+
+            // Auto-select latest game version for new mods (if currently default V1.0)
+            if (isNew) {
+                const latest = getLatestGameVersion(tags, 'V1.4');
+
+                setData(prev => {
+                    if (prev.gameVersion === 'V1.0' || !prev.gameVersion) {
+                        return { ...prev, gameVersion: latest };
+                    }
+                    return prev;
+                });
+            }
+        });
     };
 
     useEffect(() => {
         refreshGameVersionTags();
     }, []);
 
+    // Track last saved time to show autosave toast
+    const [lastToastKey, setLastToastKey] = useState<string | null>(null);
+
     // Show toast when autosave completes
     useEffect(() => {
         if (lastSavedAt && lastSavedAt !== lastToastKey) {
-            setShowToast(true);
+            showToast(t("draftSaved"), "autosave");
             setLastToastKey(lastSavedAt);
         }
-    }, [lastSavedAt, lastToastKey]);
+    }, [lastSavedAt, lastToastKey, showToast, t]);
 
     const handleRestoreDraft = useCallback((draftId?: string) => {
-        const restoredData = restoreDraft(draftId);
-        if (restoredData) {
-            setData(restoredData);
+        const restored = restoreDraft(draftId);
+        if (restored) {
+            setData(restored.data);
+            // Restore temp game version tags if present, recalculating colors
+            if (restored.extraData?.tempGameVersionTags && restored.extraData.tempGameVersionTags.length > 0) {
+                const restoredTempTags = restored.extraData.tempGameVersionTags;
+
+                // Calculate all versions for color gradient
+                const allVersions = [
+                    ...gameVersionTags.map(t => t.displayName),
+                    ...restoredTempTags.map(t => t.displayName)
+                ];
+
+                // Recalculate colors for database tags
+                setGameVersionTags(prev => prev.map(tag => ({
+                    ...tag,
+                    color: calculateGameVersionColor(tag.displayName, allVersions)
+                })));
+
+                // Recalculate colors for temp tags
+                setTempGameVersionTags(restoredTempTags.map(tag => ({
+                    ...tag,
+                    color: calculateGameVersionColor(tag.displayName, allVersions)
+                })));
+            }
         }
         setShowDraftBanner(false);
-    }, [restoreDraft]);
+    }, [restoreDraft, gameVersionTags]);
 
     const handleDiscardDraft = useCallback(() => {
         clearAllDrafts();
         setShowDraftBanner(false);
     }, [clearAllDrafts]);
+
+    const handleGameVersionCreate = (version: string) => {
+        // Calculate all versions including db tags, existing temp tags, and the new one
+        const allVersions = [
+            ...gameVersionTags.map(t => t.displayName),
+            ...tempGameVersionTags.map(t => t.displayName),
+            version
+        ];
+
+        // Create the new tag with calculated color
+        const newTag: TagData = {
+            id: `temp-${Date.now()}`, // Temporary ID
+            displayName: version,
+            value: gameVersionToTagValue(version),
+            category: 'gamever',
+            color: calculateGameVersionColor(version, allVersions)
+        };
+
+        // Recalculate colors for ALL tags (db + temp) with the new version included
+        setGameVersionTags(prev => prev.map(tag => ({
+            ...tag,
+            color: calculateGameVersionColor(tag.displayName, allVersions)
+        })));
+
+        setTempGameVersionTags(prev => {
+            const updatedTempTags = prev.map(tag => ({
+                ...tag,
+                color: calculateGameVersionColor(tag.displayName, allVersions)
+            }));
+            return [...updatedTempTags, newTag];
+        });
+
+        // Select it
+        setData(prev => ({ ...prev, gameVersion: version }));
+    };
 
     const handleSave = async () => {
         setIsSaving(true);
@@ -153,20 +229,59 @@ export default function VisualModEditor({
                         await approveModSubmission(submissionId);
                     }
 
-                    alert("Mod created successfully!");
+                    showToast(t("modCreatedSuccess"), "success");
                     router.push(`/profile/mods/${result.data.slug}`);
                 } else {
-                    alert(`Failed to create mod: ${result.error}`);
+                    // Helper to translate field paths to friendly names
+                    const translateFieldPath = (path: string): string => {
+                        // Handle changelog array paths like "changelog.0.date"
+                        const changelogMatch = path.match(/^changelog\.(\d+)\.(\w+)$/);
+                        if (changelogMatch) {
+                            const idx = parseInt(changelogMatch[1]) + 1;
+                            const field = changelogMatch[2];
+                            const fieldName = field === 'date' ? tCommon('releaseDate') : field;
+                            return `${tCommon('changelog')} #${idx} → ${fieldName}`;
+                        }
+                        // Simple field name translations
+                        const fieldMap: Record<string, string> = {
+                            'author': tCommon('authorName'),
+                            'title': tCommon('modTitle'),
+                            'slug': tCommon('slug'),
+                            'version': tCommon('version'),
+                            'gameVersion': tCommon('gameVersion'),
+                            'description': tCommon('description'),
+                            'bannerUrl': tCommon('bannerUrl'),
+                        };
+                        return fieldMap[path] || path;
+                    };
+
+                    // Split multiple validation errors and show each as separate toast
+                    const errors = result.error.split('\n');
+                    errors.forEach(errorMsg => {
+                        // Parse "field.path: Error message" format
+                        const colonIdx = errorMsg.indexOf(': ');
+                        if (colonIdx > 0) {
+                            const fieldPath = errorMsg.substring(0, colonIdx);
+                            const message = errorMsg.substring(colonIdx + 2);
+                            const friendlyPath = translateFieldPath(fieldPath);
+                            const translatedMessage = t.has(`validationErrors.${message}`)
+                                ? t(`validationErrors.${message}`)
+                                : message;
+                            showToast(`${friendlyPath}: ${translatedMessage}`, "error");
+                        } else {
+                            showToast(errorMsg, "error");
+                        }
+                    });
                 }
             } else {
                 await updateModAction(data.slug, data);
                 // Clear draft on successful save
                 clearModDraft(draftKey);
-                alert("Mod updated successfully!");
+                showToast(t("modUpdatedSuccess"), "success");
             }
         } catch (error) {
             console.error("Failed to save mod:", error);
-            alert("An error occurred while saving.");
+            showToast(t("saveError"), "error");
         } finally {
             setIsSaving(false);
         }
@@ -181,14 +296,7 @@ export default function VisualModEditor({
     return (
         <div className="min-h-screen bg-zinc-950 pb-20">
 
-            {/* Toast notification */}
-            <Toast
-                message={t("draftSaved")}
-                variant="autosave"
-                isVisible={showToast}
-                onClose={() => setShowToast(false)}
-                duration={3000}
-            />
+
 
             {/* Draft History Modal */}
             <DraftHistoryModal
@@ -328,8 +436,9 @@ export default function VisualModEditor({
                 }}
                 initialStatus={initialData?.status} // Pass initial status
                 isNew={isNew}
-                gameVersionTags={gameVersionTags}
+                gameVersionTags={[...gameVersionTags, ...tempGameVersionTags]}
                 onGameVersionTagsRefresh={refreshGameVersionTags}
+                onGameVersionCreate={handleGameVersionCreate}
             />
 
             {/* Floating Save Bar */}

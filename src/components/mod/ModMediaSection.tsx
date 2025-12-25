@@ -31,21 +31,27 @@ export default function ModMediaSection({
                 <div className="p-4 rounded-xl border border-white/10 bg-black/20 space-y-2">
                     <span className="text-xs font-bold text-textMuted uppercase">Trailer URL</span>
                     <input
+                        id="trailer-url"
+                        name="trailer"
                         type="text"
                         value={videos.trailer}
                         onChange={e => onUpdateVideo?.('trailer', e.target.value)}
-                        className="w-full bg-surface border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-primary outline-none"
+                        className="w-full bg-surface border border-white/10 rounded px-3 py-2 text-sm text-white hover:border-white/20 focus:border-white/30 outline-none transition-colors"
                         placeholder="https://youtube.com/..."
+                        spellCheck={false}
                     />
                 </div>
                 <div className="p-4 rounded-xl border border-white/10 bg-black/20 space-y-2">
                     <span className="text-xs font-bold text-textMuted uppercase">Review URL</span>
                     <input
+                        id="review-url"
+                        name="review"
                         type="text"
                         value={videos.review}
                         onChange={e => onUpdateVideo?.('review', e.target.value)}
-                        className="w-full bg-surface border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-primary outline-none"
+                        className="w-full bg-surface border border-white/10 rounded px-3 py-2 text-sm text-white hover:border-white/20 focus:border-white/30 outline-none transition-colors"
                         placeholder="https://youtube.com/..."
+                        spellCheck={false}
                     />
                 </div>
             </div>
@@ -78,7 +84,7 @@ export default function ModMediaSection({
                         </button>
                     </div>
                 </h3>
-                <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-zinc-950 rounded-lg p-2 bg-black/20">
+                <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide rounded-lg p-2 bg-black/20">
                     {screenshots.map((id, idx) => (
                         <div key={idx} className="flex-shrink-0 aspect-[16/9] w-48 bg-zinc-900 rounded-lg border border-white/5 flex flex-col items-center justify-center relative group">
                             <span className="text-xs text-textMuted font-mono mb-2">Slot {idx + 1}</span>

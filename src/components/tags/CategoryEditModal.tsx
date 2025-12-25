@@ -60,6 +60,8 @@ export default function CategoryEditModal({ isOpen, onClose, category, onSave }:
                     <DialogBody>
                         <DialogField label={t('categoryName')} smallLabel>
                             <input
+                                id="category-name"
+                                name="name"
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}

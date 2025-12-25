@@ -17,6 +17,7 @@ import {
     DialogField,
     dialogInputClass,
 } from "@/components/ui/Dialog";
+import { useToast } from "@/components/ui/Toast";
 
 interface SuggestTranslationModalProps {
     modSlug: string;
@@ -31,6 +32,7 @@ export default function SuggestTranslationModal({ modSlug, modName }: SuggestTra
     const [languageCode, setLanguageCode] = useState("");
     const [languageName, setLanguageName] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { showToast } = useToast();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -54,7 +56,7 @@ export default function SuggestTranslationModal({ modSlug, modName }: SuggestTra
             setLink("");
             setLanguageCode("");
             setLanguageName("");
-            alert(t('successMessage'));
+            showToast(t('successMessage'), 'success');
         }, 800);
     };
 
@@ -82,6 +84,8 @@ export default function SuggestTranslationModal({ modSlug, modName }: SuggestTra
                                 <div className="relative">
                                     <Globe size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-textMuted" />
                                     <input
+                                        id="language-code"
+                                        name="languageCode"
                                         type="text"
                                         value={languageCode}
                                         onChange={(e) => setLanguageCode(e.target.value)}
@@ -96,6 +100,8 @@ export default function SuggestTranslationModal({ modSlug, modName }: SuggestTra
                             {/* Language Name */}
                             <DialogField label={t('languageName')} smallLabel required>
                                 <input
+                                    id="language-name"
+                                    name="languageName"
                                     type="text"
                                     value={languageName}
                                     onChange={(e) => setLanguageName(e.target.value)}
@@ -111,6 +117,8 @@ export default function SuggestTranslationModal({ modSlug, modName }: SuggestTra
                             <div className="relative">
                                 <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-textMuted" />
                                 <input
+                                    id="author-name"
+                                    name="author"
                                     type="text"
                                     value={author}
                                     onChange={(e) => setAuthor(e.target.value)}
@@ -126,6 +134,8 @@ export default function SuggestTranslationModal({ modSlug, modName }: SuggestTra
                             <div className="relative">
                                 <LinkIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-textMuted" />
                                 <input
+                                    id="download-link"
+                                    name="link"
                                     type="url"
                                     value={link}
                                     onChange={(e) => setLink(e.target.value)}

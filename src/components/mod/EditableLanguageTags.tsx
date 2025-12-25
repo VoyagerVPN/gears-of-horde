@@ -160,12 +160,15 @@ export default function EditableLanguageTags({ items, onChange }: EditableLangua
                                 {/* URL Input */}
                                 <div className="flex-1">
                                     <input
+                                        id={`tag-url-${originalIdx}`}
+                                        name={`tag-url-${originalIdx}`}
                                         type="text"
                                         value={item.externalLink || ''}
                                         onChange={(e) => updateMetadata(originalIdx, 'externalLink', e.target.value)}
                                         disabled={isEnglish}
-                                        className={`w-full bg-black/40 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-white outline-none focus:border-primary/50 transition-colors placeholder:text-zinc-700 
+                                        className={`w-full bg-black/40 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-white outline-none hover:border-white/20 focus:border-white/30 transition-colors placeholder:text-zinc-700 
                                         ${isEnglish ? 'opacity-30 cursor-not-allowed select-none' : 'opacity-100'}`}
+                                        spellCheck={false}
                                         placeholder={isEnglish ? "Built-in" : "https://..."}
                                     />
                                 </div>

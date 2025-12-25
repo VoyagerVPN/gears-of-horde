@@ -1,3 +1,4 @@
+import React from "react";
 import { cn } from "@/lib/utils";
 import { Link } from "@/i18n/routing";
 import { getTagColor, colorToTagStyles } from "@/lib/tag-colors";
@@ -7,7 +8,7 @@ interface TagAction {
     icon: React.ReactNode;
     onClick: (e: React.MouseEvent) => void;
     title?: string;
-    variant?: 'default' | 'destructive' | 'confirm' | 'warning';
+    variant?: 'default' | 'destructive' | 'confirm' | 'warning' | 'transparent';
 }
 
 interface TagProps {
@@ -89,7 +90,7 @@ export default function Tag({
         default: "bg-white/5 text-white",
         category: "bg-green-500/10 text-green-400",
         warning: "bg-red-500/10 text-red-400",
-        version: "font-mono font-bold tracking-wide",
+        version: "font-bold tracking-wide",
         muted: "bg-white/5 text-textMuted opacity-60",
         accent: "bg-primary/10 text-primary",
         author: "bg-cyan-400/15 text-cyan-300",
@@ -196,17 +197,17 @@ export default function Tag({
                         className={cn(paddingClasses, "flex items-center h-full hover:bg-white/10 transition-colors text-left")}
                     >
                         {icon}
-                        <span className="leading-none pt-0.5">{children}</span>
+                        <span className="leading-none">{children}</span>
                     </button>
                 ) : (
                     <span className={cn(paddingClasses, "flex items-center h-full")}>
                         {icon}
-                        <span className="leading-none pt-0.5">{children}</span>
+                        <span className="leading-none">{children}</span>
                     </span>
                 )}
 
                 {allActions.map((action, idx) => (
-                    <div key={idx} className="flex h-full items-stretch">
+                    <React.Fragment key={idx}>
                         <TagDivider />
                         <button
                             type="button"
@@ -216,13 +217,14 @@ export default function Tag({
                                 action.variant === 'destructive' ? "hover:bg-red-500/20 hover:text-red-400" :
                                     action.variant === 'confirm' ? "hover:bg-green-500/20 hover:text-green-400" :
                                         action.variant === 'warning' ? "hover:bg-yellow-500/20 hover:text-yellow-400" :
-                                            "hover:bg-white/10"
+                                            action.variant === 'transparent' ? "hover:bg-transparent cursor-default" :
+                                                "hover:bg-white/10"
                             )}
                             title={action.title}
                         >
                             {action.icon}
                         </button>
-                    </div>
+                    </React.Fragment>
                 ))}
             </span>
         );

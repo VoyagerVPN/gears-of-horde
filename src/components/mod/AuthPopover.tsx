@@ -38,7 +38,7 @@ export default function AuthPopover({ children, isOpen, onOpenChange }: AuthPopo
                                     {t('title')}
                                 </h3>
                             </div>
-                            <p className="text-[13px] text-textMuted leading-snug font-medium opacity-90">
+                            <p className="text-[13px] text-textMuted leading-relaxed font-medium opacity-90">
                                 {t('description')}
                             </p>
                         </div>

@@ -147,6 +147,8 @@ export default function EditNewsModal({
                             <div className="grid grid-cols-2 gap-3">
                                 <DialogField label={t("modName")} smallLabel required className="col-span-2">
                                     <input
+                                        id="news-mod-name"
+                                        name="modName"
                                         type="text"
                                         className={dialogInputClass}
                                         value={currentData.modName}
@@ -157,6 +159,8 @@ export default function EditNewsModal({
 
                                 <DialogField label={tCommon("modVersion")} smallLabel>
                                     <input
+                                        id="news-mod-version"
+                                        name="modVersion"
                                         type="text"
                                         className={dialogInputClass}
                                         value={currentData.modVersion}
@@ -166,6 +170,8 @@ export default function EditNewsModal({
                                 </DialogField>
                                 <DialogField label={tCommon("gameVersion")} smallLabel>
                                     <input
+                                        id="news-game-version"
+                                        name="gameVersion"
                                         type="text"
                                         className={dialogInputClass}
                                         value={currentData.gameVersion}
@@ -176,6 +182,8 @@ export default function EditNewsModal({
 
                                 <DialogField label="Action Text" smallLabel>
                                     <input
+                                        id="news-action-text"
+                                        name="actionText"
                                         type="text"
                                         className={dialogInputClass}
                                         value={currentData.actionText}
@@ -185,6 +193,8 @@ export default function EditNewsModal({
                                 </DialogField>
                                 <DialogField label={tCommon("url")} smallLabel>
                                     <input
+                                        id="news-source-url"
+                                        name="sourceUrl"
                                         type="url"
                                         className={dialogInputClass}
                                         value={currentData.sourceUrl}
@@ -197,6 +207,8 @@ export default function EditNewsModal({
                             {/* Wipe Required Toggle */}
                             <label className="flex items-center gap-3 p-3 bg-black/20 border border-white/10 rounded-lg cursor-pointer hover:bg-black/30 transition-colors">
                                 <input
+                                    id="news-wipe-required"
+                                    name="wipeRequired"
                                     type="checkbox"
                                     checked={currentData.wipeRequired}
                                     onChange={(e) => handleChange("wipeRequired", e.target.checked)}
@@ -214,7 +226,9 @@ export default function EditNewsModal({
                             {/* Description */}
                             <DialogField label="Description" smallLabel>
                                 <textarea
-                                    className={`${dialogInputClass} resize-y min-h-[60px]`}
+                                    id="news-description"
+                                    name="description"
+                                    className={`${dialogInputClass} resize-y min-h-[60px] leading-relaxed`}
                                     rows={2}
                                     value={currentData.description}
                                     onChange={(e) => handleChange("description", e.target.value)}
@@ -225,6 +239,8 @@ export default function EditNewsModal({
                             {/* Main Content Editor */}
                             <DialogField label="Content" smallLabel required>
                                 <textarea
+                                    id="news-content"
+                                    name="content"
                                     className={`${dialogInputClass} resize-y min-h-[150px] font-mono`}
                                     rows={6}
                                     value={currentData.content}

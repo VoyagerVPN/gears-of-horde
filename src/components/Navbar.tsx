@@ -12,6 +12,7 @@ import Logo from "@/images/Logo.png";
 
 export default function Navbar() {
   const t = useTranslations('Navigation');
+  const tA11y = useTranslations('Accessibility');
   const locale = useLocale();
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -24,7 +25,11 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="border-b border-surface bg-background sticky top-0 z-50">
+    <nav
+      className="border-b border-surface bg-background sticky top-0 z-50"
+      role="navigation"
+      aria-label={tA11y('mainNavigation')}
+    >
       <div className="max-w-[1800px] mx-auto px-4 h-16 flex items-center">
         {/* Logo - Left */}
         <Link href="/" className="flex items-center gap-3 shrink-0">
@@ -46,6 +51,7 @@ export default function Navbar() {
           <form
             onSubmit={handleSubmit}
             className="hidden md:block w-full max-w-md"
+            role="search"
           >
             <SearchBar
               value={query}
@@ -61,11 +67,15 @@ export default function Navbar() {
         <div className="flex items-center gap-4 shrink-0">
           <LanguageSwitcher />
           <AuthButton />
-          <button className="md:hidden p-2">
-            <Menu className="h-5 w-5" />
+          <button
+            className="md:hidden p-2"
+            aria-label={tA11y('openMenu')}
+          >
+            <Menu className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
       </div>
     </nav>
   );
 }
+

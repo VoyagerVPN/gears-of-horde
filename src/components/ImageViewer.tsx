@@ -2,6 +2,7 @@
 
 import { useEffect, useCallback, useState, MouseEvent } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
 
 interface ImageViewerProps {
   images: string[];
@@ -84,10 +85,12 @@ export default function ImageViewer({ images, initialIndex, onClose }: ImageView
           className="flex-1 h-full flex items-center justify-center p-4 pointer-events-auto cursor-default"
         >
           <div className="relative max-w-full max-h-full aspect-video bg-zinc-900 rounded-lg overflow-hidden border border-white/10 shadow-2xl">
-            <img
+            <Image
               src={currentImageId}
               alt={`Screenshot ${currentIndex + 1}`}
-              className="object-contain w-full h-full"
+              fill
+              className="object-contain"
+              unoptimized
             />
             {/* Counter */}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1 bg-black/60 backdrop-blur rounded-full text-white text-sm font-exo2 border border-white/10">

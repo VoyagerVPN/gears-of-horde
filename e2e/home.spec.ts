@@ -18,11 +18,10 @@ test('homepage has title and navigation', async ({ page }) => {
     await expect(page.getByRole('button', { name: 'Top Rated' }).first()).toBeVisible();
 
     // Check for the Hero Section "Info" header
-    await expect(page.getByText('Info')).toBeVisible();
+    await expect(page.getByText('Info').first()).toBeVisible();
 
     // Check for mod grid
-    const modGrid = page.locator('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3');
-    await expect(modGrid.first()).toBeVisible();
+    await expect(page.getByTestId('mod-grid')).toBeVisible();
 
     // Check for news section
     await expect(page.locator('h3:has-text("Latest News"), h3:has-text("Последние новости")')).toBeVisible();

@@ -8,6 +8,7 @@ import {
 import * as Select from "@radix-ui/react-select";
 import DatePicker from "@/components/ui/DatePicker";
 import GameVersionSelector from "@/components/ui/GameVersionSelector";
+import RichTextEditor from "@/components/ui/RichTextEditor";
 import { ModData, ModStatusType, TagData } from "@/types/mod";
 import {
   Dialog,
@@ -23,6 +24,8 @@ import {
 } from "@/components/ui/Dialog";
 import { useTranslations, useLocale } from "next-intl";
 import { STATUS_OPTIONS } from "@/lib/mod-constants";
+
+
 
 /** Data structure for mod updates */
 export interface ModUpdateData {
@@ -131,8 +134,8 @@ export default function UpdateModModal({
     onClose();
   };
 
-  const handleChangesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const lines = e.target.value.split("\n");
+  const handleChangesChange = (html: string) => {
+    const lines = htmlToArray(html);
     setFormData(prev => ({ ...prev, changes: lines }));
   };
 
@@ -157,6 +160,8 @@ export default function UpdateModModal({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
             <DialogField label={t_modal('newVersion')} smallLabel>
               <input
+                id="mod-version"
+                name="version"
                 type="text"
                 value={formData.version}
                 onChange={e => setFormData({ ...formData, version: e.target.value })}
@@ -178,7 +183,7 @@ export default function UpdateModModal({
             {/* Status Select */}
             <DialogField label={t_modal('status')} smallLabel>
               <Select.Root value={formData.status} onValueChange={(val) => setFormData({ ...formData, status: val as ModStatusType })}>
-                <Select.Trigger className="w-full flex items-center justify-between bg-black/20 border border-white/10 hover:border-white/30 focus:border-primary/50 rounded-lg p-2.5 text-sm text-white outline-none h-[42px] group">
+                <Select.Trigger className="w-full flex items-center justify-between bg-black/20 border border-white/10 hover:border-white/20 focus:border-white/30 rounded-lg p-2.5 text-sm text-white outline-none h-[42px] group">
                   <Select.Value asChild>
                     <div className="flex items-center gap-2">
                       <StatusIcon size={16} className={currentStatusConfig?.color} />
@@ -256,10 +261,12 @@ export default function UpdateModModal({
                 <span className="text-[9px] text-textMuted opacity-60">{t_modal('leaveEmptyForAutoGeneration')}</span>
               </div>
               <textarea
+                id="update-description"
+                name="description"
                 rows={2}
                 value={formData.description}
                 onChange={e => setFormData({ ...formData, description: e.target.value })}
-                className={`${dialogInputClass} resize-none selection:bg-primary/30 selection:text-white`}
+                className={`${dialogInputClass} resize-none leading-relaxed selection:bg-primary/30 selection:text-white`}
                 placeholder={autoDescription}
               />
             </DialogField>
@@ -267,6 +274,8 @@ export default function UpdateModModal({
             <DialogField label={t_modal('sourceUrl')} smallLabel>
               <div className="relative">
                 <input
+                  id="source-url"
+                  name="sourceUrl"
                   type="text"
                   value={formData.sourceUrl}
                   onChange={e => setFormData({ ...formData, sourceUrl: e.target.value })}
@@ -281,17 +290,14 @@ export default function UpdateModModal({
           {/* 4. Changelog Details - Matching EditableChangelog styling */}
           <div className="space-y-3 pt-2 border-t border-white/5">
             <h3 className="text-xs font-bold text-white uppercase tracking-widest font-exo2">{t_modal('changelogDetails')}</h3>
-            <textarea
-              rows={Math.max(4, formData.changes.length + 1)}
-              value={formData.changes.join("\n")}
+            <RichTextEditor
+              id="changelog"
+              name="changes"
+              value={arrayToHtml(formData.changes)}
               onChange={handleChangesChange}
-              className="w-full bg-black/20 rounded-lg p-3 text-textMuted leading-relaxed text-sm outline-none resize-y placeholder:text-white/10 focus:text-white transition-colors font-mono border border-white/5 focus:border-primary/30 selection:bg-primary/30 selection:text-white"
               placeholder={t_modal('changelogPlaceholder')}
-              spellCheck={false}
+              minHeight="100px"
             />
-            <p className="text-[10px] text-textMuted italic opacity-50">
-              {t('enterEachChangeOnNewLine')}
-            </p>
           </div>
         </DialogBody>
 

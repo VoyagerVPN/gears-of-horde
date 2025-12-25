@@ -8,6 +8,8 @@ import { TRANSPARENT_INPUT_BASE } from "@/lib/constants/ui-constants";
 import Tag from "@/components/ui/Tag";
 import AuthorTag from "@/components/AuthorTag";
 import TagSelector from "@/components/TagSelector";
+import BannerUpload from "@/components/ui/BannerUpload";
+import Image from "next/image";
 
 interface ModHeaderProps {
     mod: ModData;
@@ -31,33 +33,35 @@ export default function ModHeader({ mod, isEditing = false, initialStatus, onUpd
     return (
         <div className="mb-8">
             {/* BANNER */}
-            <div className={`w-full aspect-[1000/219] bg-zinc-900 rounded-xl overflow-hidden relative shadow-2xl mb-6 group ${isEditing ? 'border border-white/5 hover:border-primary/30 transition-colors' : ''}`}>
-                {mod.bannerUrl ? (
-                    <img
-                        src={mod.bannerUrl}
-                        alt={`${mod.title} banner`}
-                        className="w-full h-full object-cover"
+            {isEditing ? (
+                <div className="mb-6">
+                    <BannerUpload
+                        currentBannerUrl={mod.bannerUrl || undefined}
+                        onBannerChange={(url) => updateField('bannerUrl', url)}
                     />
-                ) : (
-                    <>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                        <div className="absolute inset-0 flex items-center justify-center text-white/10 text-sm font-bold tracking-[0.5em] uppercase pointer-events-none">
-                            {t('modBannerImage')}
-                        </div>
-                    </>
-                )}
-                {isEditing && (
-                    <div className="absolute top-4 right-4 flex items-center gap-2">
-                        <input
-                            type="text"
-                            value={mod.bannerUrl || ''}
-                            onChange={(e) => updateField('bannerUrl', e.target.value)}
-                            className="w-64 bg-black/80 border border-white/10 rounded px-3 py-1.5 text-xs text-white outline-none focus:border-primary placeholder:text-white/30"
-                            placeholder={t('enterBannerUrl')}
+                </div>
+            ) : (
+                <div className="w-full aspect-[1000/219] bg-zinc-900 rounded-xl overflow-hidden relative shadow-2xl mb-6">
+                    {mod.bannerUrl ? (
+                        <Image
+                            src={mod.bannerUrl}
+                            alt={`${mod.title} banner`}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1200px"
+                            priority
                         />
-                    </div>
-                )}
-            </div>
+                    ) : (
+                        <>
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                            <div className="absolute inset-0 flex items-center justify-center text-white/10 text-sm font-bold tracking-[0.5em] uppercase pointer-events-none">
+                                {t('modBannerImage')}
+                            </div>
+                        </>
+                    )}
+                </div>
+            )}
+
 
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <div className="flex-1 w-full md:w-auto">
@@ -65,6 +69,8 @@ export default function ModHeader({ mod, isEditing = false, initialStatus, onUpd
                     <div className="flex items-center gap-3 mb-2">
                         {isEditing ? (
                             <input
+                                id="mod-title-input"
+                                name="title"
                                 type="text"
                                 value={mod.title}
                                 onChange={(e) => updateField('title', e.target.value)}
@@ -85,6 +91,8 @@ export default function ModHeader({ mod, isEditing = false, initialStatus, onUpd
                         <div className="flex items-center gap-2 mb-3 text-xs font-mono text-textMuted">
                             <span className="select-none opacity-50">/mod/</span>
                             <input
+                                id="mod-slug-input"
+                                name="slug"
                                 type="text"
                                 value={mod.slug}
                                 onChange={(e) => {
@@ -94,7 +102,7 @@ export default function ModHeader({ mod, isEditing = false, initialStatus, onUpd
                                         .replace(/[^a-z0-9-]/g, '');
                                     updateField('slug', sanitized);
                                 }}
-                                className={`bg-transparent border-b border-white/10 outline-none transition-colors min-w-[200px] ${isNew ? 'hover:border-white/30 focus:border-primary text-primary' : 'text-textMuted cursor-not-allowed border-transparent'}`}
+                                className={`bg-transparent border-b border-white/10 outline-none transition-colors min-w-[200px] ${isNew ? 'hover:border-white/30 focus:border-white/50 text-white' : 'text-textMuted cursor-not-allowed border-transparent'}`}
                                 placeholder={t('slug')}
                                 disabled={!isNew}
                                 title={!isNew ? "Slug cannot be changed after creation" : "Auto-generated from title"}
@@ -166,7 +174,7 @@ export default function ModHeader({ mod, isEditing = false, initialStatus, onUpd
                         <div className={`flex items-center gap-1.5 justify-center ${statusInfo.color} mb-0.5`}>
                             <StatusIcon size={18} />
                             {isEditing ? (
-                                <Select.Root value={mod.status} onValueChange={(val) => updateField('status', val as ModStatusType)}>
+                                <Select.Root value={mod.status} onValueChange={(val) => updateField('status', val as ModStatusType)} name="status">
                                     <Select.Trigger className="absolute inset-0 opacity-0 cursor-pointer z-10 font-bold uppercase">
                                         <Select.Value />
                                     </Select.Trigger>

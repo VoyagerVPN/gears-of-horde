@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { History, Plus, Trash2, Calendar as CalendarIcon } from "lucide-react";
+import { History, Plus, Trash2, Calendar as CalendarIcon, ChevronUp } from "lucide-react";
 import DatePicker from "@/components/ui/DatePicker";
+import RichTextEditor from "@/components/ui/RichTextEditor";
 import { ModChangelog } from "@/types/mod";
+import { useToast } from "@/components/ui/Toast";
 import { useTranslations, useLocale } from 'next-intl';
 
 interface EditableChangelogProps {
@@ -11,73 +13,79 @@ interface EditableChangelogProps {
   onChange: (newLogs: ModChangelog[]) => void;
 }
 
-// Separate component for the changelog textarea to manage its own local state
-interface ChangelogTextareaProps {
+// Simple component wrapper for the changelog editor
+// Stores HTML content as-is, converting array to/from single HTML string
+interface ChangelogEditorProps {
+  id?: string;
+  name?: string;
   changes: string[];
   onChange: (newChanges: string[]) => void;
   placeholder: string;
 }
 
-function ChangelogTextarea({ changes, onChange, placeholder }: ChangelogTextareaProps) {
-  const t = useTranslations('Common');
-  const [textValue, setTextValue] = useState(() => changes.join("\n"));
-  const [isFocused, setIsFocused] = useState(false);
+function ChangelogEditor({ id, name, changes, onChange, placeholder }: ChangelogEditorProps) {
+  // Join array into single HTML string (for backwards compatibility)
+  // New content will be stored as single-element array with full HTML
+  const htmlValue = changes.length === 1 ? changes[0] : changes.join("");
 
-  // Sync from parent only when not focused
-  useEffect(() => {
-    if (!isFocused) {
-      setTextValue(changes.join("\n"));
-    }
-  }, [changes, isFocused]);
-
-  const handleBlur = () => {
-    setIsFocused(false);
-    // Process and send to parent on blur
-    const newArray = textValue
-      .split("\n")
-      .map(line => line.trim())
-      .filter(line => line.length > 0);
-    onChange(newArray);
+  const handleChange = (html: string) => {
+    // Store HTML as single element array
+    onChange([html]);
   };
 
   return (
     <div className="mt-4">
-      <textarea
-        rows={Math.max(4, changes.length + 1)}
-        value={textValue}
-        onChange={(e) => setTextValue(e.target.value)}
-        onFocus={() => setIsFocused(true)}
-        onBlur={handleBlur}
-        className="w-full bg-black/20 rounded-lg p-3 text-textMuted leading-relaxed text-sm outline-none resize-y placeholder:text-white/10 focus:text-white transition-colors font-mono border border-white/5 focus:border-primary/30"
+      <RichTextEditor
+        id={id}
+        name={name}
+        value={htmlValue}
+        onChange={handleChange}
         placeholder={placeholder}
-        spellCheck={false}
+        minHeight="100px"
       />
-      <p className="text-[10px] text-textMuted mt-1 italic opacity-50">
-        {t('enterEachChangeOnNewLine')}
-      </p>
     </div>
   );
 }
 
+
 export default function EditableChangelog({ logs, onChange }: EditableChangelogProps) {
   const t = useTranslations('Common');
   const locale = useLocale() as 'en' | 'ru';
+  const { showToast } = useToast();
+  // Show all history by default to avoid confusion with sorting
+  const [showAllHistory, setShowAllHistory] = useState(true);
 
-  // --- Управление версиями ---
+  // Ensure there is always at least one version on mount/update if empty
+  useEffect(() => {
+    if (logs.length === 0) {
+      const initialEntry: ModChangelog = {
+        version: "1.0.0.0",
+        date: "",
+        changes: [""]
+      };
+      onChange([initialEntry]);
+    }
+  }, [logs, onChange]);
+
+  // --- Version Management ---
   const addVersion = () => {
-    // Логика копирования предыдущей версии
-    const previousVersion = logs.length > 0 ? logs[0].version : "v1.0.0";
+    // Validation: Check if the latest version (first in list) has a date
+    if (logs.length > 0 && !logs[0].date) {
+      showToast(t('mustPickDateBeforeNewVersion'), 'warning');
+      return;
+    }
 
     const newEntry: ModChangelog = {
-      version: previousVersion, // Копируем текст версии для удобства
-      date: "", // Дата пустая, нужно выбрать вручную
+      version: "1.0.0.0",
+      date: "",
       changes: [""]
     };
-    // Добавляем в начало списка
+    // Add to top
     onChange([newEntry, ...logs]);
   };
 
   const removeVersion = (index: number) => {
+    if (logs.length <= 1) return; // Prevent deleting last remaining version
     const newLogs = logs.filter((_, i) => i !== index);
     onChange(newLogs);
   };
@@ -112,79 +120,136 @@ export default function EditableChangelog({ logs, onChange }: EditableChangelogP
     onChange(newLogs);
   };
 
+  // Determine which logs to show
+  const visibleCount = showAllHistory ? logs.length : 1;
+
   return (
     <div className="bg-surface border border-white/5 rounded-xl overflow-hidden">
-      {/* Header */}
+      {/* Header with Add and Delete icons */}
       <div className="w-full flex items-center justify-between p-6 border-b border-white/5">
-        <h2 className="text-lg font-bold text-white font-exo2 uppercase tracking-wide flex items-center gap-2">
-          <History size={20} className="text-primary" /> {t('changelogEditor')}
-        </h2>
-        <button
-          onClick={addVersion}
-          className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary text-xs font-bold uppercase rounded border border-primary/20 hover:bg-primary hover:text-white transition-colors"
-        >
-          <Plus size={14} /> {t('newVersion')}
-        </button>
+        <div className="flex items-center gap-4">
+          <h2 className="text-lg font-bold text-white font-exo2 uppercase tracking-wide flex items-center gap-2">
+            <History size={20} className="text-primary" /> {t('changelogEditor')}
+          </h2>
+
+          {/* Add Version Icon Button */}
+          <button
+            type="button"
+            onClick={addVersion}
+            className="p-2 text-primary hover:text-white hover:bg-primary/20 rounded-lg transition-colors"
+            title={t('addNewVersion')}
+          >
+            <Plus size={20} />
+          </button>
+        </div>
       </div>
 
-      <div className="p-6 space-y-8 bg-black/20">
-        {logs.map((log, vIdx) => (
-          <div key={vIdx} className="relative pl-6 border-l border-white/10 group/version">
-            {/* Точка на таймлайне */}
-            <div className="absolute -left-[5px] top-2.5 w-2.5 h-2.5 rounded-full bg-surface border-2 border-primary"></div>
+      <div className="p-6 bg-black/20">
+        <div className="space-y-8 relative">
 
-            {/* Удаление версии */}
-            <button
-              onClick={() => removeVersion(vIdx)}
-              className="absolute right-0 top-0 p-2 text-textMuted hover:text-red-500 transition-colors z-10"
-              title={t('deleteVersion')}
-            >
-              <Trash2 size={16} />
-            </button>
+          {logs.map((log, vIdx) => {
+            // Logic to hide older versions
+            if (vIdx >= visibleCount) return null;
 
-            {/* Хедер версии (Версия + Дата) */}
-            <div className="flex flex-wrap items-center gap-6 mb-4">
+            const isLast = vIdx === logs.length - 1;
+            const isVisuallyLast = vIdx === visibleCount - 1;
 
-              {/* Поле версии */}
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-textMuted uppercase">{t('version')}</label>
-                <input
-                  type="text"
-                  value={log.version}
-                  onChange={(e) => updateVersionHeader(vIdx, 'version', e.target.value)}
-                  className="bg-transparent border-b border-white/10 focus:border-primary text-lg font-bold text-white w-32 outline-none transition-colors placeholder-white/20"
-                  placeholder="v1.0.0"
+            return (
+              <div
+                key={vIdx}
+                className={`relative pl-8 ${isLast ? '' : 'border-l border-white/10'}`}
+              >
+                {/* Connection line for the last item (top to dot) */}
+                {isLast && logs.length > 1 && (
+                  <div className="absolute left-[-1px] top-0 h-3 w-[1px] bg-white/10"></div>
+                )}
+
+                {/* Dot */}
+                <div className="absolute -left-[5px] top-2.5 w-2.5 h-2.5 rounded-full bg-surface border-2 border-primary"></div>
+
+                {/* Header (Version + Date + Delete) */}
+                <div className="flex flex-wrap items-center gap-4 mb-4">
+
+                  {/* Delete Version Icon (only if more than 1 version) */}
+                  {logs.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeVersion(vIdx)}
+                      className="p-1.5 text-textMuted hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
+                      title={t('deleteVersion')}
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  )}
+
+                  {/* Version Field */}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold text-textMuted uppercase">{t('version')}</label>
+                    <input
+                      id={`changelog-version-${vIdx}`}
+                      name={`changelog-version-${vIdx}`}
+                      type="text"
+                      value={log.version}
+                      onChange={(e) => updateVersionHeader(vIdx, 'version', e.target.value)}
+                      className="bg-transparent border-b border-white/10 hover:border-white/20 focus:border-white/30 text-lg font-bold text-white w-32 outline-none transition-colors placeholder-white/20"
+                      spellCheck={false}
+                      placeholder="1.0.0.0"
+                    />
+                  </div>
+
+                  {/* Date Field */}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold text-textMuted uppercase flex items-center gap-1">
+                      <CalendarIcon size={10} /> {t('releaseDate')}
+                    </label>
+                    <DatePicker
+                      value={log.date ? new Date(log.date) : undefined}
+                      onChange={(date) => updateVersionHeader(vIdx, 'date', date ? date.toISOString() : "")}
+                      placeholder={t('pickDate')}
+                      locale={locale}
+                    />
+                  </div>
+                </div>
+
+                {/* Textarea */}
+                <ChangelogEditor
+                  id={`changelog-text-${vIdx}`}
+                  name={`changelog-text-${vIdx}`}
+                  changes={log.changes}
+                  onChange={(newChanges) => updateChanges(vIdx, newChanges)}
+                  placeholder={t('describeChange')}
                 />
               </div>
+            );
+          })}
 
-              {/* Поле даты (DatePicker) */}
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-textMuted uppercase flex items-center gap-1">
-                  <CalendarIcon size={10} /> {t('releaseDate')}
-                </label>
-                <DatePicker
-                  value={log.date ? new Date(log.date) : undefined}
-                  onChange={(date) => updateVersionHeader(vIdx, 'date', date ? date.toISOString() : "")}
-                  placeholder={t('pickDate')}
-                  locale={locale}
-                />
-              </div>
+          {/* Show More / History Toggle */}
+          {logs.length > 1 && (
+            <div className="relative pl-8 pt-4">
+              {/* Connection line from the visible item down to this button */}
+              {!showAllHistory && (
+                <div className="absolute left-[-1px] top-0 h-4 w-[1px] bg-white/10"></div>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setShowAllHistory(!showAllHistory)}
+                className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-textMuted hover:text-white transition-colors"
+              >
+                {showAllHistory ? (
+                  <>
+                    <ChevronUp size={14} /> {t('hideHistory')}
+                  </>
+                ) : (
+                  <>
+                    <Plus size={14} /> {t('showPreviousVersions')} ({logs.length - 1})
+                  </>
+                )}
+              </button>
             </div>
+          )}
 
-            {/* Список изменений (textarea-based with local state) */}
-            <ChangelogTextarea
-              changes={log.changes}
-              onChange={(newChanges) => updateChanges(vIdx, newChanges)}
-              placeholder={t('describeChange')}
-            />
-          </div>
-        ))}
-
-        {logs.length === 0 && (
-          <div className="text-center py-8 text-textMuted text-sm italic border border-dashed border-white/10 rounded-lg">
-            {t('noHistory')}
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );

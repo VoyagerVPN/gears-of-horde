@@ -19,8 +19,8 @@ import {
 interface TagModalProps {
     isOpen: boolean;
     onClose: () => void;
-    tag: { id: string; category: string; value: string; displayName: string; color?: string | null } | null;
-    onSave: (data: { category: string; value: string; displayName: string; color?: string }) => Promise<void>;
+    tag: { id: string; category: string; value: string; displayName: string } | null;
+    onSave: (data: { category: string; value: string; displayName: string }) => Promise<void>;
     initialCategory?: string;
     existingCategories: string[];
 }
@@ -30,7 +30,6 @@ export default function TagModal({ isOpen, onClose, tag, onSave, initialCategory
     const [category, setCategory] = useState("");
     const [value, setValue] = useState("");
     const [displayName, setDisplayName] = useState("");
-    const [color, setColor] = useState("#ffffff");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showCategorySuggestions, setShowCategorySuggestions] = useState(false);
 
@@ -40,12 +39,10 @@ export default function TagModal({ isOpen, onClose, tag, onSave, initialCategory
                 setCategory(tag.category);
                 setValue(tag.value);
                 setDisplayName(tag.displayName);
-                setColor(tag.color || "#ffffff");
             } else {
                 setCategory(initialCategory || "");
                 setValue("");
                 setDisplayName("");
-                setColor("#ffffff");
             }
         }
     }, [isOpen, tag, initialCategory]);
@@ -54,7 +51,7 @@ export default function TagModal({ isOpen, onClose, tag, onSave, initialCategory
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await onSave({ category, value, displayName, color });
+            await onSave({ category, value, displayName });
             onClose();
         } catch (error) {
             console.error("Failed to save tag:", error);
@@ -80,6 +77,8 @@ export default function TagModal({ isOpen, onClose, tag, onSave, initialCategory
                         <DialogField label={t('category')}>
                             <div className="relative">
                                 <input
+                                    id="tag-category"
+                                    name="category"
                                     type="text"
                                     value={category}
                                     onChange={(e) => {
@@ -115,18 +114,22 @@ export default function TagModal({ isOpen, onClose, tag, onSave, initialCategory
                         {/* Value Input */}
                         <DialogField label={t('value')}>
                             <input
+                                id="tag-value"
+                                name="value"
                                 type="text"
                                 value={value}
                                 onChange={(e) => setValue(e.target.value)}
                                 placeholder="e.g. survival_mode"
                                 required
-                                className={`${dialogInputClass} font-mono`}
+                                className={`${dialogInputClass}`}
                             />
                         </DialogField>
 
                         {/* Display Name Input */}
                         <DialogField label={t('displayName')}>
                             <input
+                                id="tag-display-name"
+                                name="displayName"
                                 type="text"
                                 value={displayName}
                                 onChange={(e) => setDisplayName(e.target.value)}
@@ -136,31 +139,6 @@ export default function TagModal({ isOpen, onClose, tag, onSave, initialCategory
                                 className={dialogInputClass}
                             />
                         </DialogField>
-
-                        {/* Color Input - hidden for gamever category */}
-                        {category !== 'gamever' ? (
-                            <DialogField label={t('color')}>
-                                <div className="flex items-center gap-3">
-                                    <input
-                                        type="color"
-                                        value={color}
-                                        onChange={(e) => setColor(e.target.value)}
-                                        className="h-10 w-20 bg-transparent border-none cursor-pointer"
-                                    />
-                                    <input
-                                        type="text"
-                                        value={color}
-                                        onChange={(e) => setColor(e.target.value)}
-                                        pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
-                                        className={`${dialogInputClass} flex-1 font-mono uppercase`}
-                                    />
-                                </div>
-                            </DialogField>
-                        ) : (
-                            <DialogAlert variant="info">
-                                ℹ️ Game version colors are automatically calculated based on version order (newest = green, oldest = red).
-                            </DialogAlert>
-                        )}
                     </DialogBody>
 
                     <DialogFooter>

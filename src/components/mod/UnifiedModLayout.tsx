@@ -30,11 +30,12 @@ import ViewModeActions from "@/components/mod/ViewModeActions";
 
 // Admin Components
 import EditableChangelog from "@/components/mod/EditableChangelog";
-import SimpleMultilineEditor from "@/components/ui/SimpleMultilineEditor";
+import SimpleTextEditor from "@/components/ui/SimpleTextEditor";
 import EditableLanguageTags from "@/components/mod/EditableLanguageTags";
 import TagSelector from "@/components/TagSelector";
 import { SIDEBAR_HEADER_STYLE } from "@/lib/constants/ui-constants";
 import { getDomain } from "@/lib/utils";
+import ScreenshotDropzone from "@/components/ui/ScreenshotDropzone";
 
 // Helper function to extract YouTube video ID from URL
 function getYouTubeVideoId(url: string): string | null {
@@ -61,6 +62,7 @@ interface UnifiedModLayoutProps {
     isNew?: boolean;
     gameVersionTags?: TagData[];
     onGameVersionTagsRefresh?: () => void;
+    onGameVersionCreate?: (version: string) => void;
 }
 
 export default function UnifiedModLayout({
@@ -70,7 +72,8 @@ export default function UnifiedModLayout({
     initialStatus,
     isNew = false,
     gameVersionTags = [],
-    onGameVersionTagsRefresh
+    onGameVersionTagsRefresh,
+    onGameVersionCreate
 }: UnifiedModLayoutProps) {
     const t = useTranslations('Common');
     const locale = useLocale() as 'en' | 'ru';
@@ -152,8 +155,8 @@ export default function UnifiedModLayout({
                         </div>
                         {links.map((link, idx) => (
                             <div key={idx} className="flex gap-2 group items-center">
-                                <input type="text" value={link.name} onChange={e => updateLinkItem(category, idx, 'name', e.target.value)} className="w-1/3 bg-black/20 border border-white/10 rounded px-2 py-1.5 text-xs text-white outline-none focus:border-primary/50 placeholder:text-white/20" placeholder={t('name')} />
-                                <input type="text" value={link.url} onChange={e => updateLinkItem(category, idx, 'url', e.target.value)} className="flex-1 bg-black/20 border border-white/10 rounded px-2 py-1.5 text-xs text-white outline-none focus:border-primary/50 placeholder:text-white/20" placeholder={t('url')} />
+                                <input id={`link-name-${category}-${idx}`} name={`link-name-${category}-${idx}`} type="text" value={link.name} onChange={e => updateLinkItem(category, idx, 'name', e.target.value)} className="w-1/3 bg-black/20 border border-white/10 rounded px-2 py-1.5 text-xs text-white outline-none hover:border-white/20 focus:border-white/30 placeholder:text-white/20 transition-colors" placeholder={t('name')} spellCheck={false} />
+                                <input id={`link-url-${category}-${idx}`} name={`link-url-${category}-${idx}`} type="text" value={link.url} onChange={e => updateLinkItem(category, idx, 'url', e.target.value)} className="flex-1 bg-black/20 border border-white/10 rounded px-2 py-1.5 text-xs text-white outline-none hover:border-white/20 focus:border-white/30 placeholder:text-white/20 transition-colors" placeholder={t('url')} spellCheck={false} />
                                 <button type="button" onClick={() => removeLinkItem(category, idx)} className="text-textMuted hover:text-red-400 opacity-50 group-hover:opacity-100 transition-opacity"><Trash2 size={14} /></button>
                             </div>
                         ))}
@@ -237,13 +240,15 @@ export default function UnifiedModLayout({
 
                     {/* Features List */}
                     {isEditing ? (
-                        <SimpleMultilineEditor
+                        <SimpleTextEditor
                             title={t('features')}
                             icon={Zap}
                             items={mod.features}
                             onChange={(newItems) => updateField('features', newItems)}
                             placeholder="Paste features list here (one per line)..."
                             countLabel="features"
+                            id="mod-features-editor"
+                            name="features"
                         />
                     ) : (
                         <FeatureList features={mod.features} />
@@ -259,13 +264,16 @@ export default function UnifiedModLayout({
                             {/* Videos */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-textMuted uppercase font-exo2">{t('trailerUrl')}</label>
+                                    <label htmlFor="mod-trailer-url" className="text-xs font-bold text-textMuted uppercase font-exo2">{t('trailerUrl')}</label>
                                     <input
+                                        id="mod-trailer-url"
+                                        name="trailer"
                                         type="text"
                                         value={mod.videos?.trailer || ''}
                                         onChange={e => updateVideo('trailer', e.target.value)}
-                                        className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-xs text-white outline-none focus:border-primary placeholder:text-white/20"
+                                        className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-xs text-white outline-none hover:border-white/20 focus:border-white/30 transition-colors placeholder:text-white/20"
                                         placeholder="https://youtube.com/..."
+                                        spellCheck={false}
                                     />
                                     {/* Trailer Preview */}
                                     {mod.videos?.trailer && (
@@ -281,13 +289,16 @@ export default function UnifiedModLayout({
                                     )}
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-textMuted uppercase font-exo2">{t('reviewUrl')}</label>
+                                    <label htmlFor="mod-review-url" className="text-xs font-bold text-textMuted uppercase font-exo2">{t('reviewUrl')}</label>
                                     <input
+                                        id="mod-review-url"
+                                        name="review"
                                         type="text"
                                         value={mod.videos?.review || ''}
                                         onChange={e => updateVideo('review', e.target.value)}
-                                        className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-xs text-white outline-none focus:border-primary placeholder:text-white/20"
+                                        className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-xs text-white outline-none hover:border-white/20 focus:border-white/30 transition-colors placeholder:text-white/20"
                                         placeholder="https://youtube.com/..."
+                                        spellCheck={false}
                                     />
                                     {/* Review Preview */}
                                     {mod.videos?.review && (
@@ -306,7 +317,7 @@ export default function UnifiedModLayout({
 
                             {/* Screenshots - Horizontal Carousel with Drag & Drop */}
                             <div className="space-y-3">
-                                <label className="text-xs font-bold text-textMuted uppercase font-exo2">{t('screenshots')}</label>
+                                <h4 className="text-xs font-bold text-textMuted uppercase font-exo2">{t('screenshots')}</h4>
 
                                 <DragDropContext onDragEnd={onScreenshotDragEnd}>
                                     <Droppable droppableId="screenshots" direction="horizontal">
@@ -316,37 +327,28 @@ export default function UnifiedModLayout({
                                                 {...provided.droppableProps}
                                                 className="flex overflow-x-auto gap-4 pb-3 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent hover:scrollbar-thumb-primary/50"
                                             >
-                                                {mod.screenshots.map((url, idx) => (
+                                                {mod.screenshots.filter(url => url.trim() !== '').map((url, idx) => (
                                                     <Draggable key={`screenshot-${idx}`} draggableId={`screenshot-${idx}`} index={idx}>
                                                         {(provided, snapshot) => (
                                                             <div
                                                                 ref={provided.innerRef}
                                                                 {...provided.draggableProps}
-                                                                className={`flex-shrink-0 w-64 space-y-2 ${snapshot.isDragging ? 'opacity-90 scale-105' : ''}`}
+                                                                className={`flex-shrink-0 w-64 ${snapshot.isDragging ? 'opacity-90 scale-105' : ''}`}
                                                             >
                                                                 {/* Preview Card */}
-                                                                <div key={url} className="relative aspect-[16/9] bg-black/40 rounded-lg border border-white/10 overflow-hidden group">
-                                                                    {url ? (
-                                                                        <>
-                                                                            <img
-                                                                                src={url}
-                                                                                alt={`Screenshot ${idx + 1}`}
-                                                                                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                                                                                onError={(e) => {
-                                                                                    (e.target as HTMLImageElement).style.display = 'none';
-                                                                                    (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-                                                                                }}
-                                                                            />
-                                                                            <div className="hidden absolute inset-0 flex-col items-center justify-center text-red-400/60 bg-black/60">
-                                                                                <XIcon size={24} className="mb-1" />
-                                                                                <span className="text-xs uppercase font-bold font-exo2">{t('invalidUrl')}</span>
-                                                                            </div>
-                                                                        </>
-                                                                    ) : (
-                                                                        <div className="absolute inset-0 flex flex-col items-center justify-center text-white/20">
-                                                                            <span className="text-xs uppercase font-bold tracking-wider font-exo2">{t('pasteUrl')}</span>
-                                                                        </div>
-                                                                    )}
+                                                                <div className="relative aspect-[16/9] bg-black/40 rounded-lg border border-white/10 overflow-hidden group">
+                                                                    <Image
+                                                                        src={url}
+                                                                        alt={`Screenshot ${idx + 1}`}
+                                                                        fill
+                                                                        className="object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                                                                        loading="lazy"
+                                                                    />
+                                                                    <div className="hidden absolute inset-0 flex-col items-center justify-center text-red-400/60 bg-black/60">
+                                                                        <XIcon size={24} className="mb-1" />
+                                                                        <span className="text-xs uppercase font-bold font-exo2">{t('invalidUrl')}</span>
+                                                                    </div>
 
                                                                     {/* Drag Handle */}
                                                                     <div
@@ -360,7 +362,10 @@ export default function UnifiedModLayout({
                                                                     {/* Delete Overlay */}
                                                                     <button
                                                                         type="button"
-                                                                        onClick={() => updateField('screenshots', mod.screenshots.filter((_, i) => i !== idx))}
+                                                                        onClick={() => {
+                                                                            const filtered = mod.screenshots.filter(s => s.trim() !== '');
+                                                                            updateField('screenshots', filtered.filter((_, i) => i !== idx));
+                                                                        }}
                                                                         className="absolute top-2 right-2 p-1.5 bg-black/60 backdrop-blur-sm border border-white/10 rounded-lg text-white/60 hover:text-red-400 hover:bg-red-500/20 hover:border-red-400/50 opacity-0 group-hover:opacity-100 transition-all"
                                                                         title={t('remove')}
                                                                     >
@@ -372,33 +377,21 @@ export default function UnifiedModLayout({
                                                                         #{idx + 1}
                                                                     </div>
                                                                 </div>
-
-                                                                {/* URL Input */}
-                                                                <input
-                                                                    type="text"
-                                                                    value={url}
-                                                                    onChange={e => {
-                                                                        const newScreens = [...mod.screenshots];
-                                                                        newScreens[idx] = e.target.value;
-                                                                        updateField('screenshots', newScreens);
-                                                                    }}
-                                                                    className="w-full bg-black/40 border border-white/10 rounded px-2 py-1.5 text-xs text-white/80 outline-none focus:border-primary/50 placeholder:text-white/20 truncate"
-                                                                    placeholder={t('pasteUrl')}
-                                                                />
                                                             </div>
                                                         )}
                                                     </Draggable>
                                                 ))}
                                                 {provided.placeholder}
 
-                                                {/* Add New Slot Button */}
-                                                <div
-                                                    onClick={() => updateField('screenshots', [...mod.screenshots, ""])}
-                                                    className="flex-shrink-0 w-48 aspect-[16/9] border-2 border-dashed border-white/10 rounded-lg flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group"
-                                                >
-                                                    <Plus size={24} className="text-white/20 group-hover:text-primary transition-colors" />
-                                                    <span className="text-xs text-textMuted group-hover:text-white transition-colors uppercase font-bold font-exo2">{t('add')}</span>
-                                                </div>
+                                                {/* Screenshot Upload Drop Zone */}
+                                                <ScreenshotDropzone
+                                                    currentCount={mod.screenshots.filter(s => s.trim() !== '').length}
+                                                    onUploadComplete={(urls) => {
+                                                        // Filter out empty slots and add new uploaded URLs
+                                                        const currentScreenshots = mod.screenshots.filter(s => s.trim() !== '');
+                                                        updateField('screenshots', [...currentScreenshots, ...urls]);
+                                                    }}
+                                                />
                                             </div>
                                         )}
                                     </Droppable>
@@ -488,26 +481,30 @@ export default function UnifiedModLayout({
                                 </div>
                                 <div className="space-y-3">
                                     <div className="space-y-1">
-                                        <label className="text-xs font-bold text-textMuted uppercase font-exo2">{t('downloadUrl')}</label>
+                                        <label htmlFor="mod-download-url" className="text-xs font-bold text-textMuted uppercase font-exo2">{t('downloadUrl')}</label>
                                         <div className="relative">
                                             <input
+                                                id="mod-download-url"
+                                                name="download"
                                                 type="text"
                                                 value={mod.links.download}
                                                 onChange={e => updateField('links', { ...mod.links, download: e.target.value })}
-                                                className="w-full bg-black/40 border border-transparent hover:border-white/10 focus:border-primary/50 rounded p-2 pl-8 text-xs text-white outline-none transition-colors"
+                                                className="w-full bg-black/40 border border-transparent hover:border-white/10 focus:border-white/30 rounded p-2 pl-8 text-xs text-white outline-none transition-colors"
                                                 placeholder="https://nexusmods.com/..."
                                             />
                                             <Download size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-textMuted opacity-50" />
                                         </div>
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-bold text-textMuted uppercase font-exo2">{t('discordUrl')}</label>
+                                        <label htmlFor="mod-discord-url" className="text-xs font-bold text-textMuted uppercase font-exo2">{t('discordUrl')}</label>
                                         <div className="relative">
                                             <input
+                                                id="mod-discord-url"
+                                                name="discord"
                                                 type="text"
                                                 value={mod.links.discord}
                                                 onChange={e => updateField('links', { ...mod.links, discord: e.target.value })}
-                                                className="w-full bg-black/40 border border-transparent hover:border-white/10 focus:border-[#5865F2]/50 rounded p-2 pl-8 text-xs text-white outline-none transition-colors"
+                                                className="w-full bg-black/40 border border-transparent hover:border-white/10 focus:border-white/30 rounded p-2 pl-8 text-xs text-white outline-none transition-colors"
                                                 placeholder="https://discord.gg/..."
                                             />
                                             <MessageSquare size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-textMuted opacity-50" />
@@ -525,13 +522,15 @@ export default function UnifiedModLayout({
 
                         {/* Installation Instructions */}
                         {isEditing ? (
-                            <SimpleMultilineEditor
+                            <SimpleTextEditor
                                 title={t('installationGuide')}
                                 icon={FileCog}
                                 items={mod.installationSteps}
                                 onChange={(newItems) => updateField('installationSteps', newItems)}
                                 placeholder="Paste installation steps here (one per line)..."
                                 countLabel="steps"
+                                id="mod-installation-editor"
+                                name="installationSteps"
                             />
                         ) : (
                             <InstallationAccordion steps={mod.installationSteps} />
@@ -629,7 +628,7 @@ export default function UnifiedModLayout({
                             <div className="flex items-center justify-between border-b border-white/5 pb-2">
                                 <span className="text-textMuted uppercase tracking-wider font-bold font-exo2">{t('modVersion')}:</span>
                                 {isEditing ? (
-                                    <input type="text" value={mod.version} onChange={e => updateField('version', e.target.value)} className="bg-black/40 border border-white/10 rounded px-2.5 py-1 text-white font-mono text-[13px] font-bold w-24 text-right outline-none focus:border-primary" />
+                                    <input id="mod-version-input" name="version" type="text" value={mod.version} onChange={e => updateField('version', e.target.value)} className="bg-black/40 border border-white/10 rounded px-2.5 py-1 text-white text-[13px] font-bold w-24 text-right outline-none hover:border-white/20 focus:border-white/30 transition-colors" spellCheck={false} />
                                 ) : (
                                     <VersionTag type="mod" version={mod.version} />
                                 )}
@@ -642,6 +641,7 @@ export default function UnifiedModLayout({
                                         onChange={(value) => updateField('gameVersion', value)}
                                         gameVersionTags={gameVersionTags}
                                         onTagsRefresh={onGameVersionTagsRefresh}
+                                        onCreateVersion={onGameVersionCreate}
                                         compact
                                     />
                                 ) : (

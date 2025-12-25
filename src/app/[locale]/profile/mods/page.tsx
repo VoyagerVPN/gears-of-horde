@@ -18,6 +18,7 @@ import Tag from "@/components/ui/Tag";
 import AuthorTag from "@/components/AuthorTag";
 import VersionTag from "@/components/VersionTag";
 import DateDisplay from "@/components/DateDisplay";
+import { useToast } from "@/components/ui/Toast";
 
 import { useTranslations } from 'next-intl';
 
@@ -27,6 +28,7 @@ type SortDirection = 'asc' | 'desc';
 export default function AdminModsPage() {
   const t = useTranslations('Admin');
   const t_common = useTranslations('Common');
+  const { showToast } = useToast();
   const [selectedMod, setSelectedMod] = useState<ModData | null>(null);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -71,7 +73,7 @@ export default function AdminModsPage() {
       setRefreshTrigger(prev => prev + 1); // Refresh list
     } catch (error) {
       console.error("Failed to update mod:", error);
-      alert("Failed to update mod");
+      showToast(t('updateModError'), 'error');
     }
   };
 
@@ -80,10 +82,10 @@ export default function AdminModsPage() {
       try {
         await deleteModAction(slug);
         setRefreshTrigger(prev => prev + 1);
-        alert(t('deleteModSuccess'));
+        showToast(t('deleteModSuccess'), 'success');
       } catch (error) {
         console.error("Failed to delete mod:", error);
-        alert(t('deleteModError'));
+        showToast(t('deleteModError'), 'error');
       }
     }
   };

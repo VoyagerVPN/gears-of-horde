@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { LucideIcon, ChevronDown } from "lucide-react";
 
-interface SimpleMultilineEditorProps {
+interface SimpleTextEditorProps {
   title: string;
   icon: LucideIcon;
   items: string[];
@@ -11,17 +11,21 @@ interface SimpleMultilineEditorProps {
   placeholder?: string;
   countLabel?: string;
   defaultExpanded?: boolean;
+  id?: string;
+  name?: string;
 }
 
-export default function SimpleMultilineEditor({
+export default function SimpleTextEditor({
   title,
   icon: Icon,
   items,
   onChange,
   placeholder = "Enter items, one per line...",
   countLabel = "items",
-  defaultExpanded = true
-}: SimpleMultilineEditorProps) {
+  defaultExpanded = true,
+  id,
+  name
+}: SimpleTextEditorProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [textValue, setTextValue] = useState(() => items.join("\n"));
   const [isFocused, setIsFocused] = useState(false);
@@ -48,7 +52,7 @@ export default function SimpleMultilineEditor({
   };
 
   return (
-    <div className="bg-surface border border-white/5 rounded-xl overflow-hidden transition-colors group focus-within:border-primary/30">
+    <div className="bg-surface border border-white/5 rounded-xl overflow-hidden transition-colors group">
       {/* ИСПРАВЛЕНО: Весь хедер теперь кнопка */}
       <button
         type="button"
@@ -72,14 +76,15 @@ export default function SimpleMultilineEditor({
       {isExpanded && (
         <div className="p-4 bg-black/20">
           <textarea
+            id={id}
+            name={name}
             rows={Math.max(6, items.length + 1)}
             value={textValue}
             onChange={handleChange}
             onFocus={() => setIsFocused(true)}
             onBlur={handleBlur}
-            className="w-full bg-transparent text-textMuted leading-relaxed text-sm outline-none resize-y placeholder:text-white/10 focus:text-white transition-colors font-mono"
+            className="w-full bg-transparent text-textMuted leading-relaxed text-sm outline-none resize-y placeholder:text-white/10 transition-colors font-mono"
             placeholder={placeholder}
-            spellCheck={false}
           />
           <p className="text-[10px] text-textMuted mt-2 italic opacity-50">
             Tip: Enter each item on a new line. Empty lines are ignored.

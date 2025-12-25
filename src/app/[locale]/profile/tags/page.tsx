@@ -10,10 +10,12 @@ import MergeTagModal from "@/components/tags/MergeTagModal";
 import CategoryEditModal from "@/components/tags/CategoryEditModal";
 import MergeCategoryModal from "@/components/tags/MergeCategoryModal";
 import Tag from "@/components/ui/Tag";
+import { useToast } from "@/components/ui/Toast";
 import { LANG_BUILTIN_COLOR } from "@/lib/tag-colors";
 
 export default function AdminTagsPage() {
     const t = useTranslations('Admin');
+    const { showToast } = useToast();
     const [tags, setTags] = useState<TagData[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedTag, setSelectedTag] = useState<TagData | null>(null);
@@ -110,7 +112,7 @@ export default function AdminTagsPage() {
                 setDeleteConfirmId(null);
             } else {
                 console.error("Failed to delete tag:", result.error);
-                alert("Failed to delete tag");
+                showToast(t('deleteTagError'), 'error');
             }
         }
     };
@@ -128,13 +130,13 @@ export default function AdminTagsPage() {
         if (selectedTag && selectedTag.id) {
             const result = await updateTag(selectedTag.id, data);
             if (!result.success) {
-                alert(`Failed to update tag: ${result.error}`);
+                showToast(`${t('updateTagError')}: ${result.error}`, 'error');
                 return;
             }
         } else {
             const result = await createTag(data);
             if (!result.success) {
-                alert(`Failed to create tag: ${result.error}`);
+                showToast(`${t('createTagError')}: ${result.error}`, 'error');
                 return;
             }
         }
@@ -153,7 +155,7 @@ export default function AdminTagsPage() {
         if (result.success) {
             setRefreshTrigger(prev => prev + 1);
         } else {
-            alert(`Failed to merge tags: ${result.error}`);
+            showToast(`${t('mergeTagsError')}: ${result.error}`, 'error');
         }
     };
 
@@ -336,6 +338,7 @@ export default function AdminTagsPage() {
                                                 variant="default"
                                                 className={`transition-none ${isConfirming ? 'border-dashed !border-red-500/50' : ''}`}
                                                 color={tag.category === 'lang' ? LANG_BUILTIN_COLOR : (tag.color || undefined)}
+                                                category={tag.category ?? category}
                                                 showIcon={true}
                                                 onContentClick={() => handleEditTag(tag)}
                                                 actions={tagActions}

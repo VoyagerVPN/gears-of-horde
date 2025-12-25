@@ -246,10 +246,12 @@ export default function FeedbackSection({ locale = 'en' }: { locale?: 'en' | 'ru
 
           <div className="flex-1">
             <textarea
+              id="feedback-input"
+              name="feedbackContent"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder={userRating > 0 ? t('writeReviewPlaceholder') : t('writeCommentPlaceholder')}
-              className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-sm text-white placeholder:text-textMuted/50 focus:outline-none focus:border-primary/50 focus:bg-black/40 transition-all min-h-[100px] resize-y"
+              className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-sm text-white placeholder:text-textMuted/50 outline-none hover:border-white/20 focus:border-white/30 focus:bg-black/30 transition-all min-h-[100px] resize-y"
             />
 
             <div className="flex flex-wrap items-center justify-between mt-3 gap-4">

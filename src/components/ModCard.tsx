@@ -2,6 +2,7 @@
 
 import { Link } from "@/i18n/routing";
 import { useTranslations } from 'next-intl';
+import Image from "next/image";
 import { Star, Download, Calendar, Eye } from "lucide-react";
 import DateDisplay from "@/components/DateDisplay";
 import VersionTag from "@/components/VersionTag";
@@ -55,10 +56,12 @@ export default function ModCard({
           style={{ aspectRatio: '1000 / 219' }}
         >
           {bannerUrl ? (
-            <img
+            <Image
               src={bannerUrl}
               alt={title}
-              className="absolute inset-0 w-full h-full object-cover"
+              fill
+              className="object-cover"
+              sizes="(max-width: 640px) 100vw, 384px"
             />
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900" />

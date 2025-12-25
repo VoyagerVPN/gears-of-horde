@@ -106,6 +106,8 @@
         "modTitle": "Название мода",
         "authorName": "Имя автора",
         "aboutThisMod": "О моде",
+        "description": "Описание",
+        "bannerUrl": "URL баннера",
         "writeDescriptionPlaceholder": "Напишите подробное описание здесь...",
         "media": "Медиа",
         "watchTrailer": "Смотреть трейлер",
@@ -140,6 +142,8 @@
         "name": "Название",
         "url": "URL",
         "noLinksAdded": "Ссылки не добавлены",
+        "availableVersions": "Доступные версии",
+        "addVersion": "Добавить версию",
         "localizations": "Доступные языки",
         "community": "Сообщество",
         "supportCreator": "Поддержать мод",
@@ -172,6 +176,7 @@
         "createTag": "Создать тег",
         "popularTags": "Популярные теги",
         "noTagsFound": "Теги не найдены",
+        "searchingFor": "Поиск",
         "searchAuthors": "Поиск или добавление авторов...",
         "invalidUrl": "Неверный URL",
         "remove": "Удалить",
@@ -182,7 +187,30 @@
         "external": "Внешний",
         "slugInvalid": "Slug может содержать только латинские буквы, цифры и дефис",
         "tagTooLong": "Тег слишком длинный (макс. 25 символов)",
-        "maxAuthors": "Максимум 5 авторов на мод"
+        "maxAuthors": "Максимум 5 авторов на мод",
+        "signIn": "Войти",
+        "signOut": "Выйти",
+        "addNewVersion": "Добавить версию",
+        "showPreviousVersions": "Показать предыдущие версии",
+        "hideHistory": "Скрыть историю",
+        "expand": "Развернуть",
+        "collapse": "Свернуть",
+        "mustPickDateBeforeNewVersion": "Сначала выберите дату выпуска для текущей версии.",
+        "uploadBanner": "Загрузить баннер",
+        "dropOrClick": "Перетащите или нажмите для загрузки",
+        "cropImage": "Обрезать изображение",
+        "zoom": "Масштаб",
+        "cancel": "Отмена",
+        "confirm": "Подтвердить",
+        "uploading": "Загрузка...",
+        "bannerUploaded": "Баннер успешно загружен!",
+        "uploadFailed": "Ошибка загрузки. Попробуйте ещё раз.",
+        "invalidFileType": "Неверный тип файла. Используйте JPG, PNG или WebP.",
+        "fileTooLarge": "Файл слишком большой. Максимальный размер 4.5МБ.",
+        "screenshotsUploaded": "Загружено скриншотов: {count}!",
+        "dropHere": "Отпустите здесь",
+        "maxScreenshotsReached": "Максимум 10 скриншотов.",
+        "someShotsSkipped": "Пропущено {count} скриншот(ов) (максимум 10)."
     },
     "Admin": {
         "pendingTranslations": "Ожидающие переводы",
@@ -299,7 +327,24 @@
         "newsManagement": "Новости",
         "editNews": "Редактировать новость",
         "deleteNewsConfirm": "Вы уверены, что хотите удалить эту новость?",
-        "noNewsFound": "Новости не найдены"
+        "noNewsFound": "Новости не найдены",
+        "modCreatedSuccess": "Мод успешно создан!",
+        "modCreateFailed": "Не удалось создать мод",
+        "modUpdatedSuccess": "Мод успешно обновлён!",
+        "saveError": "Произошла ошибка при сохранении.",
+        "updateModError": "Не удалось обновить мод",
+        "deleteTagError": "Не удалось удалить тег",
+        "updateTagError": "Не удалось обновить тег",
+        "createTagError": "Не удалось создать тег",
+        "mergeTagsError": "Не удалось объединить теги",
+        "validationErrors": {
+            "Author is required": "Необходимо указать автора",
+            "Title is required": "Необходимо указать название",
+            "Slug is required": "Необходимо указать slug",
+            "Version is required": "Необходимо указать версию",
+            "Game version is required": "Необходимо указать версию игры",
+            "Date is required": "Необходимо указать дату"
+        }
     },
     "ModCard": {
         "by": "от",
@@ -449,5 +494,13 @@
         "benefit2": "Получай уведомления о новых версиях",
         "benefit3": "Оценивай моды и оставляй отзывы",
         "close": "Закрыть"
+    },
+    "Accessibility": {
+        "skipToContent": "Перейти к основному содержимому.",
+        "mainNavigation": "Главная навигация",
+        "openMenu": "Открыть меню",
+        "closeMenu": "Закрыть меню",
+        "searchSuggestions": "Предложения поиска",
+        "removeTag": "Удалить {tag}"
     }
 }

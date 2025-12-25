@@ -3,6 +3,7 @@ import { Exo_2 } from "next/font/google";
 import "../globals.css";
 import Navbar from "@/components/Navbar";
 import Providers from "@/components/Providers";
+import SkipLink from "@/components/SkipLink";
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 
@@ -63,8 +64,9 @@ export default async function RootLayout({
       <body className={`${exo2.className} antialiased bg-[#191919] text-[#ededed]`} suppressHydrationWarning={true}>
         <Providers>
           <NextIntlClientProvider messages={messages}>
+            <SkipLink />
             <Navbar />
-            <main className="min-h-screen pb-20">
+            <main id="main-content" className="min-h-screen pb-20" tabIndex={-1}>
               {children}
             </main>
           </NextIntlClientProvider>

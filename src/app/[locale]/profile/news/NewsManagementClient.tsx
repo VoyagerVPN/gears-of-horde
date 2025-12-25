@@ -127,7 +127,7 @@ export default function NewsManagementClient({ initialNews }: NewsManagementClie
 
                                 {/* Description/Content Preview */}
                                 {(item.description || item.content) && (
-                                    <p className="text-xs text-textMuted line-clamp-2 mb-2">
+                                    <p className="text-xs text-textMuted line-clamp-2 mb-2 leading-relaxed">
                                         {item.description || item.content}
                                     </p>
                                 )}

@@ -14,6 +14,7 @@ import {
     DialogAlert,
     dialogSelectClass,
 } from "@/components/ui/Dialog";
+import { useToast } from "@/components/ui/Toast";
 
 interface MergeTagModalProps {
     isOpen: boolean;
@@ -26,6 +27,7 @@ interface MergeTagModalProps {
 export default function MergeTagModal({ isOpen, onClose, sourceTag, allTags, onMerge }: MergeTagModalProps) {
     const [targetId, setTargetId] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { showToast } = useToast();
 
     if (!sourceTag) return null;
 
@@ -41,7 +43,7 @@ export default function MergeTagModal({ isOpen, onClose, sourceTag, allTags, onM
             onClose();
         } catch (error) {
             console.error("Failed to merge tags:", error);
-            alert("Failed to merge tags");
+            showToast("Failed to merge tags", "error");
         } finally {
             setIsSubmitting(false);
         }
