@@ -6,6 +6,7 @@ import Providers from "@/components/Providers";
 import SkipLink from "@/components/SkipLink";
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
+import { Analytics } from "@vercel/analytics/next";
 
 // Настройка основного шрифта Exo 2
 const exo2 = Exo_2({
@@ -71,6 +72,7 @@ export default async function RootLayout({
             </main>
           </NextIntlClientProvider>
         </Providers>
+        <Analytics />
       </body>
     </html>
   );
