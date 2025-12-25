@@ -137,7 +137,7 @@ export default function RichTextEditor({
                     "[&_strong]:text-white [&_strong]:font-bold",
                     "[&_em]:italic"
                 ),
-                id: id || undefined,
+                id: id ?? "",
                 "data-placeholder": placeholder,
             },
             // Custom paste handler for markdown conversion

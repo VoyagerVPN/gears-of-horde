@@ -135,8 +135,7 @@ export default function UpdateModModal({
   };
 
   const handleChangesChange = (html: string) => {
-    const lines = htmlToArray(html);
-    setFormData(prev => ({ ...prev, changes: lines }));
+    setFormData(prev => ({ ...prev, changes: [html] }));
   };
 
   const currentStatusConfig = STATUS_OPTIONS.find(o => o.value === formData.status);
@@ -293,7 +292,7 @@ export default function UpdateModModal({
             <RichTextEditor
               id="changelog"
               name="changes"
-              value={arrayToHtml(formData.changes)}
+              value={formData.changes.length === 1 ? formData.changes[0] : formData.changes.join("")}
               onChange={handleChangesChange}
               placeholder={t_modal('changelogPlaceholder')}
               minHeight="100px"
