@@ -561,7 +561,22 @@ export async function getUserProfileStats() {
             image: true,
             bio: true,
             role: true,
+            isProfilePublic: true,
+            profileViews: true,
             createdAt: true,
+            socialLinks: {
+                select: {
+                    id: true,
+                    platform: true,
+                    url: true
+                }
+            },
+            badges: {
+                include: {
+                    badge: true
+                },
+                orderBy: { earnedAt: 'desc' }
+            }
         }
     })
 
@@ -584,8 +599,24 @@ export async function getUserProfileStats() {
     const commentLikes = 0
 
     return {
-        ...user,
+        id: user.id,
+        name: user.name,
+        image: user.image,
+        bio: user.bio,
+        role: user.role,
+        isProfilePublic: user.isProfilePublic,
+        profileViews: user.profileViews,
         createdAt: user.createdAt.toISOString(),
+        socialLinks: user.socialLinks,
+        badges: user.badges.map(ub => ({
+            id: ub.badge.id,
+            slug: ub.badge.slug,
+            name: ub.badge.name,
+            icon: ub.badge.icon,
+            description: ub.badge.description,
+            rarity: ub.badge.rarity,
+            earnedAt: ub.earnedAt.toISOString()
+        })),
         stats: {
             totalDownloads,
             modsCount,
@@ -622,3 +653,222 @@ export async function updateUserBio(rawData: unknown): Promise<Result<{ bio: str
     }
 }
 
+// ============ SOCIAL LINKS ============
+
+const SUPPORTED_PLATFORMS = ['discord', 'steam', 'youtube', 'twitch', 'github', 'boosty'] as const
+type Platform = typeof SUPPORTED_PLATFORMS[number]
+
+interface SocialLinkInput {
+    platform: string
+    url: string
+}
+
+export async function updateSocialLinks(links: SocialLinkInput[]): Promise<Result<{ count: number }>> {
+    const session = await auth()
+    if (!session?.user?.id) {
+        return err("Not authenticated")
+    }
+
+    // Validate platforms
+    const validLinks = links.filter(link =>
+        SUPPORTED_PLATFORMS.includes(link.platform as Platform) &&
+        link.url.trim().length > 0
+    )
+
+    try {
+        // Delete existing links
+        await db.userSocialLink.deleteMany({
+            where: { userId: session.user.id }
+        })
+
+        // Create new links
+        if (validLinks.length > 0) {
+            await db.userSocialLink.createMany({
+                data: validLinks.map(link => ({
+                    userId: session.user.id,
+                    platform: link.platform,
+                    url: link.url.trim()
+                }))
+            })
+        }
+
+        revalidatePath('/profile')
+        return ok({ count: validLinks.length })
+    } catch (error) {
+        console.error("Failed to update social links:", error)
+        return err("Failed to update social links")
+    }
+}
+
+export async function deleteSocialLink(platform: string): Promise<Result<{ deleted: boolean }>> {
+    const session = await auth()
+    if (!session?.user?.id) {
+        return err("Not authenticated")
+    }
+
+    try {
+        await db.userSocialLink.deleteMany({
+            where: {
+                userId: session.user.id,
+                platform
+            }
+        })
+
+        revalidatePath('/profile')
+        return ok({ deleted: true })
+    } catch (error) {
+        console.error("Failed to delete social link:", error)
+        return err("Failed to delete social link")
+    }
+}
+
+// ============ PROFILE VISIBILITY ============
+
+export async function toggleProfileVisibility(): Promise<Result<{ isPublic: boolean }>> {
+    const session = await auth()
+    if (!session?.user?.id) {
+        return err("Not authenticated")
+    }
+
+    try {
+        const user = await db.user.findUnique({
+            where: { id: session.user.id },
+            select: { isProfilePublic: true }
+        })
+
+        if (!user) {
+            return err("User not found")
+        }
+
+        const newVisibility = !user.isProfilePublic
+
+        await db.user.update({
+            where: { id: session.user.id },
+            data: { isProfilePublic: newVisibility }
+        })
+
+        revalidatePath('/profile')
+        return ok({ isPublic: newVisibility })
+    } catch (error) {
+        console.error("Failed to toggle profile visibility:", error)
+        return err("Failed to update visibility")
+    }
+}
+
+// ============ PROFILE VIEW TRACKING ============
+
+const PROFILE_VIEW_COOLDOWN_HOURS = 24
+
+export async function recordProfileView(viewedUserId: string): Promise<{ recorded: boolean }> {
+    const session = await auth()
+    const viewerId = session?.user?.id || null
+
+    // Don't track self-views
+    if (viewerId === viewedUserId) {
+        return { recorded: false }
+    }
+
+    const cooldownDate = new Date()
+    cooldownDate.setHours(cooldownDate.getHours() - PROFILE_VIEW_COOLDOWN_HOURS)
+
+    try {
+        // Check for recent view from this viewer
+        const existingView = viewerId
+            ? await db.profileView.findFirst({
+                where: {
+                    viewerId,
+                    viewedId: viewedUserId,
+                    viewedAt: { gte: cooldownDate }
+                }
+            })
+            : null
+
+        // For anonymous viewers, use IP hashing (already have helper)
+        const shouldRecord = !existingView
+
+        if (shouldRecord) {
+            // Record the view
+            await db.profileView.create({
+                data: {
+                    viewerId,
+                    viewedId: viewedUserId
+                }
+            })
+
+            // Increment the profile view counter
+            await db.user.update({
+                where: { id: viewedUserId },
+                data: {
+                    profileViews: { increment: 1 }
+                }
+            })
+        }
+
+        return { recorded: shouldRecord }
+    } catch (error) {
+        console.error("Failed to record profile view:", error)
+        return { recorded: false }
+    }
+}
+
+// ============ RECENT ACTIVITY ============
+
+interface ActivityItem {
+    type: 'mod_published' | 'mod_updated' | 'badge_earned'
+    title: string
+    slug?: string
+    timestamp: string
+}
+
+export async function getRecentActivity(): Promise<ActivityItem[]> {
+    const session = await auth()
+    if (!session?.user?.id) return []
+
+    const activities: ActivityItem[] = []
+
+    // Get recent mod updates/creates
+    const recentMods = await db.mod.findMany({
+        where: { authorId: session.user.id },
+        select: {
+            slug: true,
+            title: true,
+            createdAt: true,
+            updatedAt: true
+        },
+        orderBy: { updatedAt: 'desc' },
+        take: 5
+    })
+
+    for (const mod of recentMods) {
+        // Check if it was recently created (within 1 minute of updated = new)
+        const isNew = Math.abs(mod.createdAt.getTime() - mod.updatedAt.getTime()) < 60000
+
+        activities.push({
+            type: isNew ? 'mod_published' : 'mod_updated',
+            title: mod.title,
+            slug: mod.slug,
+            timestamp: mod.updatedAt.toISOString()
+        })
+    }
+
+    // Get recent badges
+    const recentBadges = await db.userBadge.findMany({
+        where: { userId: session.user.id },
+        include: { badge: true },
+        orderBy: { earnedAt: 'desc' },
+        take: 3
+    })
+
+    for (const ub of recentBadges) {
+        activities.push({
+            type: 'badge_earned',
+            title: ub.badge.name,
+            timestamp: ub.earnedAt.toISOString()
+        })
+    }
+
+    // Sort by timestamp and take top 10
+    return activities
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, 10)
+}

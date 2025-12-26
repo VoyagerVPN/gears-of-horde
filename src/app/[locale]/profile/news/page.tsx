@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { fetchAllNews, deleteNews } from "@/app/actions/news-actions";
 import NewsManagementClient from "./NewsManagementClient";
+import UnifiedTopBar from "@/components/ui/UnifiedTopBar";
 
 export default async function NewsManagementPage() {
     // Auth protection - ADMIN only
@@ -21,11 +22,11 @@ export default async function NewsManagementPage() {
 
     return (
         <div className="max-w-6xl">
-            <h1 className="text-2xl font-bold text-white font-exo2 uppercase tracking-wide mb-6">
-                {t("newsManagement")}
-            </h1>
+            <UnifiedTopBar title={t("newsManagement")} />
 
-            <NewsManagementClient initialNews={news} />
+            <div className="px-6 lg:px-8">
+                <NewsManagementClient initialNews={news} />
+            </div>
         </div>
     );
 }

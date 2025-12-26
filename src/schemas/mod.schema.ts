@@ -100,13 +100,19 @@ export const ModDataSchema = z.object({
         .regex(/^[a-z0-9-]+$/, "Slug can only contain Latin letters, numbers, and hyphens"),
     version: z.string().min(1, "Version is required"),
     author: z.string().min(1, "Author is required"),
-    description: z.string().default(""),
+    description: z.string().refine(
+        (val) => val.trim().split(/\s+/).filter(word => word.length > 0).length >= 5,
+        "Description must contain at least 5 words"
+    ),
     status: ModStatusSchema.default('active'),
     gameVersion: z.string().min(1, "Game version is required"),
-    bannerUrl: z.string().url("Invalid banner URL").optional().or(z.literal('')),
+    bannerUrl: z.string().min(1, "Banner is required").url("Invalid banner URL"),
     isSaveBreaking: z.boolean().default(false),
     features: z.array(z.string()).default([]),
-    tags: z.array(TagDataSchema).default([]),
+    tags: z.array(TagDataSchema).refine(
+        (tags) => tags.filter(t => t.category !== 'lang' && t.category !== 'author' && t.category !== 'gamever').length >= 1,
+        "At least one tag is required"
+    ),
     installationSteps: z.array(z.string()).default([]),
     links: ModLinksSchema.default({
         download: '',
@@ -121,7 +127,7 @@ export const ModDataSchema = z.object({
         views: "0"
     }),
     videos: ModVideosSchema.default({ trailer: '', review: '' }),
-    screenshots: z.array(z.string().url("Invalid screenshot URL")).default([]),
+    screenshots: z.array(z.string().url("Invalid screenshot URL")).min(1, "At least one screenshot is required"),
     changelog: z.array(ModChangelogSchema).default([]),
     localizations: z.array(ModLocalizationSchema).default([]),
     createdAt: z.string().optional(),

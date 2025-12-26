@@ -236,10 +236,10 @@ const DialogField = React.forwardRef<HTMLDivElement, DialogFieldProps>(
 DialogField.displayName = "DialogField";
 
 // Input style helper (use as className)
-const dialogInputClass = "w-full bg-black/20 border border-white/10 rounded-lg py-2.5 px-4 text-sm text-white placeholder:text-textMuted/40 hover:border-white/20 focus:border-white/30 outline-none transition-colors";
+const dialogInputClass = "w-full bg-black/20 border border-white/10 rounded-md py-2.5 px-4 text-sm text-white placeholder:text-textMuted/40 hover:border-white/20 focus:border-white/30 outline-none transition-colors";
 
 // Select style helper
-const dialogSelectClass = "w-full bg-black/20 border border-white/10 rounded-lg py-2.5 px-4 text-sm text-white hover:border-white/20 focus:border-white/30 outline-none transition-colors appearance-none cursor-pointer";
+const dialogSelectClass = "w-full bg-black/20 border border-white/10 rounded-md py-2.5 px-4 text-sm text-white hover:border-white/20 focus:border-white/30 outline-none transition-colors appearance-none cursor-pointer";
 
 // ============================================================================
 // ALERT BOXES

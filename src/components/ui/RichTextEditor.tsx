@@ -2,9 +2,11 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { Bold, Italic, Heading1, List } from "lucide-react";
-import { useEffect, useCallback } from "react";
+import Placeholder from "@tiptap/extension-placeholder";
+import { Bold, Italic, Heading1, List, LucideIcon } from "lucide-react";
+import { useEffect, useCallback, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { INVALID_INPUT_STYLE } from "@/lib/constants/ui-constants";
 
 interface RichTextEditorProps {
     value: string;
@@ -14,6 +16,11 @@ interface RichTextEditorProps {
     minHeight?: string;
     id?: string;
     name?: string;
+    invalid?: boolean;
+    onClear?: () => void;
+    variant?: "contained" | "seamless";
+    label?: string;
+    icon?: LucideIcon;
 }
 // Tiptap JSON content types
 type TiptapNode = {
@@ -111,6 +118,11 @@ export default function RichTextEditor({
     minHeight = "100px",
     id,
     name,
+    invalid,
+    onClear,
+    variant = "contained",
+    label,
+    icon: Icon
 }: RichTextEditorProps) {
     const editor = useEditor({
         extensions: [
@@ -118,6 +130,10 @@ export default function RichTextEditor({
                 heading: {
                     levels: [1, 2, 3],
                 },
+            }),
+            Placeholder.configure({
+                placeholder: placeholder || '',
+                emptyEditorClass: 'is-editor-empty',
             }),
         ],
         content: value,
@@ -160,6 +176,10 @@ export default function RichTextEditor({
         },
         onUpdate: ({ editor }) => {
             onChange(editor.getHTML());
+            onClear?.();
+        },
+        onFocus: () => {
+            onClear?.();
         },
         immediatelyRender: false,
     });
@@ -187,11 +207,15 @@ export default function RichTextEditor({
         editor?.chain().focus().toggleBulletList().run();
     }, [editor]);
 
+    const focusEditor = useCallback(() => {
+        editor?.chain().focus().run();
+    }, [editor]);
+
     if (!editor) {
         return (
             <div
                 className={cn(
-                    "bg-black/20 rounded-lg border border-white/5 animate-pulse",
+                    "bg-black/20 rounded-xl border border-white/5 animate-pulse",
                     className
                 )}
                 style={{ minHeight }}
@@ -199,15 +223,12 @@ export default function RichTextEditor({
         );
     }
 
-    return (
-        <div
-            className={cn(
-                "bg-black/20 rounded-lg border border-white/5 overflow-hidden",
-                className
-            )}
-        >
-            {/* Compact Toolbar */}
-            <div className="flex items-center gap-1 p-2 border-b border-white/5 bg-black/10">
+    const toolbar = (
+        <div className={cn(
+            "flex items-center gap-1",
+            label ? "ml-4 border-l border-white/5 pl-4" : (variant === "contained" ? "p-1.5 bg-white/[0.02] border-b border-white/5" : "mb-1 px-0")
+        )}>
+            <div className="flex bg-white/5 rounded-lg p-0.5 border border-white/5 gap-0.5">
                 <ToolbarButton
                     onClick={toggleBold}
                     isActive={editor.isActive("bold")}
@@ -222,7 +243,9 @@ export default function RichTextEditor({
                 >
                     <Italic size={14} />
                 </ToolbarButton>
-                <div className="w-px h-4 bg-white/10 mx-1" />
+            </div>
+
+            <div className="flex bg-white/5 rounded-lg p-0.5 border border-white/5 gap-0.5">
                 <ToolbarButton
                     onClick={toggleHeading}
                     isActive={editor.isActive("heading", { level: 1 })}
@@ -238,22 +261,97 @@ export default function RichTextEditor({
                     <List size={14} />
                 </ToolbarButton>
             </div>
+        </div>
+    );
+
+    // Card Layout (mimics SimpleTextEditor)
+    if (label) {
+        return (
+            <div className={cn(
+                "bg-surface border border-white/5 rounded-xl overflow-hidden transition-colors group",
+                invalid ? "border-red-500/50" : "",
+                className
+            )}>
+                {/* Header */}
+                <div className="w-full flex items-center justify-start p-4 bg-white/[0.02] border-b border-white/5">
+                    <div className="flex items-center gap-2">
+                        {Icon && <Icon size={20} className="text-primary" />}
+                        <h2 className="text-lg font-bold text-white font-exo2 uppercase tracking-wide">
+                            {label}
+                        </h2>
+                    </div>
+                    {/* Toolbar in Header */}
+                    {toolbar}
+                </div>
+
+                {/* Content */}
+                <div
+                    className="p-4 bg-black/20 cursor-text min-h-[150px] text-sm text-textMuted leading-relaxed flex flex-col"
+                    onClick={focusEditor}
+                >
+                    <EditorContent editor={editor} className="flex-1" />
+                    {name && <input type="hidden" name={name} value={editor.getHTML()} />}
+                </div>
+
+                <style jsx global>{`
+                    .ProseMirror p.is-editor-empty:first-child::before {
+                        content: attr(data-placeholder);
+                        float: left;
+                        color: rgba(255, 255, 255, 0.2);
+                        pointer-events: none;
+                        height: 0;
+                    }
+                    .ProseMirror:focus {
+                        outline: none;
+                    }
+                    .ProseMirror {
+                        min-height: 100%;
+                        height: 100%;
+                    }
+                    .tiptap {
+                        height: 100%;
+                    }
+                `}</style>
+            </div>
+        );
+    }
+
+    // Default Layout (Contained/Seamless)
+    return (
+        <div
+            className={cn(
+                "overflow-hidden transition-all flex flex-col",
+                variant === "contained" && "rounded-xl border border-white/5 bg-black/20",
+                variant === "seamless" && "",
+                invalid ? INVALID_INPUT_STYLE : "",
+                className
+            )}
+        >
+            {/* Toolbar */}
+            {toolbar}
 
             {/* Editor Content */}
-            <div className="p-3" style={{ minHeight }}>
-                <EditorContent editor={editor} />
-                {/* Hidden input for form submission */}
-                {name && (
-                    <input type="hidden" name={name} value={editor.getHTML()} />
+            <div
+                className={cn(
+                    "p-4 cursor-text transition-colors flex-1 min-h-[inherit] text-sm text-textMuted leading-relaxed",
+                    variant === "seamless" ? "bg-black/20 rounded-xl border border-white/5 hover:border-white/10" : ""
                 )}
+                style={{ minHeight }}
+                onClick={focusEditor}
+            >
+                <EditorContent editor={editor} />
+                {name && <input type="hidden" name={name} value={editor.getHTML()} />}
             </div>
 
             {/* Placeholder styling */}
             <style jsx global>{`
+        .ProseMirror {
+            min-height: 100%;
+        }
         .ProseMirror p.is-editor-empty:first-child::before {
           content: attr(data-placeholder);
           float: left;
-          color: rgba(255, 255, 255, 0.1);
+          color: rgba(255, 255, 255, 0.2);
           pointer-events: none;
           height: 0;
         }
@@ -279,10 +377,10 @@ function ToolbarButton({ onClick, isActive, title, children }: ToolbarButtonProp
             onClick={onClick}
             title={title}
             className={cn(
-                "p-1.5 rounded transition-colors",
+                "p-1.5 rounded-md transition-all",
                 isActive
-                    ? "text-white bg-white/10"
-                    : "text-textMuted hover:text-white hover:bg-white/10"
+                    ? "text-white bg-white/10 shadow-sm"
+                    : "text-textMuted hover:text-white hover:bg-white/5"
             )}
         >
             {children}

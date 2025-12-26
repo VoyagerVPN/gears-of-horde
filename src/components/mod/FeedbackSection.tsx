@@ -130,7 +130,7 @@ export default function FeedbackSection({ locale = 'en' }: { locale?: 'en' | 'ru
 
       stars.push(
         <div key={i} className="relative transition-transform hover:scale-110 w-6 h-6">
-          <Star size={24} className="text-white/20 absolute top-0 left-0" />
+          <Star size={24} className="text-white opacity-20 absolute top-0 left-0" />
           <div
             className="absolute top-0 left-0 overflow-hidden transition-all"
             style={{ width: isFull ? '100%' : isHalf ? '50%' : '0%' }}

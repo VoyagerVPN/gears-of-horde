@@ -12,12 +12,16 @@ const MAX_SCREENSHOTS = 10;
 interface ScreenshotDropzoneProps {
     currentCount: number; // Current number of screenshots
     onUploadComplete: (urls: string[]) => void;
+    invalid?: boolean;
+    onClear?: () => void;
 }
 
 // Local compressToWebP removed in favor of shared utility
 import { compressImage } from '@/lib/imageCompression';
+import { cn } from '@/lib/utils';
+import { INVALID_INPUT_STYLE } from '@/lib/constants/ui-constants';
 
-export default function ScreenshotDropzone({ currentCount, onUploadComplete }: ScreenshotDropzoneProps) {
+export default function ScreenshotDropzone({ currentCount, onUploadComplete, invalid, onClear }: ScreenshotDropzoneProps) {
     const t = useTranslations('Common');
     const { showToast } = useToast();
     const inputRef = useRef<HTMLInputElement>(null);
@@ -142,34 +146,54 @@ export default function ScreenshotDropzone({ currentCount, onUploadComplete }: S
             />
 
             <div
-                onClick={() => !isUploading && inputRef.current?.click()}
-                onDrop={handleDrop}
+                onClick={() => {
+                    if (!isUploading) {
+                        inputRef.current?.click();
+                        onClear?.();
+                    }
+                }}
+                onDrop={(e) => {
+                    handleDrop(e);
+                    onClear?.();
+                }}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
-                className={`flex-shrink-0 w-48 aspect-[16/9] border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-1 cursor-pointer transition-all group ${isDragging
-                    ? 'border-primary bg-primary/10'
-                    : 'border-white/10 hover:border-primary/50 hover:bg-primary/5'
-                    }`}
+                className={cn(
+                    "flex-shrink-0 w-48 aspect-[16/9] border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-1 cursor-pointer transition-all group",
+                    isDragging ? 'border-primary bg-primary/10' : 'border-white/10 hover:border-primary/50 hover:bg-primary/5',
+                    invalid ? "!border-red-500/50 shadow-[0_0_10px_-2px_rgba(239,68,68,0.2)]" : ""
+                )}
             >
                 {isUploading ? (
                     <>
-                        <Loader2 size={24} className="text-primary animate-spin" />
-                        <span className="text-xs text-primary font-bold uppercase tracking-wider font-exo2">
+                        <Loader2 size={24} className="text-primary animate-spin pointer-events-none" />
+                        <span className="text-xs text-primary font-bold uppercase tracking-wider font-exo2 pointer-events-none">
                             {uploadProgress}%
                         </span>
                     </>
                 ) : (
                     <>
-                        {isDragging ? (
-                            <Upload size={24} className="text-primary transition-colors" />
-                        ) : (
-                            <Plus size={24} className="text-white/20 group-hover:text-primary transition-colors" />
-                        )}
-                        <span className="text-xs text-textMuted group-hover:text-white transition-colors uppercase font-bold font-exo2">
+                        <div className="relative w-6 h-6 mb-1 pointer-events-none">
+                            <Plus
+                                size={24}
+                                className={cn(
+                                    "absolute inset-0 transition-all duration-150 pointer-events-none",
+                                    isDragging ? "opacity-0 scale-50 rotate-90" : "text-textMuted opacity-40 group-hover:opacity-100 group-hover:text-primary scale-100 rotate-0"
+                                )}
+                            />
+                            <Upload
+                                size={24}
+                                className={cn(
+                                    "absolute inset-0 transition-all duration-150 pointer-events-none text-primary",
+                                    isDragging ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-50 -translate-y-2"
+                                )}
+                            />
+                        </div>
+                        <span className="text-xs text-textMuted group-hover:text-white transition-colors uppercase font-bold font-exo2 pointer-events-none">
                             {isDragging ? t('dropHere') : t('add')}
                         </span>
-                        <span className="text-[10px] text-white/30 font-mono">
-                            {remainingSlots}/{MAX_SCREENSHOTS}
+                        <span className="text-[10px] text-white/30 font-mono pointer-events-none">
+                            {currentCount}/{MAX_SCREENSHOTS}
                         </span>
                     </>
                 )}

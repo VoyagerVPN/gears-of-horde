@@ -31,7 +31,7 @@ export default async function AuthorPage({ searchParams }: PageProps) {
                 author: submission.author,
                 description: submission.description,
                 gameVersion: submission.gameVersion,
-                bannerUrl: submission.bannerUrl,
+                bannerUrl: submission.bannerUrl || '',
                 isSaveBreaking: submission.isSaveBreaking,
                 features: submission.features,
                 installationSteps: submission.installationSteps,

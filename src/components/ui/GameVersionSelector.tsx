@@ -5,7 +5,8 @@ import { ChevronDown, Plus, Gamepad2, Loader2, Check } from "lucide-react";
 import * as Select from "@radix-ui/react-select";
 import { TagData } from "@/types/mod";
 import { getTagColor } from "@/lib/tag-colors";
-import { normalizeGameVersion, compareGameVersions } from "@/lib/utils";
+import { normalizeGameVersion, compareGameVersions, cn } from "@/lib/utils";
+import { INVALID_INPUT_STYLE } from "@/lib/constants/ui-constants";
 import { useTranslations } from "next-intl";
 
 interface GameVersionSelectorProps {
@@ -18,6 +19,8 @@ interface GameVersionSelectorProps {
     currentVersion?: string;
     /** Optional: Use compact size for inline usage in specs panel */
     compact?: boolean;
+    invalid?: boolean;
+    onClear?: () => void;
 }
 
 /**
@@ -32,7 +35,9 @@ export default function GameVersionSelector({
     onTagsRefresh,
     onCreateVersion,
     currentVersion,
-    compact = false
+    compact = false,
+    invalid,
+    onClear
 }: GameVersionSelectorProps) {
     const t = useTranslations('Common');
 
@@ -112,17 +117,16 @@ export default function GameVersionSelector({
     };
 
     return (
-        <Select.Root value={value} onValueChange={onChange} name="gameVersion">
+        <Select.Root value={value} onValueChange={(v) => { onChange(v); onClear?.(); }} name="gameVersion">
             <Select.Trigger
-                className={`
-                    flex items-center justify-between text-white outline-none group
-                    bg-surface border border-white/10 hover:border-white/20 hover:bg-white/5
-                    hover:border-white/20 focus:border-white/30 transition-all duration-200
-                    ${compact
-                        ? 'min-w-[90px] h-[32px] px-2.5 rounded-lg text-xs'
-                        : 'w-full h-[46px] px-4 rounded-xl text-sm shadow-sm'
-                    }
-                `}
+                onFocus={() => onClear?.()}
+                className={cn(
+                    "flex items-center justify-between text-white outline-none group bg-surface border transition-all duration-200",
+                    invalid ? INVALID_INPUT_STYLE : "border-white/10 hover:border-white/20 hover:bg-white/5 focus:border-white/30",
+                    compact
+                        ? 'min-w-[90px] h-[32px] px-2.5 rounded-md text-xs'
+                        : 'w-full h-[46px] px-4 rounded-md text-sm shadow-sm'
+                )}
             >
                 <Select.Value asChild>
                     <div className="flex items-center gap-2.5">

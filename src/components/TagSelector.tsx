@@ -5,6 +5,7 @@ import { Search, X, Plus, Tag as TagIcon, TrendingUp, Check, CircleUser } from '
 import { searchTags, fetchPopularTags, TagData } from '@/app/actions/tag-actions';
 import Tag from '@/components/ui/Tag';
 import { cn } from '@/lib/utils';
+import { INVALID_INPUT_STYLE, STANDARD_INPUT_STYLE } from "@/lib/constants/ui-constants";
 import { useTranslations } from 'next-intl';
 
 interface TagSelectorProps {
@@ -24,6 +25,10 @@ interface TagSelectorProps {
     className?: string;
     /** Hide the list of selected tags (useful if parent renders them differently) */
     hideSelectedTags?: boolean;
+    invalid?: boolean;
+    onClear?: () => void;
+    /** Compact pill-sized mode for inline use */
+    compact?: boolean;
 }
 
 export default function TagSelector({
@@ -34,7 +39,10 @@ export default function TagSelector({
     showPopular = true,
     maxTags,
     className,
-    hideSelectedTags = false
+    hideSelectedTags = false,
+    invalid,
+    onClear,
+    compact = false
 }: TagSelectorProps) {
     const t = useTranslations('Common');
     const [query, setQuery] = useState('');
@@ -169,11 +177,21 @@ export default function TagSelector({
         <div className={cn("space-y-2", className)} ref={dropdownRef}>
             {/* Input ... (same) */}
             <div className="relative">
-                <div className="relative flex items-center">
+                <div
+                    className={cn(
+                        "flex flex-wrap items-center border rounded-md transition-all",
+                        compact ? "gap-1 px-2 py-1 bg-white/5" : "gap-2 px-3 py-1.5 bg-black/40 min-h-[38px]",
+                        invalid ? INVALID_INPUT_STYLE : "border-white/10 hover:border-white/20 focus-within:border-white/30"
+                    )}
+                    onClick={() => {
+                        inputRef.current?.focus();
+                        onClear?.();
+                    }}
+                >
                     {category === 'author' ? (
-                        <CircleUser size={14} className="absolute left-3 text-cyan-400 pointer-events-none" />
+                        <CircleUser size={14} className="text-cyan-400 pointer-events-none" />
                     ) : (
-                        <Search size={14} className="absolute left-3 text-textMuted pointer-events-none" />
+                        <Search size={14} className="text-textMuted pointer-events-none" />
                     )}
                     <input
                         id={`tag-input-${category}`}
@@ -184,11 +202,18 @@ export default function TagSelector({
                         onChange={(e) => {
                             setQuery(e.target.value);
                             setIsOpen(true);
+                            onClear?.();
                         }}
-                        onFocus={() => setIsOpen(true)}
+                        onFocus={() => {
+                            setIsOpen(true);
+                            onClear?.();
+                        }}
                         onKeyDown={handleKeyDown}
-                        className="w-full bg-black/40 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white outline-none hover:border-white/20 focus:border-white/30 placeholder:text-white/30 transition-colors"
-                        placeholder={placeholder || t('searchOrAddTags')}
+                        className={cn(
+                            "flex-1 bg-transparent border-none outline-none text-white p-0",
+                            compact ? "text-xs min-w-[40px] h-5" : "text-sm min-w-[120px] h-7"
+                        )}
+                        placeholder={(hideSelectedTags || selectedTags.length === 0) ? (placeholder || t('searchOrAddTags')) : ""}
                         maxLength={25}
                         spellCheck={false}
                     />

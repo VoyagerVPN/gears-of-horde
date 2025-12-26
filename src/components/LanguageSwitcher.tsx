@@ -13,17 +13,22 @@ export default function LanguageSwitcher() {
     };
 
     return (
-        <div className="flex items-center gap-1 text-sm font-medium text-textMuted">
+        <div className="flex bg-white/5 rounded-lg p-1 border border-white/10">
             <button
                 onClick={() => switchLocale('en')}
-                className={`hover:text-white transition-colors ${locale === 'en' ? 'text-white font-bold' : ''}`}
+                className={`px-3 py-1 rounded text-xs font-bold transition-all ${locale === 'en'
+                    ? 'bg-white/10 text-white shadow-sm'
+                    : 'text-textMuted hover:text-white hover:bg-white/5'
+                    }`}
             >
                 EN
             </button>
-            <span>/</span>
             <button
                 onClick={() => switchLocale('ru')}
-                className={`hover:text-white transition-colors ${locale === 'ru' ? 'text-white font-bold' : ''}`}
+                className={`px-3 py-1 rounded text-xs font-bold transition-all ${locale === 'ru'
+                    ? 'bg-white/10 text-white shadow-sm'
+                    : 'text-textMuted hover:text-white hover:bg-white/5'
+                    }`}
             >
                 RU
             </button>

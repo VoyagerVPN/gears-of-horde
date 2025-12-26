@@ -25,12 +25,7 @@ export default async function ProfileLayout({
         <div className="flex min-h-screen bg-[#191919] text-[#ededed]">
             {/* Desktop Sidebar */}
             <aside className="hidden lg:flex w-64 bg-surface border-r border-white/5 flex-col fixed h-full z-50">
-                <div className="p-6 border-b border-white/5">
-                    <Link href="/" className="text-xl font-bold font-locust tracking-wider text-white hover:text-primary transition-colors flex items-center gap-2 group">
-                        GOH <span className="text-primary group-hover:text-white transition-colors">PROFILE</span>
-                        <ExternalLink size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-textMuted" />
-                    </Link>
-                </div>
+
 
                 <SidebarNav userRole={session.user.role} />
 
@@ -43,7 +38,7 @@ export default async function ProfileLayout({
             </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 lg:ml-64 p-6 lg:p-8 pb-24 lg:pb-8 bg-[#191919]">
+            <main className="flex-1 lg:ml-64 pb-24 lg:pb-8 bg-[#191919]">
                 {children}
             </main>
 

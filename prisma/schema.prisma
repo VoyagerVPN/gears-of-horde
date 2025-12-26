@@ -26,6 +26,10 @@ model User {
   role          UserRole  @default(USER)
   isBanned      Boolean   @default(false)
   
+  // Profile settings
+  isProfilePublic  Boolean   @default(true)
+  profileViews     Int       @default(0)
+  
   accounts      Account[]
   sessions      Session[]
   mods          Mod[]     @relation("ModAuthor")
@@ -35,6 +39,9 @@ model User {
   viewHistory      ViewHistory[]
   downloadHistory  DownloadHistory[]
   subscriptions    Subscription[]
+  badges           UserBadge[]
+  socialLinks      UserSocialLink[]
+  profileViewsReceived ProfileView[]
   
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -289,4 +296,57 @@ model AnonymousDownload {
   
   @@unique([modSlug, ipAddress])
   @@index([downloadedAt]) // For cleanup queries
+}
+
+// ============ BADGE SYSTEM ============
+
+model Badge {
+  id          String      @id @default(cuid())
+  slug        String      @unique  // "pioneer", "quality_seal", etc.
+  name        String               // Display name
+  icon        String               // Emoji or icon name
+  description String
+  rarity      String      @default("common") // common, rare, epic, legendary
+  
+  users       UserBadge[]
+  
+  createdAt   DateTime    @default(now())
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String
+  badgeId   String
+  earnedAt  DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, badgeId])
+}
+
+// ============ SOCIAL LINKS ============
+
+model UserSocialLink {
+  id       String @id @default(cuid())
+  userId   String
+  platform String // "discord", "steam", "youtube", "twitch", "github", "boosty"
+  url      String
+  
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, platform])
+}
+
+// ============ PROFILE VIEW TRACKING ============
+
+model ProfileView {
+  id        String   @id @default(cuid())
+  viewerId  String?  // null for anonymous views
+  viewedId  String   // user whose profile was viewed
+  viewedAt  DateTime @default(now())
+  
+  viewedUser User    @relation(fields: [viewedId], references: [id], onDelete: Cascade)
+  
+  @@index([viewedId, viewedAt])
 }

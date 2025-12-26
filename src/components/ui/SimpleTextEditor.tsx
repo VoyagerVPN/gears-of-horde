@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { LucideIcon, ChevronDown } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { LucideIcon, ChevronDown, Info } from "lucide-react";
 
 interface SimpleTextEditorProps {
   title: string;
@@ -11,9 +11,19 @@ interface SimpleTextEditorProps {
   placeholder?: string;
   countLabel?: string;
   defaultExpanded?: boolean;
+  minHeight?: string;
+  tooltip?: string;
   id?: string;
   name?: string;
 }
+
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/Tooltip";
+import { cn } from "@/lib/utils";
 
 export default function SimpleTextEditor({
   title,
@@ -23,12 +33,15 @@ export default function SimpleTextEditor({
   placeholder = "Enter items, one per line...",
   countLabel = "items",
   defaultExpanded = true,
+  minHeight = "150px",
+  tooltip,
   id,
   name
 }: SimpleTextEditorProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [textValue, setTextValue] = useState(() => items.join("\n"));
   const [isFocused, setIsFocused] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Only sync from parent when not focused (to avoid cursor jumping)
   useEffect(() => {
@@ -60,13 +73,24 @@ export default function SimpleTextEditor({
         className="w-full flex items-center justify-between p-4 bg-white/[0.02] border-b border-white/5 hover:bg-white/[0.04] transition-colors text-left outline-none"
       >
         <div className="flex items-center gap-2">
-          <Icon size={20} className="text-primary" />
+          <Icon size={20} className="text-primary shrink-0" />
           <h2 className="text-lg font-bold text-white font-exo2 uppercase tracking-wide flex items-center gap-2">
-            {title}
-            {items.length > 0 && (
-              <span className="text-xs text-textMuted font-mono bg-white/10 px-2 py-0.5 rounded-full tracking-normal">
-                {items.length} {countLabel}
-              </span>
+            <span>{title}</span>
+            <span className="text-xs text-textMuted font-mono bg-white/10 px-2 py-0.5 rounded-full tracking-normal min-w-[20px] h-5 flex items-center justify-center">
+              {items.length}
+            </span>{tooltip && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild onClick={(e) => e.stopPropagation()}>
+                    <div className="text-textMuted hover:text-white transition-colors cursor-help p-1 rounded-full hover:bg-white/10 flex items-center justify-center">
+                      <Info size={16} />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[300px] text-center bg-black/90 border-white/10 backdrop-blur-sm normal-case">
+                    <p>{tooltip}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
           </h2>
         </div>
@@ -74,8 +98,13 @@ export default function SimpleTextEditor({
       </button>
 
       {isExpanded && (
-        <div className="p-4 bg-black/20">
+        <div
+          className="p-4 bg-black/20 cursor-text flex flex-col"
+          onClick={() => textareaRef.current?.focus()}
+          style={{ minHeight }}
+        >
           <textarea
+            ref={textareaRef}
             id={id}
             name={name}
             rows={Math.max(6, items.length + 1)}
@@ -83,12 +112,10 @@ export default function SimpleTextEditor({
             onChange={handleChange}
             onFocus={() => setIsFocused(true)}
             onBlur={handleBlur}
-            className="w-full bg-transparent text-textMuted leading-relaxed text-sm outline-none resize-y placeholder:text-white/10 transition-colors font-mono"
+            className="w-full h-full bg-transparent text-textMuted leading-relaxed text-sm outline-none resize-none placeholder:text-white/20 transition-colors flex-1"
             placeholder={placeholder}
+            style={{ minHeight: "100%" }}
           />
-          <p className="text-[10px] text-textMuted mt-2 italic opacity-50">
-            Tip: Enter each item on a new line. Empty lines are ignored.
-          </p>
         </div>
       )}
     </div>

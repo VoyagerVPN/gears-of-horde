@@ -248,3 +248,38 @@ export function clearModDraft(draftKey: string): void {
     if (typeof window === "undefined") return;
     localStorage.removeItem(`${DRAFT_PREFIX}${draftKey}`);
 }
+
+/**
+ * Get all drafts from localStorage for display in sidebar
+ * Returns an array of { slug, title, savedAt } for each mod with drafts
+ */
+export function getAllDrafts(): { slug: string; title: string; savedAt: string }[] {
+    if (typeof window === "undefined") return [];
+
+    const drafts: { slug: string; title: string; savedAt: string }[] = [];
+
+    try {
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith(DRAFT_PREFIX)) {
+                const slug = key.replace(DRAFT_PREFIX, "");
+                const stored = localStorage.getItem(key);
+                if (stored) {
+                    const parsed: DraftData[] = JSON.parse(stored);
+                    if (parsed.length > 0) {
+                        drafts.push({
+                            slug,
+                            title: parsed[0].data.title || slug,
+                            savedAt: parsed[0].savedAt,
+                        });
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error("Failed to get all drafts:", error);
+    }
+
+    // Sort by most recent first
+    return drafts.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
+}

@@ -6,27 +6,18 @@ import { useRouter } from "next/navigation";
 import { searchTags, fetchPopularTags, TagData } from "@/app/actions/tag-actions";
 import Tag from "@/components/ui/Tag";
 import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 
 interface SearchBarProps {
-    /** For controlled mode - current value */
     value?: string;
-    /** For controlled mode - change handler */
     onChange?: (value: string) => void;
-    /** Placeholder text */
     placeholder?: string;
-    /** Visual variant - 'default' or 'compact' */
     variant?: 'default' | 'compact';
-    /** Additional CSS classes for the container */
     className?: string;
-    /** Enable tag autocomplete dropdown */
     showTagSuggestions?: boolean;
-    /** Current locale for navigation */
     locale?: string;
 }
 
-/**
- * Unified SearchBar Component with optional tag autocomplete
- */
 export default function SearchBar({
     value,
     onChange,
@@ -128,11 +119,9 @@ export default function SearchBar({
     };
 
     const selectTag = (tag: TagData) => {
-        // Add to selected tags if not already selected
         if (!selectedTags.some(t => t.displayName.toLowerCase() === tag.displayName.toLowerCase())) {
             setSelectedTags([...selectedTags, tag]);
         }
-        // Clear input
         if (isControlled && onChange) {
             onChange("");
         } else {
@@ -155,7 +144,6 @@ export default function SearchBar({
 
         if (params) {
             router.push(`/${locale}/search?${params}`);
-            // Clear after navigation
             setSelectedTags([]);
             if (isControlled && onChange) {
                 onChange("");
@@ -172,17 +160,14 @@ export default function SearchBar({
         } else if (e.key === "Enter") {
             e.preventDefault();
             if (showTagSuggestions && isOpen && highlightIndex >= 0) {
-                // Add highlighted tag to selection
                 const allItems = suggestions.length > 0 ? suggestions : popularTags;
                 if (highlightIndex < allItems.length) {
                     selectTag(allItems[highlightIndex]);
                 }
             } else {
-                // Perform search with current text + selected tags
                 performSearch();
             }
         } else if (e.key === "Backspace" && !currentValue && selectedTags.length > 0) {
-            // Remove last tag on backspace when input is empty
             removeTag(selectedTags[selectedTags.length - 1].displayName);
         } else if (showTagSuggestions && isOpen) {
             const allItems = suggestions.length > 0 ? suggestions : popularTags;
@@ -201,142 +186,82 @@ export default function SearchBar({
     return (
         <div
             ref={dropdownRef}
-            className={className}
-            style={{
-                position: 'relative',
-                flex: '1 1 0%',
-                width: '100%',
-                maxWidth: '448px'
-            }}
+            className={cn("w-full relative group", className)}
         >
-            {/* Input container with selected tags */}
-            <div
-                className="flex items-center gap-1 flex-wrap"
-                style={{
-                    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '8px',
-                    paddingLeft: '40px',
-                    paddingRight: selectedTags.length > 0 || currentValue ? '40px' : '12px',
-                    paddingTop: '6px',
-                    paddingBottom: '6px',
-                    minHeight: '38px',
-                }}
-            >
-                <Search
-                    className="text-textMuted pointer-events-none"
-                    style={{
-                        position: 'absolute',
-                        left: '12px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        width: '16px',
-                        height: '16px',
-                        zIndex: 1
-                    }}
-                    aria-hidden="true"
-                />
+            {/* Input Container */}
+            <div className="flex items-center gap-3 bg-background/50 border border-white/10 rounded-lg px-3 py-1.5 min-h-[38px] focus-within:border-white/20 focus-within:bg-background transition-all hover:bg-background/80 overflow-hidden w-full">
+                <Search className="w-5 h-5 text-textMuted shrink-0" aria-hidden="true" />
 
-                {/* Selected tags chips */}
-                {selectedTags.map(tag => (
-                    <span
-                        key={tag.displayName}
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs shrink-0"
-                        style={{
-                            backgroundColor: tag.color ? `${tag.color}20` : 'rgba(161, 161, 170, 0.15)',
-                            border: `1px solid ${tag.color || '#71717a'}40`,
-                            color: tag.color || '#a1a1aa'
-                        }}
-                    >
-                        {tag.displayName}
-                        <button
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); removeTag(tag.displayName); }}
-                            className="opacity-60 hover:opacity-100 hover:text-red-400 transition-all"
-                            aria-label={tA11y('removeTag', { tag: tag.displayName })}
-                        >
-                            <X size={10} aria-hidden="true" />
-                        </button>
-                    </span>
-                ))}
-
-                {/* Input field */}
+                {/* Input */}
                 <input
-                    id="search-input"
-                    name="q"
                     ref={inputRef}
                     type="text"
                     value={currentValue}
                     onChange={handleChange}
                     onKeyDown={handleKeyDown}
                     onFocus={() => showTagSuggestions && setIsOpen(true)}
-                    placeholder={selectedTags.length > 0 ? '' : placeholder}
-                    className="flex-1 min-w-[80px] bg-transparent outline-none text-sm text-white placeholder:text-white/30"
-                    role={showTagSuggestions ? "combobox" : undefined}
-                    aria-expanded={showTagSuggestions ? isOpen : undefined}
-                    aria-haspopup={showTagSuggestions ? "listbox" : undefined}
-                    aria-controls={showTagSuggestions ? "search-suggestions" : undefined}
-                    aria-autocomplete={showTagSuggestions ? "list" : undefined}
+                    placeholder={placeholder}
+                    className="flex-grow bg-transparent border-none outline-none text-sm text-foreground placeholder:text-textMuted/50 h-full min-w-[80px]"
                 />
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 shrink-0">
+                    {(currentValue || selectedTags.length > 0) && (
+                        <button
+                            type="button"
+                            onClick={handleClear}
+                            className="text-textMuted hover:text-foreground transition-colors p-1"
+                        >
+                            <X size={14} />
+                        </button>
+                    )}
+                    {isLoading && (
+                        <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                    )}
+                </div>
             </div>
 
-            {/* Clear button */}
-            {(currentValue || selectedTags.length > 0) && (
-                <button
-                    type="button"
-                    onClick={handleClear}
-                    className="text-textMuted hover:text-white transition-colors"
-                    style={{
-                        position: 'absolute',
-                        right: '12px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: 0,
-                        zIndex: 1
-                    }}
-                    aria-label={tA11y('removeTag', { tag: 'all' })}
-                >
-                    <X size={14} />
-                </button>
-            )}
-            {isLoading && (
-                <div style={{
-                    position: 'absolute',
-                    right: currentValue ? '36px' : '12px',
-                    top: '50%',
-                    transform: 'translateY(-50%)'
-                }}>
-                    <div className="w-4 h-4 border-2 border-white/20 border-t-primary rounded-full animate-spin" />
+            {/* Selected Tags - Below Search Bar */}
+            {selectedTags.length > 0 && (
+                <div className="flex items-center gap-2 flex-wrap mt-3">
+                    {selectedTags.map(tag => (
+                        <span
+                            key={tag.displayName}
+                            className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs bg-white/5 border border-white/10 animate-in fade-in zoom-in-95 duration-200"
+                        >
+                            <span style={{ color: tag.color || '#a1a1aa' }}>{tag.displayName}</span>
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); removeTag(tag.displayName); }}
+                                className="text-textMuted hover:text-red-400 transition-colors"
+                            >
+                                <X size={10} aria-hidden="true" />
+                            </button>
+                        </span>
+                    ))}
                 </div>
             )}
 
-            {/* Tag suggestions dropdown */}
+            {/* Dropdown */}
             {shouldShowDropdown && (
                 <div
-                    id="search-suggestions"
-                    role="listbox"
-                    aria-label={tA11y('searchSuggestions')}
-                    className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-white/10 rounded-lg shadow-xl z-50 max-h-64 overflow-y-auto"
+                    className="absolute top-full left-0 right-0 mt-2 bg-background border border-white/10 rounded-lg shadow-2xl z-50 overflow-hidden backdrop-blur-xl"
                 >
-                    {/* Search results */}
-                    {suggestions.length > 0 && (
-                        <div className="p-2">
-                            <div className="text-[10px] uppercase tracking-wider text-textMuted mb-2 px-1">
+                    {suggestions.length > 0 ? (
+                        <div className="p-2 space-y-1">
+                            <div className="text-[10px] uppercase tracking-wider text-textMuted px-2 py-1 font-semibold">
                                 {t('suggestions')}
                             </div>
                             {suggestions.map((tag, idx) => (
                                 <button
                                     key={tag.id}
                                     onClick={() => selectTag(tag)}
-                                    role="option"
-                                    aria-selected={idx === highlightIndex}
-                                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left transition-colors ${idx === highlightIndex ? 'bg-white/10' : 'hover:bg-white/5'
-                                        }`}
+                                    className={cn(
+                                        "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all",
+                                        idx === highlightIndex ? 'bg-white/10' : 'hover:bg-white/5'
+                                    )}
                                 >
-                                    <Tag color={tag.color || undefined} className="text-xs">
+                                    <Tag color={tag.color || undefined} className="text-xs pointer-events-none">
                                         {tag.displayName}
                                     </Tag>
                                     <span className="text-[10px] text-textMuted ml-auto">
@@ -345,26 +270,23 @@ export default function SearchBar({
                                 </button>
                             ))}
                         </div>
-                    )}
-
-                    {/* Popular tags when no search */}
-                    {currentValue.length < 2 && popularTags.length > 0 && suggestions.length === 0 && (
-                        <div className="p-2">
-                            <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-textMuted mb-2 px-1">
-                                <TrendingUp size={10} />
+                    ) : (
+                        <div className="p-4">
+                            <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-textMuted mb-3 font-semibold">
+                                <TrendingUp size={12} />
                                 {t('popularTags')}
                             </div>
-                            <div className="flex flex-wrap gap-1.5">
+                            <div className="flex flex-wrap gap-2">
                                 {popularTags.map((tag, idx) => (
                                     <button
                                         key={tag.id}
                                         onClick={() => selectTag(tag)}
-                                        role="option"
-                                        aria-selected={idx === highlightIndex}
-                                        className={`transition-transform hover:scale-105 active:scale-95 ${idx === highlightIndex ? 'ring-1 ring-primary' : ''
-                                            }`}
+                                        className={cn(
+                                            "transition-transform hover:scale-105 active:scale-95",
+                                            idx === highlightIndex ? 'ring-2 ring-primary ring-offset-2 ring-offset-background rounded-full' : ''
+                                        )}
                                     >
-                                        <Tag color={tag.color || undefined} className="text-xs cursor-pointer hover:opacity-80">
+                                        <Tag color={tag.color || undefined} className="text-xs cursor-pointer hover:brightness-110">
                                             {tag.displayName}
                                         </Tag>
                                     </button>

@@ -144,7 +144,7 @@ export default function EditableChangelog({ logs, onChange }: EditableChangelogP
         </div>
       </div>
 
-      <div className="p-6 bg-black/20">
+      <div className="p-6">
         <div className="space-y-8 relative">
 
           {logs.map((log, vIdx) => {

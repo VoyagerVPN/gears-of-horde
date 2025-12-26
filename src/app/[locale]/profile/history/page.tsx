@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl"
 import { History as HistoryIcon } from "lucide-react"
 import ModCard from "@/components/ModCard"
 import { getViewHistory } from "@/app/actions/profile-actions"
+import UnifiedTopBar from "@/components/ui/UnifiedTopBar"
 
 interface ViewWithMod {
     id: string
@@ -52,47 +53,53 @@ export default function ProfileHistoryPage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <h1 className="text-2xl lg:text-3xl font-bold text-white font-exo2 flex items-center gap-3">
-                <HistoryIcon className="text-primary" size={28} />
-                {t('history')}
-            </h1>
+            <UnifiedTopBar
+                title={
+                    <div className="flex items-center gap-3">
+                        <HistoryIcon className="text-primary" size={28} />
+                        {t('history')}
+                    </div>
+                }
+            />
 
             {/* Content */}
-            {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {[1, 2, 3].map(i => (
-                        <div key={i} className="h-64 bg-surface rounded-xl animate-pulse border border-white/5" />
-                    ))}
-                </div>
-            ) : history.length === 0 ? (
-                <div className="text-center py-20">
-                    <HistoryIcon size={48} className="mx-auto text-textMuted/30 mb-4" />
-                    <h2 className="text-lg font-bold text-white mb-2">{t('noHistory')}</h2>
-                    <p className="text-sm text-textMuted">{t('noHistoryDesc')}</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {history.map((view) => (
-                        <ModCard
-                            key={view.id}
-                            title={view.mod.title}
-                            slug={view.mod.slug}
-                            version={view.mod.version}
-                            gameVersion={view.mod.gameVersion}
-                            author={view.mod.author}
-                            tags={view.mod.tags}
-                            updatedAt={view.mod.updatedAt}
-                            bannerUrl={view.mod.bannerUrl}
-                            description={view.mod.description || ''}
-                            stats={{
-                                rating: view.mod.rating,
-                                downloads: view.mod.downloads,
-                                views: view.mod.views
-                            }}
-                        />
-                    ))}
-                </div>
-            )}
+            <div className="px-6 lg:px-8">
+                {loading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="h-64 bg-surface rounded-xl animate-pulse border border-white/5" />
+                        ))}
+                    </div>
+                ) : history.length === 0 ? (
+                    <div className="text-center py-20">
+                        <HistoryIcon size={48} className="mx-auto text-textMuted/30 mb-4" />
+                        <h2 className="text-lg font-bold text-white mb-2">{t('noHistory')}</h2>
+                        <p className="text-sm text-textMuted">{t('noHistoryDesc')}</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {history.map((view) => (
+                            <ModCard
+                                key={view.id}
+                                title={view.mod.title}
+                                slug={view.mod.slug}
+                                version={view.mod.version}
+                                gameVersion={view.mod.gameVersion}
+                                author={view.mod.author}
+                                tags={view.mod.tags}
+                                updatedAt={view.mod.updatedAt}
+                                bannerUrl={view.mod.bannerUrl}
+                                description={view.mod.description || ''}
+                                stats={{
+                                    rating: view.mod.rating,
+                                    downloads: view.mod.downloads,
+                                    views: view.mod.views
+                                }}
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     )
 }

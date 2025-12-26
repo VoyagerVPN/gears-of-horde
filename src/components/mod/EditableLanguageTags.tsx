@@ -6,6 +6,8 @@ import { TagData } from '@/types/mod';
 import TagSelector from '@/components/TagSelector';
 import { useTranslations } from 'next-intl';
 import { LANG_BUILTIN_COLOR, PRIMARY_COLOR } from '@/lib/tag-colors';
+import { STANDARD_INPUT_STYLE, INVALID_INPUT_STYLE } from "@/lib/constants/ui-constants";
+import { cn } from '@/lib/utils';
 
 interface EditableLanguageTagsProps {
     items: TagData[];
@@ -166,8 +168,11 @@ export default function EditableLanguageTags({ items, onChange }: EditableLangua
                                         value={item.externalLink || ''}
                                         onChange={(e) => updateMetadata(originalIdx, 'externalLink', e.target.value)}
                                         disabled={isEnglish}
-                                        className={`w-full bg-black/40 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-white outline-none hover:border-white/20 focus:border-white/30 transition-colors placeholder:text-zinc-700 
-                                        ${isEnglish ? 'opacity-30 cursor-not-allowed select-none' : 'opacity-100'}`}
+                                        className={cn(
+                                            STANDARD_INPUT_STYLE,
+                                            "py-1.5",
+                                            isEnglish ? 'opacity-30 cursor-not-allowed select-none' : 'opacity-100'
+                                        )}
                                         spellCheck={false}
                                         placeholder={isEnglish ? "Built-in" : "https://..."}
                                     />

@@ -175,7 +175,7 @@ export function mapPrismaModToModData(mod: PrismaModWithTags): import('@/schemas
         description: mod.description,
         status: mod.status as ModStatusType,
         gameVersion: mod.gameVersion,
-        bannerUrl: mod.bannerUrl ?? undefined,
+        bannerUrl: mod.bannerUrl ?? '',
         isSaveBreaking: mod.isSaveBreaking,
         features: mod.features,
         tags: mod.tags.map(mapPrismaTagToTagData),

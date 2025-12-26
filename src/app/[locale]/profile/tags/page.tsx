@@ -12,6 +12,7 @@ import MergeCategoryModal from "@/components/tags/MergeCategoryModal";
 import Tag from "@/components/ui/Tag";
 import { useToast } from "@/components/ui/Toast";
 import { LANG_BUILTIN_COLOR } from "@/lib/tag-colors";
+import UnifiedTopBar from "@/components/ui/UnifiedTopBar";
 
 export default function AdminTagsPage() {
     const t = useTranslations('Admin');
@@ -205,203 +206,204 @@ export default function AdminTagsPage() {
 
     return (
         <div className="min-h-screen bg-zinc-950 pb-20 font-exo2">
-            <div className="max-w-[1600px] w-full mx-auto px-6 py-8 space-y-8">
+            <div className="max-w-[1600px] w-full mx-auto pb-8">
 
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold text-white uppercase tracking-wide">{t('tagsManagement')}</h1>
+                <UnifiedTopBar title={t('tagsManagement')}>
                     <button
                         onClick={() => handleCreateTag()}
                         className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-red-600 text-white text-sm font-bold rounded-lg transition-colors shadow-lg shadow-red-900/20 uppercase tracking-wider"
                     >
                         <Plus size={18} /> {t('createTag')}
                     </button>
-                </div>
+                </UnifiedTopBar>
 
-                {/* Toolbar */}
-                <div className="flex flex-col md:flex-row items-center gap-4 bg-surface p-4 rounded-xl border border-white/5 shadow-sm">
-                    <SearchBar
-                        value={searchQuery}
-                        onChange={setSearchQuery}
-                        placeholder={t('searchTags')}
-                        variant="compact"
+                <div className="px-6 lg:px-8 space-y-8">
+                    {/* Toolbar */}
+                    <div className="flex flex-col md:flex-row items-center gap-4 bg-surface p-4 rounded-xl border border-white/5 shadow-sm">
+                        <SearchBar
+                            value={searchQuery}
+                            onChange={setSearchQuery}
+                            placeholder={t('searchTags')}
+                            variant="compact"
+                        />
+
+                        <div className="flex items-center gap-2 w-full md:w-auto ml-auto">
+                            <div className="flex bg-black/20 rounded-md p-0.5 border border-white/10">
+                                <button
+                                    onClick={() => setSortOption('name')}
+                                    className={`px-3 py-1.5 rounded-[4px] text-xs font-bold transition-colors ${sortOption === 'name' ? 'bg-white/10 text-white' : 'text-textMuted hover:text-white'}`}
+                                >
+                                    {t('name')}
+                                </button>
+                                <button
+                                    onClick={() => setSortOption('usage')}
+                                    className={`px-3 py-1.5 rounded-[4px] text-xs font-bold transition-colors ${sortOption === 'usage' ? 'bg-white/10 text-white' : 'text-textMuted hover:text-white'}`}
+                                >
+                                    {t('usage')}
+                                </button>
+                            </div>
+
+                            <button
+                                onClick={() => setRefreshTrigger(prev => prev + 1)}
+                                className="p-2 hover:bg-white/10 rounded-lg text-textMuted hover:text-white transition-colors"
+                                title="Refresh"
+                            >
+                                <RefreshCw size={18} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Categories List */}
+                    <div className="space-y-8">
+                        {categories.map(category => (
+                            <div key={category} className="bg-surface border border-white/5 rounded-xl overflow-hidden shadow-sm">
+                                {/* Category Header */}
+                                <div className="px-6 py-4 bg-white/5 border-b border-white/5 flex items-center justify-between group">
+                                    <div className="flex items-center gap-3">
+                                        <h2 className="text-xl font-bold text-white capitalize">
+                                            {getCategoryDisplayName(category)}
+                                        </h2>
+                                        <span className="px-2 py-0.5 bg-white/10 rounded text-xs font-mono text-textMuted">
+                                            {(groupedTags[category] || []).length}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                            onClick={() => handleMergeCategory(category)}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-white/10 rounded text-textMuted hover:text-yellow-400 transition-colors text-xs font-bold"
+                                            title={t('mergeCategory')}
+                                        >
+                                            <Merge size={14} />
+                                            {t('merge')}
+                                        </button>
+                                        <button
+                                            onClick={() => handleEditCategory(category)}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-white/10 rounded text-textMuted hover:text-white transition-colors text-xs font-bold"
+                                            title={t('editCategory')}
+                                        >
+                                            <FolderEdit size={14} />
+                                            {t('edit')}
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteCategory(category)}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-red-500/10 rounded text-textMuted hover:text-red-400 transition-colors text-xs font-bold"
+                                            title={t('deleteCategory')}
+                                        >
+                                            <FolderX size={14} />
+                                            {t('delete')}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Tag Cloud */}
+                                <div className="p-6">
+                                    <div className="flex flex-wrap gap-2">
+                                        {(groupedTags[category] || []).map(tag => {
+                                            const isConfirming = deleteConfirmId === tag.id;
+
+                                            // Define actions based on state
+                                            const tagActions = [];
+
+                                            if (isConfirming) {
+                                                tagActions.push({
+                                                    icon: <Check size={14} />,
+                                                    onClick: (e: React.MouseEvent) => { e.stopPropagation(); handleConfirmDelete(e, tag); },
+                                                    variant: 'confirm' as const,
+                                                    title: t('confirm')
+                                                });
+                                                tagActions.push({
+                                                    icon: <X size={14} className="text-zinc-500" />,
+                                                    onClick: (e: React.MouseEvent) => { e.stopPropagation(); setDeleteConfirmId(null); },
+                                                    title: t('cancel')
+                                                });
+                                            } else {
+                                                tagActions.push({
+                                                    icon: <Merge size={14} />,
+                                                    onClick: (e: React.MouseEvent) => { e.stopPropagation(); handleMergeTagClick(e, tag); },
+                                                    variant: 'warning' as const,
+                                                    title: t('merge')
+                                                });
+                                                tagActions.push({
+                                                    icon: <X size={14} />,
+                                                    onClick: (e: React.MouseEvent) => { e.stopPropagation(); handleDeleteTag(e, tag); },
+                                                    variant: 'destructive' as const,
+                                                    title: t('delete')
+                                                });
+                                            }
+
+                                            return (
+                                                <Tag
+                                                    key={tag.id}
+                                                    variant="default"
+                                                    className={`transition-none ${isConfirming ? 'border-dashed !border-red-500/50' : ''}`}
+                                                    color={tag.category === 'lang' ? LANG_BUILTIN_COLOR : (tag.color || undefined)}
+                                                    category={tag.category ?? category}
+                                                    showIcon={true}
+                                                    onContentClick={() => handleEditTag(tag)}
+                                                    actions={tagActions}
+                                                >
+                                                    <span className="leading-none">{tag.displayName}</span>
+                                                    {category !== 'newscat' && (
+                                                        <span className="opacity-50 ml-1 leading-none">({tag.usageCount})</span>
+                                                    )}
+                                                </Tag>
+                                            );
+                                        })}
+                                        <button
+                                            onClick={() => handleCreateTag(category)}
+                                            className="inline-flex items-center justify-center px-2 py-1 gap-1 text-[13px] font-bold rounded-md border border-dashed border-white/20 text-textMuted hover:text-white hover:bg-white/5 transition-all active:scale-95 capitalize leading-none"
+                                        >
+                                            <Plus size={14} />
+                                            <span className="leading-none">{t('add')}</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+
+                        {categories.length === 0 && (
+                            <div className="text-center py-20 text-textMuted">
+                                {t('noTagsFound')}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Modals */}
+                    <TagModal
+                        isOpen={isTagModalOpen}
+                        onClose={() => setIsTagModalOpen(false)}
+                        tag={selectedTag ? { ...selectedTag, id: selectedTag.id ?? '', category: selectedTag.category ?? 'tag', value: selectedTag.value ?? '' } : null}
+                        onSave={handleSaveTag}
+                        initialCategory={createCategory}
+                        existingCategories={allCategories}
                     />
 
-                    <div className="flex items-center gap-2 w-full md:w-auto ml-auto">
-                        <div className="flex bg-black/20 rounded-md p-0.5 border border-white/10">
-                            <button
-                                onClick={() => setSortOption('name')}
-                                className={`px-3 py-1.5 rounded-[4px] text-xs font-bold transition-colors ${sortOption === 'name' ? 'bg-white/10 text-white' : 'text-textMuted hover:text-white'}`}
-                            >
-                                {t('name')}
-                            </button>
-                            <button
-                                onClick={() => setSortOption('usage')}
-                                className={`px-3 py-1.5 rounded-[4px] text-xs font-bold transition-colors ${sortOption === 'usage' ? 'bg-white/10 text-white' : 'text-textMuted hover:text-white'}`}
-                            >
-                                {t('usage')}
-                            </button>
-                        </div>
+                    <MergeTagModal
+                        isOpen={isMergeTagModalOpen}
+                        onClose={() => setIsMergeTagModalOpen(false)}
+                        sourceTag={selectedTag}
+                        allTags={tags}
+                        onMerge={handleMergeTags}
+                    />
 
-                        <button
-                            onClick={() => setRefreshTrigger(prev => prev + 1)}
-                            className="p-2 hover:bg-white/10 rounded-lg text-textMuted hover:text-white transition-colors"
-                            title="Refresh"
-                        >
-                            <RefreshCw size={18} />
-                        </button>
-                    </div>
+                    <CategoryEditModal
+                        isOpen={isCategoryEditModalOpen}
+                        onClose={() => setIsCategoryEditModalOpen(false)}
+                        category={selectedCategory}
+                        onSave={handleSaveCategory}
+                    />
+
+                    <MergeCategoryModal
+                        isOpen={isMergeCategoryModalOpen}
+                        onClose={() => setIsMergeCategoryModalOpen(false)}
+                        sourceCategory={selectedCategory}
+                        allCategories={allCategories}
+                        onMerge={handleMergeCategories}
+                    />
+
                 </div>
-
-                {/* Categories List */}
-                <div className="space-y-8">
-                    {categories.map(category => (
-                        <div key={category} className="bg-surface border border-white/5 rounded-xl overflow-hidden shadow-sm">
-                            {/* Category Header */}
-                            <div className="px-6 py-4 bg-white/5 border-b border-white/5 flex items-center justify-between group">
-                                <div className="flex items-center gap-3">
-                                    <h2 className="text-xl font-bold text-white capitalize">
-                                        {getCategoryDisplayName(category)}
-                                    </h2>
-                                    <span className="px-2 py-0.5 bg-white/10 rounded text-xs font-mono text-textMuted">
-                                        {(groupedTags[category] || []).length}
-                                    </span>
-                                </div>
-
-                                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button
-                                        onClick={() => handleMergeCategory(category)}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-white/10 rounded text-textMuted hover:text-yellow-400 transition-colors text-xs font-bold"
-                                        title={t('mergeCategory')}
-                                    >
-                                        <Merge size={14} />
-                                        {t('merge')}
-                                    </button>
-                                    <button
-                                        onClick={() => handleEditCategory(category)}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-white/10 rounded text-textMuted hover:text-white transition-colors text-xs font-bold"
-                                        title={t('editCategory')}
-                                    >
-                                        <FolderEdit size={14} />
-                                        {t('edit')}
-                                    </button>
-                                    <button
-                                        onClick={() => handleDeleteCategory(category)}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-red-500/10 rounded text-textMuted hover:text-red-400 transition-colors text-xs font-bold"
-                                        title={t('deleteCategory')}
-                                    >
-                                        <FolderX size={14} />
-                                        {t('delete')}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Tag Cloud */}
-                            <div className="p-6">
-                                <div className="flex flex-wrap gap-2">
-                                    {(groupedTags[category] || []).map(tag => {
-                                        const isConfirming = deleteConfirmId === tag.id;
-
-                                        // Define actions based on state
-                                        const tagActions = [];
-
-                                        if (isConfirming) {
-                                            tagActions.push({
-                                                icon: <Check size={14} />,
-                                                onClick: (e: React.MouseEvent) => { e.stopPropagation(); handleConfirmDelete(e, tag); },
-                                                variant: 'confirm' as const,
-                                                title: t('confirm')
-                                            });
-                                            tagActions.push({
-                                                icon: <X size={14} className="text-zinc-500" />,
-                                                onClick: (e: React.MouseEvent) => { e.stopPropagation(); setDeleteConfirmId(null); },
-                                                title: t('cancel')
-                                            });
-                                        } else {
-                                            tagActions.push({
-                                                icon: <Merge size={14} />,
-                                                onClick: (e: React.MouseEvent) => { e.stopPropagation(); handleMergeTagClick(e, tag); },
-                                                variant: 'warning' as const,
-                                                title: t('merge')
-                                            });
-                                            tagActions.push({
-                                                icon: <X size={14} />,
-                                                onClick: (e: React.MouseEvent) => { e.stopPropagation(); handleDeleteTag(e, tag); },
-                                                variant: 'destructive' as const,
-                                                title: t('delete')
-                                            });
-                                        }
-
-                                        return (
-                                            <Tag
-                                                key={tag.id}
-                                                variant="default"
-                                                className={`transition-none ${isConfirming ? 'border-dashed !border-red-500/50' : ''}`}
-                                                color={tag.category === 'lang' ? LANG_BUILTIN_COLOR : (tag.color || undefined)}
-                                                category={tag.category ?? category}
-                                                showIcon={true}
-                                                onContentClick={() => handleEditTag(tag)}
-                                                actions={tagActions}
-                                            >
-                                                <span className="leading-none">{tag.displayName}</span>
-                                                {category !== 'newscat' && (
-                                                    <span className="opacity-50 ml-1 leading-none">({tag.usageCount})</span>
-                                                )}
-                                            </Tag>
-                                        );
-                                    })}
-                                    <button
-                                        onClick={() => handleCreateTag(category)}
-                                        className="inline-flex items-center justify-center px-2 py-1 gap-1 text-[13px] font-bold rounded-md border border-dashed border-white/20 text-textMuted hover:text-white hover:bg-white/5 transition-all active:scale-95 capitalize leading-none"
-                                    >
-                                        <Plus size={14} />
-                                        <span className="leading-none">{t('add')}</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-
-                    {categories.length === 0 && (
-                        <div className="text-center py-20 text-textMuted">
-                            {t('noTagsFound')}
-                        </div>
-                    )}
-                </div>
-
-                {/* Modals */}
-                <TagModal
-                    isOpen={isTagModalOpen}
-                    onClose={() => setIsTagModalOpen(false)}
-                    tag={selectedTag ? { ...selectedTag, id: selectedTag.id ?? '', category: selectedTag.category ?? 'tag', value: selectedTag.value ?? '' } : null}
-                    onSave={handleSaveTag}
-                    initialCategory={createCategory}
-                    existingCategories={allCategories}
-                />
-
-                <MergeTagModal
-                    isOpen={isMergeTagModalOpen}
-                    onClose={() => setIsMergeTagModalOpen(false)}
-                    sourceTag={selectedTag}
-                    allTags={tags}
-                    onMerge={handleMergeTags}
-                />
-
-                <CategoryEditModal
-                    isOpen={isCategoryEditModalOpen}
-                    onClose={() => setIsCategoryEditModalOpen(false)}
-                    category={selectedCategory}
-                    onSave={handleSaveCategory}
-                />
-
-                <MergeCategoryModal
-                    isOpen={isMergeCategoryModalOpen}
-                    onClose={() => setIsMergeCategoryModalOpen(false)}
-                    sourceCategory={selectedCategory}
-                    allCategories={allCategories}
-                    onMerge={handleMergeCategories}
-                />
-
             </div>
         </div>
     );

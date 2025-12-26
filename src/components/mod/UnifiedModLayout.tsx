@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import {
     Download, ChevronLeft, Tags, Languages, Users, Coins, Trash2, Zap, FileCog,
-    Link as LinkIcon, ExternalLink, MessageSquare, History, AlertTriangle, Plus, X as XIcon, Disc as Discord, Check, GripVertical, Heart
+    Link as LinkIcon, ExternalLink, MessageSquare, History, AlertTriangle, Plus, X as XIcon, Disc as Discord, Check, GripVertical, Heart, Images
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { Link } from "@/i18n/routing";
@@ -33,8 +33,8 @@ import EditableChangelog from "@/components/mod/EditableChangelog";
 import SimpleTextEditor from "@/components/ui/SimpleTextEditor";
 import EditableLanguageTags from "@/components/mod/EditableLanguageTags";
 import TagSelector from "@/components/TagSelector";
-import { SIDEBAR_HEADER_STYLE } from "@/lib/constants/ui-constants";
-import { getDomain } from "@/lib/utils";
+import { SIDEBAR_HEADER_STYLE, INVALID_INPUT_STYLE, STANDARD_INPUT_STYLE } from "@/lib/constants/ui-constants";
+import { cn, getDomain } from "@/lib/utils";
 import ScreenshotDropzone from "@/components/ui/ScreenshotDropzone";
 
 // Helper function to extract YouTube video ID from URL
@@ -63,6 +63,8 @@ interface UnifiedModLayoutProps {
     gameVersionTags?: TagData[];
     onGameVersionTagsRefresh?: () => void;
     onGameVersionCreate?: (version: string) => void;
+    invalidFields?: Set<string>;
+    onClearField?: (field: string) => void;
 }
 
 export default function UnifiedModLayout({
@@ -73,7 +75,9 @@ export default function UnifiedModLayout({
     isNew = false,
     gameVersionTags = [],
     onGameVersionTagsRefresh,
-    onGameVersionCreate
+    onGameVersionCreate,
+    invalidFields = new Set(),
+    onClearField
 }: UnifiedModLayoutProps) {
     const t = useTranslations('Common');
     const locale = useLocale() as 'en' | 'ru';
@@ -155,8 +159,8 @@ export default function UnifiedModLayout({
                         </div>
                         {links.map((link, idx) => (
                             <div key={idx} className="flex gap-2 group items-center">
-                                <input id={`link-name-${category}-${idx}`} name={`link-name-${category}-${idx}`} type="text" value={link.name} onChange={e => updateLinkItem(category, idx, 'name', e.target.value)} className="w-1/3 bg-black/20 border border-white/10 rounded px-2 py-1.5 text-xs text-white outline-none hover:border-white/20 focus:border-white/30 placeholder:text-white/20 transition-colors" placeholder={t('name')} spellCheck={false} />
-                                <input id={`link-url-${category}-${idx}`} name={`link-url-${category}-${idx}`} type="text" value={link.url} onChange={e => updateLinkItem(category, idx, 'url', e.target.value)} className="flex-1 bg-black/20 border border-white/10 rounded px-2 py-1.5 text-xs text-white outline-none hover:border-white/20 focus:border-white/30 placeholder:text-white/20 transition-colors" placeholder={t('url')} spellCheck={false} />
+                                <input id={`link-name-${category}-${idx}`} name={`link-name-${category}-${idx}`} type="text" value={link.name} onChange={e => updateLinkItem(category, idx, 'name', e.target.value)} className={cn(STANDARD_INPUT_STYLE, "w-1/3")} placeholder={t('name')} spellCheck={false} />
+                                <input id={`link-url-${category}-${idx}`} name={`link-url-${category}-${idx}`} type="text" value={link.url} onChange={e => updateLinkItem(category, idx, 'url', e.target.value)} className={cn(STANDARD_INPUT_STYLE, "flex-1")} placeholder={t('url')} spellCheck={false} />
                                 <button type="button" onClick={() => removeLinkItem(category, idx)} className="text-textMuted hover:text-red-400 opacity-50 group-hover:opacity-100 transition-opacity"><Trash2 size={14} /></button>
                             </div>
                         ))}
@@ -209,8 +213,8 @@ export default function UnifiedModLayout({
     return (
         <div className="max-w-[1600px] mx-auto px-4 py-8">
 
-            {/* Back Link (Only in View Mode or if desired in Edit) */}
-            {!isEditing && (
+            {/* Back Link (Only in View Mode, hidden in editor preview) */}
+            {!isEditing && !onUpdate && (
                 <Link href="/" className="inline-flex items-center gap-2 text-textMuted hover:text-white transition-colors mb-6 text-xs uppercase tracking-widest font-bold font-exo2">
                     <ChevronLeft size={16} /> {t('backToCatalog')}
                 </Link>
@@ -223,6 +227,9 @@ export default function UnifiedModLayout({
                 initialStatus={initialStatus}
                 onUpdate={updateField}
                 isNew={isNew}
+                invalidFields={invalidFields}
+                onClearField={onClearField}
+                hideAdminEdit={!!onUpdate}
             />
 
             {/* === MAIN GRID === */}
@@ -236,6 +243,8 @@ export default function UnifiedModLayout({
                         description={mod.description}
                         isEditing={isEditing}
                         onUpdate={(value) => updateField('description', value)}
+                        invalid={invalidFields.has('description')}
+                        onClear={() => onClearField?.('description')}
                     />
 
                     {/* Features List */}
@@ -245,10 +254,11 @@ export default function UnifiedModLayout({
                             icon={Zap}
                             items={mod.features}
                             onChange={(newItems) => updateField('features', newItems)}
-                            placeholder="Paste features list here (one per line)..."
+                            placeholder={t('featuresPlaceholder')}
                             countLabel="features"
                             id="mod-features-editor"
                             name="features"
+                            tooltip={t('featuresTooltip')}
                         />
                     ) : (
                         <FeatureList features={mod.features} />
@@ -258,7 +268,7 @@ export default function UnifiedModLayout({
                     {isEditing ? (
                         <div className="bg-surface rounded-xl p-6 border border-white/5 space-y-6">
                             <h2 className="text-lg font-bold text-white border-b border-white/5 pb-2 font-exo2 uppercase tracking-wide flex items-center gap-2">
-                                <Zap size={20} className="text-primary" /> {t('mediaGallery')}
+                                <Images size={20} className="text-primary" /> {t('mediaGallery')}
                             </h2>
 
                             {/* Videos */}
@@ -271,7 +281,7 @@ export default function UnifiedModLayout({
                                         type="text"
                                         value={mod.videos?.trailer || ''}
                                         onChange={e => updateVideo('trailer', e.target.value)}
-                                        className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-xs text-white outline-none hover:border-white/20 focus:border-white/30 transition-colors placeholder:text-white/20"
+                                        className={STANDARD_INPUT_STYLE}
                                         placeholder="https://youtube.com/..."
                                         spellCheck={false}
                                     />
@@ -296,7 +306,7 @@ export default function UnifiedModLayout({
                                         type="text"
                                         value={mod.videos?.review || ''}
                                         onChange={e => updateVideo('review', e.target.value)}
-                                        className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-xs text-white outline-none hover:border-white/20 focus:border-white/30 transition-colors placeholder:text-white/20"
+                                        className={STANDARD_INPUT_STYLE}
                                         placeholder="https://youtube.com/..."
                                         spellCheck={false}
                                     />
@@ -328,7 +338,7 @@ export default function UnifiedModLayout({
                                                 className="flex overflow-x-auto gap-4 pb-3 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent hover:scrollbar-thumb-primary/50"
                                             >
                                                 {mod.screenshots.filter(url => url.trim() !== '').map((url, idx) => (
-                                                    <Draggable key={`screenshot-${idx}`} draggableId={`screenshot-${idx}`} index={idx}>
+                                                    <Draggable key={url} draggableId={url} index={idx}>
                                                         {(provided, snapshot) => (
                                                             <div
                                                                 ref={provided.innerRef}
@@ -353,7 +363,7 @@ export default function UnifiedModLayout({
                                                                     {/* Drag Handle */}
                                                                     <div
                                                                         {...provided.dragHandleProps}
-                                                                        className="absolute top-2 left-2 p-1.5 bg-black/60 backdrop-blur-sm border border-white/10 rounded-lg text-white/40 hover:text-white cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-all"
+                                                                        className="absolute top-2 left-2 p-1.5 bg-black/60 backdrop-blur-sm border border-white/10 rounded-lg text-white opacity-0 group-hover:opacity-40 hover:!opacity-100 transition-all"
                                                                         title="Drag to reorder"
                                                                     >
                                                                         <GripVertical size={14} />
@@ -366,7 +376,7 @@ export default function UnifiedModLayout({
                                                                             const filtered = mod.screenshots.filter(s => s.trim() !== '');
                                                                             updateField('screenshots', filtered.filter((_, i) => i !== idx));
                                                                         }}
-                                                                        className="absolute top-2 right-2 p-1.5 bg-black/60 backdrop-blur-sm border border-white/10 rounded-lg text-white/60 hover:text-red-400 hover:bg-red-500/20 hover:border-red-400/50 opacity-0 group-hover:opacity-100 transition-all"
+                                                                        className="absolute top-2 right-2 p-1.5 bg-black/60 backdrop-blur-sm border border-white/10 rounded-lg text-white opacity-0 group-hover:opacity-60 hover:!opacity-100 hover:text-red-400 hover:bg-red-500/20 hover:border-red-400/50 transition-all"
                                                                         title={t('remove')}
                                                                     >
                                                                         <Trash2 size={14} />
@@ -383,14 +393,16 @@ export default function UnifiedModLayout({
                                                 ))}
                                                 {provided.placeholder}
 
-                                                {/* Screenshot Upload Drop Zone */}
                                                 <ScreenshotDropzone
                                                     currentCount={mod.screenshots.filter(s => s.trim() !== '').length}
                                                     onUploadComplete={(urls) => {
                                                         // Filter out empty slots and add new uploaded URLs
                                                         const currentScreenshots = mod.screenshots.filter(s => s.trim() !== '');
                                                         updateField('screenshots', [...currentScreenshots, ...urls]);
+                                                        onClearField?.('screenshots');
                                                     }}
+                                                    invalid={invalidFields.has('screenshots')}
+                                                    onClear={() => onClearField?.('screenshots')}
                                                 />
                                             </div>
                                         )}
@@ -453,16 +465,8 @@ export default function UnifiedModLayout({
                 <div className="lg:col-span-4 space-y-6 sticky top-24">
 
                     {/* ACTIONS BLOCK */}
-                    <div className="bg-surface rounded-xl p-6 border border-white/5 shadow-[0_0_30px_-10px_rgba(0,0,0,0.5)] relative overflow-hidden space-y-4">
-                        {mod.isSaveBreaking && (
-                            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex gap-3 items-start">
-                                <AlertTriangle className="text-red-500 shrink-0 mt-0.5" size={16} />
-                                <div>
-                                    <div className="text-red-400 font-bold text-xs uppercase mb-0.5 font-exo2">{t('wipeRequired')}</div>
-                                    <p className="text-red-400/70 text-[10px] leading-tight">{t('wipeRequiredDesc')}</p>
-                                </div>
-                            </div>
-                        )}
+                    <div className="bg-surface rounded-xl p-4 border border-white/5 relative overflow-hidden space-y-4">
+
 
                         {isEditing ? (
                             // EDIT MODE ACTIONS
@@ -473,10 +477,10 @@ export default function UnifiedModLayout({
                                     </h3>
                                     <button
                                         onClick={() => updateField('isSaveBreaking', !mod.isSaveBreaking)}
-                                        className={`inline-flex items-center gap-1.5 px-2 py-1 rounded border text-[12px] font-bold ${mod.isSaveBreaking ? 'bg-red-500 text-white border-red-500 hover:bg-red-600 shadow-lg shadow-red-900/20' : 'bg-transparent text-textMuted border-white/10 hover:text-white hover:border-white/30'}`}
+                                        className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all ${mod.isSaveBreaking ? 'bg-red-500/20 text-red-400 border-red-500/50 hover:bg-red-500/30' : 'bg-transparent text-textMuted border-white/10 hover:text-white hover:border-white/30'}`}
                                     >
-                                        <AlertTriangle size={12} className={mod.isSaveBreaking ? "fill-white" : ""} />
-                                        {mod.isSaveBreaking ? t('wipeRequired') : `${t('wipeRequired')}?`}
+                                        <AlertTriangle size={12} />
+                                        {t('wipe')}
                                     </button>
                                 </div>
                                 <div className="space-y-3">
@@ -488,8 +492,16 @@ export default function UnifiedModLayout({
                                                 name="download"
                                                 type="text"
                                                 value={mod.links.download}
-                                                onChange={e => updateField('links', { ...mod.links, download: e.target.value })}
-                                                className="w-full bg-black/40 border border-transparent hover:border-white/10 focus:border-white/30 rounded p-2 pl-8 text-xs text-white outline-none transition-colors"
+                                                onChange={e => {
+                                                    updateField('links', { ...mod.links, download: e.target.value });
+                                                    onClearField?.('links.download');
+                                                }}
+                                                onFocus={() => onClearField?.('links.download')}
+                                                className={cn(
+                                                    STANDARD_INPUT_STYLE,
+                                                    "pl-8",
+                                                    invalidFields.has('links.download') ? INVALID_INPUT_STYLE : ""
+                                                )}
                                                 placeholder="https://nexusmods.com/..."
                                             />
                                             <Download size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-textMuted opacity-50" />
@@ -504,7 +516,7 @@ export default function UnifiedModLayout({
                                                 type="text"
                                                 value={mod.links.discord}
                                                 onChange={e => updateField('links', { ...mod.links, discord: e.target.value })}
-                                                className="w-full bg-black/40 border border-transparent hover:border-white/10 focus:border-white/30 rounded p-2 pl-8 text-xs text-white outline-none transition-colors"
+                                                className={cn(STANDARD_INPUT_STYLE, "pl-8")}
                                                 placeholder="https://discord.gg/..."
                                             />
                                             <MessageSquare size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-textMuted opacity-50" />
@@ -520,22 +532,24 @@ export default function UnifiedModLayout({
                             />
                         )}
 
-                        {/* Installation Instructions */}
-                        {isEditing ? (
-                            <SimpleTextEditor
-                                title={t('installationGuide')}
-                                icon={FileCog}
-                                items={mod.installationSteps}
-                                onChange={(newItems) => updateField('installationSteps', newItems)}
-                                placeholder="Paste installation steps here (one per line)..."
-                                countLabel="steps"
-                                id="mod-installation-editor"
-                                name="installationSteps"
-                            />
-                        ) : (
-                            <InstallationAccordion steps={mod.installationSteps} />
-                        )}
                     </div>
+
+                    {/* Installation Instructions - STANDALONE CARD */}
+                    {isEditing ? (
+                        <SimpleTextEditor
+                            title={t('installationGuide')}
+                            icon={FileCog}
+                            items={mod.installationSteps}
+                            onChange={(newItems) => updateField('installationSteps', newItems)}
+                            placeholder={t('installationPlaceholder')}
+                            countLabel="steps"
+                            id="mod-installation-editor"
+                            name="installationSteps"
+                            tooltip={t('installationTooltip')}
+                        />
+                    ) : (
+                        <InstallationAccordion steps={mod.installationSteps} />
+                    )}
 
                     {/* TAGS BLOCK - FULL WIDTH */}
                     <div className="bg-surface rounded-xl p-4 border border-white/5">
@@ -552,6 +566,8 @@ export default function UnifiedModLayout({
                                 }}
                                 category="tag"
                                 showPopular={true}
+                                invalid={invalidFields.has('tags')}
+                                onClear={() => onClearField?.('tags')}
                             />
                         ) : (
                             <div className="flex flex-wrap gap-2">
@@ -628,7 +644,7 @@ export default function UnifiedModLayout({
                             <div className="flex items-center justify-between border-b border-white/5 pb-2">
                                 <span className="text-textMuted uppercase tracking-wider font-bold font-exo2">{t('modVersion')}:</span>
                                 {isEditing ? (
-                                    <input id="mod-version-input" name="version" type="text" value={mod.version} onChange={e => updateField('version', e.target.value)} className="bg-black/40 border border-white/10 rounded px-2.5 py-1 text-white text-[13px] font-bold w-24 text-right outline-none hover:border-white/20 focus:border-white/30 transition-colors" spellCheck={false} />
+                                    <input id="mod-version-input" name="version" type="text" value={mod.version} onChange={e => updateField('version', e.target.value)} className={cn(STANDARD_INPUT_STYLE, "w-24 text-right py-1")} spellCheck={false} />
                                 ) : (
                                     <VersionTag type="mod" version={mod.version} />
                                 )}
@@ -643,6 +659,8 @@ export default function UnifiedModLayout({
                                         onTagsRefresh={onGameVersionTagsRefresh}
                                         onCreateVersion={onGameVersionCreate}
                                         compact
+                                        invalid={invalidFields.has('gameVersion')}
+                                        onClear={() => onClearField?.('gameVersion')}
                                     />
                                 ) : (
                                     <VersionTag type="game" version={mod.gameVersion} color={gameVerTag?.color || undefined} />

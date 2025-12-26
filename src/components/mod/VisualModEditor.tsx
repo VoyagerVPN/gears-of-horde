@@ -1,29 +1,32 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Save, ArrowLeft, Loader2, RotateCcw, X, Cloud, History } from "lucide-react";
+import { Save, Loader2, RotateCcw, X, Cloud, History, Eye, Pencil } from "lucide-react";
 import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 
 import { type ModData, type TagData } from "@/schemas";
 import UnifiedModLayout from "@/components/mod/UnifiedModLayout";
+import UnifiedTopBar from "@/components/ui/UnifiedTopBar";
 import { createMod } from "@/app/actions/mod-actions";
 import { updateModAction } from "@/app/actions/admin-actions";
 import { fetchTagsByCategory } from "@/app/actions/tag-actions";
 import { slugify, getLatestGameVersion, gameVersionToTagValue, calculateGameVersionColor } from "@/lib/utils";
 import { useAutosave, clearModDraft } from "@/hooks/useAutosave";
+import { useRecentMods } from "@/hooks/useRecentMods";
 import { useToast } from "@/components/ui/Toast";
 import DraftHistoryModal from "./DraftHistoryModal";
 import { approveModSubmission } from "@/app/actions/mod-submission-actions";
 
 const EMPTY_MOD: ModData = {
-    title: "New Mod Title",
-    slug: "new-mod",
+    title: "",
+    slug: "",
     version: "v1.0",
     author: "",
     description: "",
     status: "active",
     gameVersion: "V1.0",
+    bannerUrl: "",
     isSaveBreaking: false,
     features: [],
     tags: [
@@ -50,16 +53,16 @@ interface VisualModEditorProps {
     submissionId?: string; // If created from a submission, approve it on save
 }
 
-function formatRelativeTime(isoDate: string): string {
+function formatRelativeTime(isoDate: string, t: (key: string, vars?: Record<string, string | number>) => string): string {
     const now = new Date();
     const date = new Date(isoDate);
     const diffMs = now.getTime() - date.getTime();
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
 
-    if (diffMinutes < 1) return "just now";
-    if (diffMinutes < 60) return `${diffMinutes} min ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffMinutes < 1) return t("relativeTime.justNow");
+    if (diffMinutes < 60) return t("relativeTime.minutesAgo", { count: diffMinutes });
+    if (diffHours < 24) return t("relativeTime.hoursAgo", { count: diffHours });
     return date.toLocaleDateString();
 }
 
@@ -68,6 +71,11 @@ export default function VisualModEditor({
     isNew = false,
     submissionId
 }: VisualModEditorProps) {
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const t = useTranslations("Admin");
     const tCommon = useTranslations("Common");
 
@@ -89,6 +97,7 @@ export default function VisualModEditor({
     const [tempGameVersionTags, setTempGameVersionTags] = useState<TagData[]>([]);
     const [showDraftBanner, setShowDraftBanner] = useState(true);
     const [showHistoryModal, setShowHistoryModal] = useState(false);
+    const [isPreviewMode, setIsPreviewMode] = useState(false);
     const { showToast } = useToast();
     const router = useRouter();
 
@@ -130,9 +139,14 @@ export default function VisualModEditor({
         });
     };
 
+    const { addToRecent } = useRecentMods();
+
     useEffect(() => {
         refreshGameVersionTags();
-    }, []);
+        if (!isNew && initialData?.slug && initialData?.title) {
+            addToRecent(initialData.slug, initialData.title);
+        }
+    }, [isNew, initialData]);
 
     // Track last saved time to show autosave toast
     const [lastToastKey, setLastToastKey] = useState<string | null>(null);
@@ -215,7 +229,98 @@ export default function VisualModEditor({
         setData(prev => ({ ...prev, gameVersion: version }));
     };
 
+    // Warning confirmation state - when true, button shows "Confirm" and next click saves
+    const [warningConfirmed, setWarningConfirmed] = useState(false);
+    const [invalidFields, setInvalidFields] = useState<Set<string>>(new Set());
+
+    const clearFieldHighlight = useCallback((field: string) => {
+        setInvalidFields(prev => {
+            if (!prev.has(field)) return prev;
+            const next = new Set(prev);
+            next.delete(field);
+            return next;
+        });
+    }, []);
+
     const handleSave = async () => {
+        // Pre-save validation
+        const errors: string[] = [];
+        const warnings: string[] = [];
+        const newInvalidFields = new Set<string>();
+
+        // Required field checks (Errors)
+        if (!data.title?.trim()) {
+            errors.push(t("validationErrors.Title is required"));
+            newInvalidFields.add('title');
+        }
+        if (!data.author?.trim()) {
+            errors.push(t("validationErrors.Author is required"));
+            newInvalidFields.add('author');
+        }
+        if (!data.version?.trim()) {
+            errors.push(t("validationErrors.Version is required"));
+            newInvalidFields.add('version');
+        }
+        if (!data.gameVersion?.trim()) {
+            errors.push(t("validationErrors.Game version is required"));
+            newInvalidFields.add('gameVersion');
+        }
+
+        const descriptionWords = data.description?.trim().split(/\s+/).filter(word => word.length > 0).length || 0;
+        if (descriptionWords < 5) {
+            errors.push(t("validationErrors.Description must contain at least 5 words"));
+            newInvalidFields.add('description');
+        }
+
+        if (!data.bannerUrl?.trim()) {
+            errors.push(t("validationErrors.Banner is required"));
+            newInvalidFields.add('bannerUrl');
+        }
+
+        const contentTags = data.tags.filter(tag =>
+            tag.category !== 'lang' &&
+            tag.category !== 'author' &&
+            tag.category !== 'gamever'
+        );
+        if (contentTags.length === 0) {
+            errors.push(t("validationErrors.At least one tag is required"));
+            newInvalidFields.add('tags');
+        }
+
+        if (!data.screenshots || data.screenshots.length === 0) {
+            errors.push(t("validationErrors.At least one screenshot is required"));
+            newInvalidFields.add('screenshots');
+        }
+
+        if (data.status !== 'upcoming' && !data.links.download?.trim()) {
+            errors.push(t("validationErrors.Download link is required"));
+            newInvalidFields.add('links.download');
+        }
+
+        setInvalidFields(newInvalidFields);
+
+        // 1. If there are errors, show them and block
+        if (errors.length > 0) {
+            errors.forEach(err => showToast(err, "error"));
+            setWarningConfirmed(false);
+            return;
+        }
+
+        // 2. If no errors, check for warnings
+        if (data.features.length === 0) {
+            warnings.push(tCommon('featuresEmptyWarning'));
+        }
+
+        // 3. If there are warnings and they haven't been confirmed yet
+        if (warnings.length > 0 && !warningConfirmed) {
+            warnings.forEach(warn => showToast(warn, "warning"));
+            setWarningConfirmed(true);
+            return;
+        }
+
+        // Reset confirmation state after save attempt (if it reached here, it means it's ready to save)
+        setWarningConfirmed(false);
+
         setIsSaving(true);
         try {
             if (isNew) {
@@ -246,18 +351,20 @@ export default function VisualModEditor({
                         const fieldMap: Record<string, string> = {
                             'author': tCommon('authorName'),
                             'title': tCommon('modTitle'),
-                            'slug': tCommon('slug'),
+                            'slug': tCommon('modName'),
                             'version': tCommon('version'),
                             'gameVersion': tCommon('gameVersion'),
                             'description': tCommon('description'),
                             'bannerUrl': tCommon('bannerUrl'),
+                            'tags': tCommon('tags'),
+                            'screenshots': tCommon('screenshots'),
                         };
                         return fieldMap[path] || path;
                     };
 
-                    // Split multiple validation errors and show each as separate toast
+                    // Split multiple validation errors and combine into single toast
                     const errors = result.error.split('\n');
-                    errors.forEach(errorMsg => {
+                    const formattedErrors = errors.map(errorMsg => {
                         // Parse "field.path: Error message" format
                         const colonIdx = errorMsg.indexOf(': ');
                         if (colonIdx > 0) {
@@ -267,11 +374,13 @@ export default function VisualModEditor({
                             const translatedMessage = t.has(`validationErrors.${message}`)
                                 ? t(`validationErrors.${message}`)
                                 : message;
-                            showToast(`${friendlyPath}: ${translatedMessage}`, "error");
-                        } else {
-                            showToast(errorMsg, "error");
+                            return `${friendlyPath}: ${translatedMessage}`;
                         }
-                    });
+                        return errorMsg;
+                    }).filter(Boolean);
+
+                    // Show all errors in one toast
+                    showToast(formattedErrors.join('\n'), "error");
                 }
             } else {
                 await updateModAction(data.slug, data);
@@ -293,6 +402,10 @@ export default function VisualModEditor({
         return date.toLocaleString();
     };
 
+    if (!mounted) {
+        return <div className="min-h-screen bg-zinc-950" />;
+    }
+
     return (
         <div className="min-h-screen bg-zinc-950 pb-20">
 
@@ -308,119 +421,82 @@ export default function VisualModEditor({
                 onClearAll={clearAllDrafts}
             />
 
-            {/* === DRAFT RECOVERY BANNER === */}
-            {hasDraft && showDraftBanner && draftHistory.length > 0 && (
-                <div className="mx-6 mb-4 mt-4 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <History size={20} className="text-amber-400" />
-                        <span className="text-amber-200 text-sm">
-                            {t("draftFound", { date: formatDraftDate(draftHistory[0].savedAt) })}
-                        </span>
-                    </div>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => setShowHistoryModal(true)}
-                            className="px-3 py-1.5 text-xs font-bold text-amber-300 hover:text-white border border-amber-500/30 hover:border-amber-500 rounded-lg flex items-center gap-1.5 transition-colors"
-                        >
-                            <History size={14} />
-                            {t("draftHistory")}
-                        </button>
-                        <button
-                            onClick={() => handleRestoreDraft()}
-                            className="px-3 py-1.5 text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-lg flex items-center gap-1.5 transition-colors"
-                        >
-                            <RotateCcw size={14} />
-                            {t("restoreDraft")}
-                        </button>
-                        <button
-                            onClick={handleDiscardDraft}
-                            className="px-3 py-1.5 text-xs font-bold text-amber-300 hover:text-white border border-amber-500/30 hover:border-amber-500 rounded-lg flex items-center gap-1.5 transition-colors"
-                        >
-                            <X size={14} />
-                            {t("discardDraft")}
-                        </button>
-                    </div>
-                </div>
-            )}
+
 
             {/* === ADMIN TOP BAR === */}
-            <div className="flex items-center justify-between mb-8 sticky top-20 z-40 bg-[#191919]/90 backdrop-blur-md py-4 border-b border-white/10 mx-6 px-6 rounded-xl shadow-2xl">
-                <div className="flex items-center gap-4">
-                    <button onClick={() => router.back()} className="p-2 hover:bg-white/5 rounded-lg text-textMuted hover:text-white transition-colors">
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div>
-                        <h1 className="text-xl font-bold text-white font-exo2 leading-none flex items-center gap-2">
-                            {isNew ? t("createNewMod") : `${t("editing")}: ${data.title}`}
-                        </h1>
-                    </div>
+            <UnifiedTopBar
+                className="top-20"
+                title={isNew ? t("createNewMod") : `${t("editing")}: ${data.title}`}
+            >
+                {/* Autosave status indicator */}
+                <div className="flex items-center gap-1.5 text-xs text-textMuted">
+                    {isAutosaving ? (
+                        <>
+                            <Loader2 size={14} className="animate-spin text-amber-400" />
+                            <span className="text-amber-400">{t("autoSaveStatus.saving")}</span>
+                        </>
+                    ) : lastSavedAt ? (
+                        <>
+                            <Cloud size={14} className="text-green-400" />
+                            <span className="text-green-400">
+                                {t("autoSaveStatus.saved", { time: formatRelativeTime(lastSavedAt, t) })}
+                            </span>
+                        </>
+                    ) : (
+                        <>
+                            <Cloud size={14} className="text-textMuted" />
+                            <span>{t("autoSaveStatus.idle")}</span>
+                        </>
+                    )}
                 </div>
 
-                <div className="flex items-center gap-3">
-                    {/* Autosave status indicator */}
-                    <div className="flex items-center gap-1.5 text-xs text-textMuted">
-                        {isAutosaving ? (
-                            <>
-                                <Loader2 size={14} className="animate-spin text-amber-400" />
-                                <span className="text-amber-400">{t("saving")}</span>
-                            </>
-                        ) : lastSavedAt ? (
-                            <>
-                                <Cloud size={14} className="text-green-400" />
-                                <span className="text-green-400">
-                                    {t("lastSavedAt", { time: formatRelativeTime(lastSavedAt) })}
-                                </span>
-                            </>
-                        ) : (
-                            <>
-                                <Cloud size={14} className="text-textMuted" />
-                                <span>{t("autosaved")}</span>
-                            </>
-                        )}
-                    </div>
+                <div className="w-px h-6 bg-white/10" />
 
-                    <div className="w-px h-6 bg-white/10" />
+                {/* Draft History button */}
+                <button
+                    onClick={() => setShowHistoryModal(true)}
+                    className="p-2 text-textMuted hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                    title={t("draftHistory")}
+                >
+                    <History size={18} />
+                </button>
 
-                    {/* Draft History button */}
-                    <button
-                        onClick={() => setShowHistoryModal(true)}
-                        className="p-2 text-textMuted hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-                        title={t("draftHistory")}
-                    >
-                        <History size={18} />
-                    </button>
+                {/* Manual save button */}
+                <button
+                    onClick={saveNow}
+                    className="p-2 text-textMuted hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                    title={t("saveDraft")}
+                >
+                    <Save size={18} />
+                </button>
 
-                    {/* Manual save button */}
-                    <button
-                        onClick={saveNow}
-                        className="p-2 text-textMuted hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-                        title={t("saving")}
-                    >
-                        <Cloud size={18} />
-                    </button>
+                {/* Preview/Edit Toggle */}
+                <button
+                    onClick={() => setIsPreviewMode(!isPreviewMode)}
+                    className={`p-2 rounded-lg transition-colors ${isPreviewMode ? 'bg-primary text-white' : 'text-textMuted hover:text-white hover:bg-white/5'}`}
+                    title={isPreviewMode ? tCommon('edit') : tCommon('preview')}
+                >
+                    {isPreviewMode ? <Pencil size={18} /> : <Eye size={18} />}
+                </button>
 
-                    <div className="w-px h-6 bg-white/10" />
+                <div className="w-px h-6 bg-white/10" />
 
-                    <button
-                        onClick={handleDiscardDraft}
-                        className="px-4 py-2 text-xs font-bold text-textMuted hover:text-white border border-white/10 rounded-lg transition-colors hover:bg-white/5 uppercase tracking-wider"
-                    >
-                        {t("discard")}
-                    </button>
-                    <button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className="px-6 py-2 text-xs font-bold text-white bg-primary hover:bg-red-600 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-red-900/20 uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                        {isSaving ? t("saving") : t("submitMod")}
-                    </button>
-                </div>
-            </div>
+                <button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className={`px-6 py-2 text-xs font-bold text-white rounded-lg flex items-center gap-2 transition-colors shadow-lg uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed ${warningConfirmed
+                        ? 'bg-yellow-600 hover:bg-yellow-500 shadow-yellow-900/20'
+                        : 'bg-primary hover:bg-red-600 shadow-red-900/20'
+                        }`}
+                >
+                    {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                    {isSaving ? t("saving") : warningConfirmed ? tCommon("confirm") : t("save")}
+                </button>
+            </UnifiedTopBar>
 
             <UnifiedModLayout
                 mod={data}
-                isEditing={true}
+                isEditing={!isPreviewMode}
                 onUpdate={(newData) => {
                     // Auto-generate slug from title for new mods
                     if (isNew && newData.title !== data.title) {
@@ -439,9 +515,11 @@ export default function VisualModEditor({
                 gameVersionTags={[...gameVersionTags, ...tempGameVersionTags]}
                 onGameVersionTagsRefresh={refreshGameVersionTags}
                 onGameVersionCreate={handleGameVersionCreate}
+                invalidFields={invalidFields}
+                onClearField={clearFieldHighlight}
             />
 
             {/* Floating Save Bar */}
-        </div>
+        </div >
     );
 }

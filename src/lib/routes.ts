@@ -9,5 +9,6 @@ export const ROUTES = {
     settings: '/profile/settings',
     news: '/profile/news',
     myMods: '/profile/my-mods',
+    editor: '/editor',
 } as const;
 

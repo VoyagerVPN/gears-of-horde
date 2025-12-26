@@ -12,7 +12,7 @@ export function convertSubmissionToModData(submission: ModSubmission): ModData {
         description: submission.description,
         status: 'active', // Default status for new mods
         gameVersion: submission.gameVersion,
-        bannerUrl: submission.bannerUrl,
+        bannerUrl: submission.bannerUrl || '',
         isSaveBreaking: submission.isSaveBreaking,
         features: submission.features,
         tags: submission.tags,

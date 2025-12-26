@@ -88,7 +88,7 @@ export default function DraftHistoryModal({
                 <DialogBody>
                     {draftHistory.length === 0 ? (
                         <div className="text-center py-10">
-                            <History size={40} className="text-textMuted/30 mx-auto mb-3" />
+                            <History size={40} className="text-textMuted opacity-30 mx-auto mb-3" />
                             <p className="text-textMuted text-sm">{t("noDraftsFound")}</p>
                         </div>
                     ) : (

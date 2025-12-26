@@ -70,10 +70,9 @@ export default function MediaGallery({ screenshots, videos }: MediaGalleryProps)
             />
           </div>
         ) : (
-          <div className="aspect-video bg-black/40 rounded-xl border border-white/5 flex flex-col items-center justify-center group cursor-pointer hover:border-primary/50 transition-colors relative overflow-hidden">
-            <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <Youtube size={48} className="text-white/20 group-hover:text-primary transition-colors mb-2" />
-            <span className="text-white/30 font-bold uppercase tracking-widest group-hover:text-white transition-colors font-exo2">{t('watchTrailer')}</span>
+          <div className="aspect-video bg-black/40 rounded-xl border border-white/5 flex flex-col items-center justify-center relative overflow-hidden">
+            <Youtube size={48} className="text-white opacity-10 mb-2" />
+            <span className="text-white/30 text-sm font-medium">{t('noTrailerAvailable')}</span>
           </div>
         )}
 
@@ -89,9 +88,9 @@ export default function MediaGallery({ screenshots, videos }: MediaGalleryProps)
             />
           </div>
         ) : (
-          <div className="aspect-video bg-black/40 rounded-xl border border-white/5 flex flex-col items-center justify-center group cursor-pointer hover:border-primary/50 transition-colors relative overflow-hidden">
-            <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div className="text-4xl font-black text-white/10 group-hover:text-white/20 transition-colors uppercase font-exo2">{t('review')}</div>
+          <div className="aspect-video bg-black/40 rounded-xl border border-white/5 flex flex-col items-center justify-center relative overflow-hidden">
+            <Film size={48} className="text-white opacity-10 mb-2" />
+            <span className="text-white/30 text-sm font-medium">{t('noReviewAvailable')}</span>
           </div>
         )}
       </div>

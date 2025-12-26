@@ -157,7 +157,7 @@ export default function ModCard({
       </div>
 
       {/* Main Card Link - Overlay */}
-      <Link href={`/${slug}`} className="absolute inset-0 z-10" aria-label={`View ${title}`} />
+      <Link href={`/mods/${slug}`} className="absolute inset-0 z-10" aria-label={`View ${title}`} />
     </div>
   );
 }

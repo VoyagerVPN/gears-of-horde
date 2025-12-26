@@ -19,6 +19,7 @@ import AuthorTag from "@/components/AuthorTag";
 import VersionTag from "@/components/VersionTag";
 import DateDisplay from "@/components/DateDisplay";
 import { useToast } from "@/components/ui/Toast";
+import UnifiedTopBar from "@/components/ui/UnifiedTopBar";
 
 import { useTranslations } from 'next-intl';
 
@@ -176,7 +177,7 @@ export default function AdminModsPage() {
 
   return (
     <div className="min-h-screen bg-zinc-950 pb-20">
-      <div className="max-w-[1600px] w-full mx-auto px-6 py-8 space-y-8">
+      <div className="max-w-[1600px] w-full mx-auto pb-8">
 
         {/* === PENDING TRANSLATIONS DASHBOARD === */}
         {suggestions.length > 0 && (
@@ -306,7 +307,7 @@ export default function AdminModsPage() {
                     >
                       <X size={18} />
                     </button>
-                    <Link href={`/profile/mods/new?fromSubmission=${submission.id}`}>
+                    <Link href={`/editor?fromSubmission=${submission.id}`}>
                       <button
                         className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5 transition-colors shadow-lg shadow-amber-900/20"
                         title={t('reviewSubmission')}
@@ -352,182 +353,183 @@ export default function AdminModsPage() {
         )}
 
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-white font-exo2">{t('modsCatalog')}</h1>
-          <Link href="/profile/mods/new">
+        <UnifiedTopBar title={t('modsCatalog')}>
+          <Link href="/editor">
             <button className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-red-600 text-white text-sm font-bold rounded-lg transition-colors shadow-lg shadow-red-900/20 uppercase tracking-wider font-exo2">
               <Plus size={18} /> {t('addNewMod')}
             </button>
           </Link>
-        </div>
+        </UnifiedTopBar>
 
-        {/* Toolbar */}
-        <div className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-white/5 shadow-sm">
-          <SearchBar
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder={t('searchMods')}
-            variant="compact"
+        <div className="px-6 lg:px-8 space-y-8">
+          {/* Toolbar */}
+          <div className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-white/5 shadow-sm">
+            <SearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder={t('searchMods')}
+              variant="compact"
+            />
+          </div>
+
+          {/* Table */}
+          <div className="bg-surface border border-white/5 rounded-xl overflow-hidden shadow-sm">
+            <table className="w-full text-sm text-left table-fixed">
+              <thead className="bg-white/5 text-textMuted uppercase text-xs font-bold tracking-wider">
+                <tr>
+                  <th
+                    className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[20%]"
+                    onClick={() => handleSort('title')}
+                  >
+                    <div className="flex items-center gap-2">
+                      {t('modName')}
+                      <SortIcon column="title" />
+                    </div>
+                  </th>
+                  <th
+                    className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[10%]"
+                    onClick={() => handleSort('author')}
+                  >
+                    <div className="flex items-center gap-2">
+                      {t('author')}
+                      <SortIcon column="author" />
+                    </div>
+                  </th>
+                  <th
+                    className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[8%]"
+                    onClick={() => handleSort('gameVersion')}
+                  >
+                    <div className="flex items-center gap-2">
+                      {t('gameVersion')}
+                      <SortIcon column="gameVersion" />
+                    </div>
+                  </th>
+                  <th
+                    className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[8%]"
+                    onClick={() => handleSort('version')}
+                  >
+                    <div className="flex items-center gap-2">
+                      {t('version')}
+                      <SortIcon column="version" />
+                    </div>
+                  </th>
+                  <th
+                    className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[15%]"
+                    onClick={() => handleSort('tags')}
+                  >
+                    <div className="flex items-center gap-2">
+                      {t('tags')}
+                      <SortIcon column="tags" />
+                    </div>
+                  </th>
+                  <th
+                    className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[8%]"
+                    onClick={() => handleSort('status')}
+                  >
+                    <div className="flex items-center gap-2">
+                      {t('status')}
+                      <SortIcon column="status" />
+                    </div>
+                  </th>
+                  <th
+                    className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[10%]"
+                    onClick={() => handleSort('updatedAt')}
+                  >
+                    <div className="flex items-center gap-2">
+                      {t('lastUpdated')}
+                      <SortIcon column="updatedAt" />
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-right w-[140px]">{t('actions')}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {filteredAndSortedMods.map((mod) => (
+                  <tr key={mod.slug} className="hover:bg-white/[0.02] transition-colors group">
+                    <td className="px-6 py-4 font-bold text-white text-base truncate max-w-0" title={mod.title}>{mod.title}</td>
+                    <td className="px-6 py-4">
+                      <AuthorTag author={mod.author} href={`/search?author=${mod.author}`} />
+                    </td>
+                    <td className="px-6 py-4">
+                      <VersionTag
+                        type="game"
+                        version={mod.gameVersion}
+                        color={mod.tags.find(t => t.category === 'gamever')?.color || undefined}
+                      />
+                    </td>
+                    <td className="px-6 py-4">
+                      <VersionTag type="mod" version={mod.version} />
+                    </td>
+                    <td className="px-6 py-4 overflow-hidden">
+                      <div className="flex flex-nowrap gap-1 overflow-hidden">
+                        {mod.tags.filter(tag => tag.category !== 'author' && tag.category !== 'gamever').slice(0, 3).map(tag => (
+                          <Tag key={tag.id || tag.displayName} color={tag.color || undefined} className="text-[10px] px-1.5 py-0.5 whitespace-nowrap">
+                            {tag.displayName}
+                          </Tag>
+                        ))}
+                        {mod.tags.filter(t => t.category !== 'author' && t.category !== 'gamever').length > 3 && (
+                          <span className="text-[10px] text-textMuted self-center whitespace-nowrap">+{mod.tags.filter(t => t.category !== 'author' && t.category !== 'gamever').length - 3}</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <Tag category="status" value={mod.status}>
+                        {t_common(`statuses.${mod.status}`)}
+                      </Tag>
+                    </td>
+                    <td className="px-6 py-4 text-textMuted text-xs">
+                      {mod.updatedAt ? (
+                        <DateDisplay date={mod.updatedAt} locale="en" />
+                      ) : (
+                        t('recently')
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                        <Link href={`/mods/${mod.slug}`} target="_blank">
+                          <button className="p-2 hover:bg-white/10 rounded text-textMuted hover:text-blue-400 transition-colors" title={t('viewLive')}>
+                            <Eye size={16} />
+                          </button>
+                        </Link>
+
+                        <button
+                          onClick={() => handleUpdateClick(mod)}
+                          className="p-2 hover:bg-white/10 rounded text-textMuted hover:text-green-400 transition-colors"
+                          title={t('quickUpdate')}
+                        >
+                          <RefreshCw size={16} />
+                        </button>
+
+                        <Link href={`/editor/${mod.slug}`}>
+                          <button className="p-2 hover:bg-white/10 rounded text-textMuted hover:text-white transition-colors" title={t('fullEdit')}>
+                            <Edit size={16} />
+                          </button>
+                        </Link>
+
+                        <button
+                          onClick={() => handleDelete(mod.slug)}
+                          className="p-2 hover:bg-red-500/10 rounded text-textMuted hover:text-red-400 transition-colors"
+                          title={t('delete')}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <UpdateModModal
+            isOpen={isUpdateModalOpen}
+            onClose={() => setIsUpdateModalOpen(false)}
+            mod={selectedMod}
+            onSave={handleSaveUpdate}
+            gameVersionTags={gameVersionTags}
+            onGameVersionTagsRefresh={() => fetchTagsByCategory('gamever').then(setGameVersionTags)}
           />
         </div>
-
-        {/* Table */}
-        <div className="bg-surface border border-white/5 rounded-xl overflow-hidden shadow-sm">
-          <table className="w-full text-sm text-left table-fixed">
-            <thead className="bg-white/5 text-textMuted uppercase text-xs font-bold tracking-wider">
-              <tr>
-                <th
-                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[20%]"
-                  onClick={() => handleSort('title')}
-                >
-                  <div className="flex items-center gap-2">
-                    {t('modName')}
-                    <SortIcon column="title" />
-                  </div>
-                </th>
-                <th
-                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[10%]"
-                  onClick={() => handleSort('author')}
-                >
-                  <div className="flex items-center gap-2">
-                    {t('author')}
-                    <SortIcon column="author" />
-                  </div>
-                </th>
-                <th
-                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[8%]"
-                  onClick={() => handleSort('gameVersion')}
-                >
-                  <div className="flex items-center gap-2">
-                    {t('gameVersion')}
-                    <SortIcon column="gameVersion" />
-                  </div>
-                </th>
-                <th
-                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[8%]"
-                  onClick={() => handleSort('version')}
-                >
-                  <div className="flex items-center gap-2">
-                    {t('version')}
-                    <SortIcon column="version" />
-                  </div>
-                </th>
-                <th
-                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[15%]"
-                  onClick={() => handleSort('tags')}
-                >
-                  <div className="flex items-center gap-2">
-                    {t('tags')}
-                    <SortIcon column="tags" />
-                  </div>
-                </th>
-                <th
-                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[8%]"
-                  onClick={() => handleSort('status')}
-                >
-                  <div className="flex items-center gap-2">
-                    {t('status')}
-                    <SortIcon column="status" />
-                  </div>
-                </th>
-                <th
-                  className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[10%]"
-                  onClick={() => handleSort('updatedAt')}
-                >
-                  <div className="flex items-center gap-2">
-                    {t('lastUpdated')}
-                    <SortIcon column="updatedAt" />
-                  </div>
-                </th>
-                <th className="px-6 py-4 text-right w-[140px]">{t('actions')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {filteredAndSortedMods.map((mod) => (
-                <tr key={mod.slug} className="hover:bg-white/[0.02] transition-colors group">
-                  <td className="px-6 py-4 font-bold text-white text-base truncate max-w-0" title={mod.title}>{mod.title}</td>
-                  <td className="px-6 py-4">
-                    <AuthorTag author={mod.author} href={`/search?author=${mod.author}`} />
-                  </td>
-                  <td className="px-6 py-4">
-                    <VersionTag
-                      type="game"
-                      version={mod.gameVersion}
-                      color={mod.tags.find(t => t.category === 'gamever')?.color || undefined}
-                    />
-                  </td>
-                  <td className="px-6 py-4">
-                    <VersionTag type="mod" version={mod.version} />
-                  </td>
-                  <td className="px-6 py-4 overflow-hidden">
-                    <div className="flex flex-nowrap gap-1 overflow-hidden">
-                      {mod.tags.filter(tag => tag.category !== 'author' && tag.category !== 'gamever').slice(0, 3).map(tag => (
-                        <Tag key={tag.id || tag.displayName} color={tag.color || undefined} className="text-[10px] px-1.5 py-0.5 whitespace-nowrap">
-                          {tag.displayName}
-                        </Tag>
-                      ))}
-                      {mod.tags.filter(t => t.category !== 'author' && t.category !== 'gamever').length > 3 && (
-                        <span className="text-[10px] text-textMuted self-center whitespace-nowrap">+{mod.tags.filter(t => t.category !== 'author' && t.category !== 'gamever').length - 3}</span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <Tag category="status" value={mod.status}>
-                      {t_common(`statuses.${mod.status}`)}
-                    </Tag>
-                  </td>
-                  <td className="px-6 py-4 text-textMuted text-xs">
-                    {mod.updatedAt ? (
-                      <DateDisplay date={mod.updatedAt} locale="en" />
-                    ) : (
-                      t('recently')
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
-                      <Link href={`/${mod.slug}`} target="_blank">
-                        <button className="p-2 hover:bg-white/10 rounded text-textMuted hover:text-blue-400 transition-colors" title={t('viewLive')}>
-                          <Eye size={16} />
-                        </button>
-                      </Link>
-
-                      <button
-                        onClick={() => handleUpdateClick(mod)}
-                        className="p-2 hover:bg-white/10 rounded text-textMuted hover:text-green-400 transition-colors"
-                        title={t('quickUpdate')}
-                      >
-                        <RefreshCw size={16} />
-                      </button>
-
-                      <Link href={`/profile/mods/${mod.slug}`}>
-                        <button className="p-2 hover:bg-white/10 rounded text-textMuted hover:text-white transition-colors" title={t('fullEdit')}>
-                          <Edit size={16} />
-                        </button>
-                      </Link>
-
-                      <button
-                        onClick={() => handleDelete(mod.slug)}
-                        className="p-2 hover:bg-red-500/10 rounded text-textMuted hover:text-red-400 transition-colors"
-                        title={t('delete')}
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <UpdateModModal
-          isOpen={isUpdateModalOpen}
-          onClose={() => setIsUpdateModalOpen(false)}
-          mod={selectedMod}
-          onSave={handleSaveUpdate}
-          gameVersionTags={gameVersionTags}
-          onGameVersionTagsRefresh={() => fetchTagsByCategory('gamever').then(setGameVersionTags)}
-        />
       </div>
     </div>
   );
