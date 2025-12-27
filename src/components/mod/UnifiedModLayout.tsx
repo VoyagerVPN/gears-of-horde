@@ -3,7 +3,7 @@
 import { ElementType } from "react";
 import {
     Download, ChevronLeft, Tags, Languages, Users, Coins, Trash2, Zap, FileCog,
-    Link as LinkIcon, ExternalLink, MessageSquare, History, AlertTriangle, Plus, X as XIcon, GripVertical, Images
+    Link as LinkIcon, ExternalLink, MessageSquare, History, AlertTriangle, X as XIcon, GripVertical, Images
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { Link } from "@/i18n/routing";
@@ -35,6 +35,7 @@ import TagSelector from "@/components/TagSelector";
 import { SIDEBAR_HEADER_STYLE, INVALID_INPUT_STYLE, STANDARD_INPUT_STYLE } from "@/lib/constants/ui-constants";
 import { cn, getDomain } from "@/lib/utils";
 import ScreenshotDropzone from "@/components/ui/ScreenshotDropzone";
+import LinkUnfurler from "@/components/ui/LinkUnfurler";
 
 // Helper function to extract YouTube video ID from URL
 function getYouTubeVideoId(url: string): string | null {
@@ -101,10 +102,10 @@ export default function UnifiedModLayout({
         updateField('links', newLinks);
     };
 
-    const addLinkItem = (category: 'community' | 'donations') => {
+    const addLinkItem = (category: 'community' | 'donations', initialData?: { name: string, url: string }) => {
         if (!onUpdate) return;
         const newLinks = { ...mod.links };
-        newLinks[category] = [...newLinks[category], { name: "", url: "" }];
+        newLinks[category] = [...newLinks[category], initialData || { name: "", url: "" }];
         updateField('links', newLinks);
     };
 
@@ -131,6 +132,9 @@ export default function UnifiedModLayout({
     // --- RENDER HELPERS ---
     const renderLinkBlock = (title: string, icon: ElementType, links: ModLink[], category: 'community' | 'donations') => {
         if (isEditing) {
+            // Determine if we should show a ghost input at the end
+            const showGhost = links.length === 0 || links[links.length - 1].url.trim() !== "";
+            const displayLinks = showGhost ? [...links, { name: "", url: "" }] : links;
             return (
                 <div className="bg-surface rounded-xl p-4 border border-white/5 flex flex-col">
                     <h3 className={SIDEBAR_HEADER_STYLE}>
@@ -139,16 +143,33 @@ export default function UnifiedModLayout({
                     <div className="space-y-2 mt-1">
                         <div className="flex justify-between items-center">
                             <span className="text-xs font-bold text-textMuted font-exo2">{t('links')}</span>
-                            <button type="button" onClick={() => addLinkItem(category)} className="text-primary hover:text-white flex items-center gap-1 text-xs uppercase font-bold font-exo2"><Plus size={12} /> {t('add')}</button>
                         </div>
-                        {links.map((link, idx) => (
-                            <div key={idx} className="flex gap-2 group items-center">
-                                <input id={`link-name-${category}-${idx}`} name={`link-name-${category}-${idx}`} type="text" value={link.name} onChange={e => updateLinkItem(category, idx, 'name', e.target.value)} className={cn(STANDARD_INPUT_STYLE, "w-1/3")} placeholder={t('name')} spellCheck={false} />
-                                <input id={`link-url-${category}-${idx}`} name={`link-url-${category}-${idx}`} type="text" value={link.url} onChange={e => updateLinkItem(category, idx, 'url', e.target.value)} className={cn(STANDARD_INPUT_STYLE, "flex-1")} placeholder={t('url')} spellCheck={false} />
-                                <button type="button" onClick={() => removeLinkItem(category, idx)} className="text-textMuted hover:text-red-400 opacity-50 group-hover:opacity-100 transition-opacity"><Trash2 size={14} /></button>
-                            </div>
-                        ))}
-                        {links.length === 0 && (
+                        {displayLinks.map((link, idx) => {
+                            const isReal = idx < links.length;
+                            return (
+                                <LinkUnfurler
+                                    key={idx}
+                                    index={idx}
+                                    category={category}
+                                    name={link.name}
+                                    url={link.url}
+                                    onNameChange={(value) => {
+                                        if (isReal) updateLinkItem(category, idx, 'name', value);
+                                        else addLinkItem(category, { name: value, url: link.url });
+                                    }}
+                                    onUrlChange={(value) => {
+                                        if (isReal) updateLinkItem(category, idx, 'url', value);
+                                        else addLinkItem(category, { name: link.name, url: value });
+                                    }}
+                                    onRemove={() => {
+                                        if (isReal) removeLinkItem(category, idx);
+                                    }}
+                                    namePlaceholder={t('name')}
+                                    urlPlaceholder={t('url')}
+                                />
+                            );
+                        })}
+                        {displayLinks.length === 0 && (
                             <div className="text-xs text-textMuted italic opacity-50 text-center py-2">{t('noLinksAdded')}</div>
                         )}
                     </div>

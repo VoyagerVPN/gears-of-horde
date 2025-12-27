@@ -62,6 +62,7 @@ export default async function Home({ params, searchParams }: Props) {
                 bannerUrl={mod.bannerUrl}
                 stats={{ rating: mod.stats.rating, downloads: mod.stats.downloads, views: mod.stats.views || '0' }}
                 locale={locale as 'en' | 'ru'}
+                status={mod.status}
               />
             ))}
           </div>

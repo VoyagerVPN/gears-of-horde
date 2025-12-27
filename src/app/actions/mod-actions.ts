@@ -217,7 +217,7 @@ export async function createMod(rawData: unknown): Promise<Result<{ slug: string
             const category = t.category || 'tag';
 
             if (category === 'lang') {
-                tag = await findOrCreateLangTag(t.displayName, t.value || t.displayName.substring(0, 2).toUpperCase());
+                tag = await findOrCreateLangTag(t.displayName);
             } else if (category === 'author') {
                 tag = await findOrCreateAuthorTag(t.displayName);
             } else if (category === 'gamever') {

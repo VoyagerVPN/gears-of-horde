@@ -74,7 +74,7 @@ export default function ModHeader({ mod, isEditing = false, initialStatus, onUpd
             )}
 
 
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 w-full overflow-hidden">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 w-full">
                 <div className="flex-1 min-w-0 w-full">
                     {/* Title & Author */}
                     <div className="flex items-center gap-3 mb-2 flex-wrap">

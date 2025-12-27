@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect } from 'react';
-import { Trash2 } from 'lucide-react';
+import { HelpCircle } from 'lucide-react';
 import { TagData } from '@/types/mod';
 import TagSelector from '@/components/TagSelector';
 import { useTranslations } from 'next-intl';
-import { LANG_BUILTIN_COLOR, PRIMARY_COLOR } from '@/lib/tag-colors';
-import { STANDARD_INPUT_STYLE } from "@/lib/constants/ui-constants";
-import { cn } from '@/lib/utils';
+import Tag from '@/components/ui/Tag';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/Tooltip';
 
 interface EditableLanguageTagsProps {
     items: TagData[];
@@ -113,8 +112,9 @@ export default function EditableLanguageTags({ items, onChange }: EditableLangua
                 className="space-y-0"
             />
 
+
             {/* List of Languages - sorted for display */}
-            <div className="bg-surface border border-white/5 rounded-xl overflow-hidden divide-y divide-white/5">
+            <div className="flex flex-col gap-2">
                 {[...items]
                     .map((item, originalIdx) => ({ item, originalIdx }))
                     .sort((a, b) => {
@@ -144,54 +144,47 @@ export default function EditableLanguageTags({ items, onChange }: EditableLangua
                         const isExternal = item.externalLink && item.externalLink.trim().length > 0;
 
                         return (
-                            <div key={originalIdx} className="group flex items-center gap-3 px-3 py-2.5 hover:bg-white/[0.03] transition-colors">
-                                {/* Language Name as Badge */}
-                                <div className="min-w-[100px]">
-                                    <div
-                                        className="inline-flex items-center px-2 py-1 rounded text-[12px] font-bold uppercase tracking-wider border"
-                                        style={{
-                                            color: isExternal ? PRIMARY_COLOR : LANG_BUILTIN_COLOR,
-                                            backgroundColor: isExternal ? `${PRIMARY_COLOR}20` : `${LANG_BUILTIN_COLOR}20`,
-                                            borderColor: isExternal ? `${PRIMARY_COLOR}33` : `${LANG_BUILTIN_COLOR}33`,
-                                        }}
-                                    >
-                                        {item.displayName}
-                                    </div>
-                                </div>
-
-                                {/* URL Input */}
-                                <div className="flex-1">
-                                    <input
-                                        id={`tag-url-${originalIdx}`}
-                                        name={`tag-url-${originalIdx}`}
-                                        type="text"
-                                        value={item.externalLink || ''}
-                                        onChange={(e) => updateMetadata(originalIdx, 'externalLink', e.target.value)}
-                                        disabled={isEnglish}
-                                        className={cn(
-                                            STANDARD_INPUT_STYLE,
-                                            "py-1.5",
-                                            isEnglish ? 'opacity-30 cursor-not-allowed select-none' : 'opacity-100'
-                                        )}
-                                        spellCheck={false}
-                                        placeholder={isEnglish ? "Built-in" : "https://..."}
-                                    />
-                                </div>
-
-                                {/* Delete Button */}
-                                <button
-                                    type="button"
-                                    onClick={() => removeLanguage(originalIdx)}
-                                    disabled={isEnglish}
-                                    className={`shrink-0 transition-all p-1 ${isEnglish
-                                        ? 'text-transparent cursor-default'
-                                        : 'text-zinc-500 hover:text-red-400 opacity-0 group-hover:opacity-100 cursor-pointer'
-                                        }`}
-                                    title={isEnglish ? undefined : t('remove')}
-                                >
-                                    <Trash2 size={16} />
-                                </button>
-                            </div>
+                            <Tag
+                                key={originalIdx}
+                                category="lang"
+                                value={isExternal ? 'external' : 'builtin'}
+                                onRemove={!isEnglish ? () => removeLanguage(originalIdx) : undefined}
+                                className="w-full flex"
+                                middleContent={
+                                    isEnglish ? (
+                                        <span className="text-textMuted text-[12px]">{t('builtIn')}</span>
+                                    ) : (
+                                        <input
+                                            type="text"
+                                            value={item.externalLink || ''}
+                                            onChange={(e) => updateMetadata(originalIdx, 'externalLink', e.target.value)}
+                                            placeholder="https://..."
+                                            className="bg-transparent border-none outline-none h-full text-[12px] font-normal w-full placeholder:text-textMuted/40 text-white"
+                                            spellCheck={false}
+                                        />
+                                    )
+                                }
+                                actions={isEnglish ? [
+                                    {
+                                        icon: (
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <HelpCircle size={14} className="text-textMuted/60 cursor-help" />
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p className="max-w-[200px] text-center whitespace-normal break-words">{t('languageTooltip')}</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        ),
+                                        onClick: () => { },
+                                        title: ''
+                                    }
+                                ] : undefined}
+                            >
+                                <span className="text-primary">{item.displayName}</span>
+                            </Tag>
                         );
                     })}
             </div>

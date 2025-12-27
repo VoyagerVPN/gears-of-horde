@@ -100,11 +100,17 @@ export async function findOrCreateNewscatTag(
     return findOrCreateTag('newscat', value, displayName);
 }
 
+/**
+ * Find or create a language tag
+ * 
+ * @param langName - Language display name (e.g., "English", "Russian")
+ * @returns The found or created lang tag
+ */
 export async function findOrCreateLangTag(
-    langName: string,
-    langCode: string
+    langName: string
 ): Promise<{ id: string; category: string; value: string; displayName: string; color: string | null }> {
-    const value = langCode.toLowerCase();
+    // Use lowercase name as value (e.g., "English" -> "english")
+    const value = langName.toLowerCase().trim().replace(/\s+/g, '_');
     return findOrCreateTag('lang', value, langName);
 }
 

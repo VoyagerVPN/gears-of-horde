@@ -39,7 +39,6 @@ export interface PrismaTagWithRelation {
         value: string;
         displayName: string;
         color: string | null;
-        isExternal?: boolean;
     };
 }
 

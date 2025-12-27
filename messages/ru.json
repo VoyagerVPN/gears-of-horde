@@ -223,7 +223,12 @@
         "wipe": "Вайп",
         "edit": "Редактировать",
         "preview": "Просмотр",
-        "delete": "Удалить"
+        "delete": "Удалить",
+        "fetchTitle": "Получить название",
+        "pressEnterToUnfurl": "Нажмите Enter, чтобы преобразовать ссылку",
+        "fetching": "Получение...",
+        "builtIn": "Встроенный",
+        "languageTooltip": "Английский всегда встроенный. Другие языки становятся внешними, когда вы добавляете ссылку для скачивания."
     },
     "Admin": {
         "pendingTranslations": "Ожидающие переводы",
@@ -332,7 +337,6 @@
         "editing": "Редактирование",
         "discard": "Отменить",
         "submitMod": "Отправить",
-        "save": "Сохранить",
         "saveDraft": "Сохранить черновик",
         "draftFrom": "Черновик {time}",
         "autoSaveStatus": {
@@ -379,12 +383,16 @@
             "At least one tag is required": "Необходимо добавить минимум один тег",
             "At least one screenshot is required": "Необходимо добавить минимум один скриншот",
             "Download link is required": "Необходимо указать ссылку на скачивание"
-        }
+        },
+        "userRegistrationsLast30Days": "Регистрации пользователей (30 дней)",
+        "modViewsLast30Days": "Просмотры модов (30 дней)",
+        "totalDownloads": "Всего скачиваний",
+        "registrations": "Регистрации",
+        "views": "Просмотры"
     },
     "ModCard": {
         "by": "от",
-        "noDescription": "Описание отсутствует",
-        "tagsLabel": "Теги:"
+        "noDescription": "Описание отсутствует"
     },
     "Author": {
         "dashboard": "Панель разработчика",

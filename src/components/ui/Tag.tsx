@@ -26,7 +26,7 @@ interface TagProps {
     variant?: 'default' | 'category' | 'warning' | 'version' | 'muted' | 'accent' | 'author';
     /** Direct color override (from database) - highest priority */
     color?: string;
-    /** Tag content */
+    /** Tag content (Left section) */
     children: React.ReactNode;
     /** Additional CSS classes */
     className?: string;
@@ -42,12 +42,18 @@ interface TagProps {
     customLayout?: boolean;
     /** Remove callback - creates a split pill with X button */
     onRemove?: () => void;
-    /** List of actions to display (split pill design) */
+    /** List of actions to display (split pill design) - Right section */
     actions?: TagAction[];
     /** Show category-specific icon (author, gamever, etc.) */
     showIcon?: boolean;
     /** Callback for clicking the main content area (e.g. to edit) */
     onContentClick?: (e: React.MouseEvent) => void;
+
+    /** 
+     * Middle content section (e.g. for Input fields) 
+     * Triggers the multi-section pill layout
+     */
+    middleContent?: React.ReactNode;
 }
 
 export function TagDivider() {
@@ -61,6 +67,7 @@ export function TagDivider() {
  * 1. Static Tag - displays text only
  * 2. Link Tag - clickable, navigates to href
  * 3. Split Action Tag - Actions (remove/merge/etc) are split by dividers
+ * 4. Multi-section Tag - [Left] | [Middle] | [Right] (e.g. for inline editing)
  * 
  * Color Priority:
  * 1. `color` prop (direct override, typically from DB)
@@ -83,7 +90,8 @@ export default function Tag({
     onRemove,
     actions = [],
     showIcon = false,
-    onContentClick
+    onContentClick,
+    middleContent
 }: TagProps) {
     // Legacy variant styles (for backward compatibility)
     const variantStyles = {
@@ -126,6 +134,22 @@ export default function Tag({
 
     // Combine onRemove and legacy onAction into generic actions array
     const allActions = [...actions];
+
+    // Legacy onAction support (if href and onAction are both present)
+    if (href && onAction && !actionIcon) {
+        // This is handled visually below in the "legacy split" block, 
+        // but if we move to unified actions, we might need to adapt.
+        // For now, we'll keep the legacy block for specifically href+onAction.
+    } else if (onAction && actionIcon) {
+        // If it's just a generic action button (like "external link" button in localizations)
+        allActions.push({
+            icon: actionIcon,
+            onClick: (e) => { e.preventDefault(); e.stopPropagation(); onAction(e); },
+            variant: 'default', // or whatever
+            title: 'Action'
+        });
+    }
+
     if (onRemove) {
         allActions.push({
             icon: <X size={14} />,
@@ -139,9 +163,9 @@ export default function Tag({
     const baseClasses = cn(
         "inline-flex items-center justify-center",
         "transition-colors whitespace-nowrap",
-        "text-[13px] font-bold rounded-md",
+        "text-[13px] font-bold rounded-md", // Rounded-md per user request roughly matching the screenshot (or change to rounded-full if needed)
         "capitalize",
-        "cursor-default",
+        "cursor-default", // Default cursor, overridden for links
         // Apply variant styles ONLY if no dynamic color
         !dynamicStyle && variantStyles[variant],
         className
@@ -150,102 +174,125 @@ export default function Tag({
     const paddingClasses = "px-2 py-1";
     const icon = showIcon ? getCategoryIcon() : null;
 
-    // 4. Split Action Tag (including onRemove)
-    // Matches the "amazing" styling from the tags panel
-    if (allActions.length > 0 || (href && onAction)) {
-        // Handle legacy onAction (Link + Action)
-        if (href && onAction) {
-            return (
-                <span
-                    className={cn(baseClasses, "p-0 overflow-hidden border items-stretch leading-none group", dynamicStyle ? "" : "border-white/10")}
-                    style={dynamicStyle}
-                    title={title}
-                >
-                    <Link
-                        href={href}
-                        className={cn(paddingClasses, "hover:bg-white/10 transition-colors h-full flex items-center pl-1.5 pr-1.5")}
-                    >
-                        {children}
-                    </Link>
-                    <TagDivider />
-                    <button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            onAction(e);
-                        }}
-                        className="pl-1.5 pr-1.5 py-1 hover:bg-white/10 transition-colors h-full flex items-center justify-center"
-                    >
-                        {actionIcon}
-                    </button>
-                </span>
-            );
-        }
 
-        // Generic Actions List
+    // Helper to render action buttons
+    const renderActionButtons = () => (
+        allActions.map((action, idx) => (
+            <React.Fragment key={idx}>
+                <TagDivider />
+                <button
+                    type="button"
+                    onClick={action.onClick}
+                    className={cn(
+                        "px-1.5 py-1.5 transition-colors self-stretch flex items-center justify-center min-w-[28px]",
+                        action.variant === 'destructive' ? "hover:bg-red-500/20 hover:text-red-400" :
+                            action.variant === 'confirm' ? "hover:bg-green-500/20 hover:text-green-400" :
+                                action.variant === 'warning' ? "hover:bg-yellow-500/20 hover:text-yellow-400" :
+                                    action.variant === 'transparent' ? "hover:bg-transparent cursor-default" :
+                                        "hover:bg-white/10"
+                    )}
+                    title={action.title}
+                >
+                    {action.icon}
+                </button>
+            </React.Fragment>
+        ))
+    );
+
+    // --- COMPLEX LAYOUTS ---
+
+    // 1. Multi-section Layout (Left | Middle | Right)
+    // Triggered by presence of middleContent, or if we have actions but no special href requirement
+    if (middleContent || (allActions.length > 0 && !href)) {
         return (
             <span
-                className={cn(baseClasses, "p-0 overflow-hidden border items-stretch leading-none", dynamicStyle ? "" : "border-white/10")}
+                className={cn(baseClasses, "p-0 overflow-hidden border items-stretch leading-none group", dynamicStyle ? "" : "border-white/10")}
                 style={dynamicStyle}
                 title={title}
             >
-                {/* Content side */}
+                {/* LEFT SECTION */}
                 {onContentClick ? (
                     <button
                         type="button"
                         onClick={onContentClick}
-                        className={cn(paddingClasses, "flex items-center h-full hover:bg-white/10 transition-colors text-left")}
+                        className={cn(paddingClasses, "flex items-center self-stretch hover:bg-white/10 transition-colors text-left")}
                     >
                         {icon}
                         <span className="leading-none">{children}</span>
                     </button>
                 ) : (
-                    <span className={cn(paddingClasses, "flex items-center h-full")}>
+                    <span className={cn(paddingClasses, "flex items-center self-stretch")}>
                         {icon}
                         <span className="leading-none">{children}</span>
                     </span>
                 )}
 
-                {allActions.map((action, idx) => (
-                    <React.Fragment key={idx}>
+                {/* MIDDLE SECTION */}
+                {middleContent && (
+                    <>
                         <TagDivider />
-                        <button
-                            type="button"
-                            onClick={action.onClick}
-                            className={cn(
-                                "px-1.5 py-1 transition-colors h-full flex items-center justify-center min-w-[28px]",
-                                action.variant === 'destructive' ? "hover:bg-red-500/20 hover:text-red-400" :
-                                    action.variant === 'confirm' ? "hover:bg-green-500/20 hover:text-green-400" :
-                                        action.variant === 'warning' ? "hover:bg-yellow-500/20 hover:text-yellow-400" :
-                                            action.variant === 'transparent' ? "hover:bg-transparent cursor-default" :
-                                                "hover:bg-white/10"
-                            )}
-                            title={action.title}
-                        >
-                            {action.icon}
-                        </button>
-                    </React.Fragment>
-                ))}
+                        <div className="flex-1 self-stretch flex items-center px-2 py-1.5 transition-colors hover:bg-white/10">
+                            {middleContent}
+                        </div>
+                    </>
+                )}
+
+                {/* RIGHT SECTION (Actions) */}
+                {renderActionButtons()}
             </span>
         );
     }
 
-    // 2. Link Tag
-    if (href) {
+    // 2. Legacy Split Action Tag (Href + Action)
+    // Specifically for "External Link" tags that are clickable BUT also have a secondary action (like delete or open external)
+    if (href && onAction && !middleContent) {
         return (
-            <Link
-                href={href}
-                className={cn(baseClasses, paddingClasses, "gap-1 hover:opacity-80 active:scale-95 border border-transparent")}
+            <span
+                className={cn(baseClasses, "p-0 overflow-hidden border items-stretch leading-none group", dynamicStyle ? "" : "border-white/10")}
                 style={dynamicStyle}
                 title={title}
             >
-                {icon}
-                {children}
-            </Link>
+                <Link
+                    href={href}
+                    className={cn(paddingClasses, "hover:bg-white/10 transition-colors h-full flex items-center pl-1.5 pr-1.5 cursor-pointer")}
+                >
+                    {children}
+                </Link>
+                <TagDivider />
+                <button
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onAction(e);
+                    }}
+                    className="pl-1.5 pr-1.5 py-1 hover:bg-white/10 transition-colors h-full flex items-center justify-center"
+                >
+                    {actionIcon}
+                </button>
+            </span>
         );
     }
 
-    // 3. Static Tag (Default or Custom Layout)
+    // 3. Link Tag (Simple)
+    if (href) {
+        return (
+            <span
+                className={cn(baseClasses, "p-0 overflow-hidden border border-transparent")}
+                style={dynamicStyle}
+                title={title}
+            >
+                <Link
+                    href={href}
+                    className={cn(paddingClasses, "gap-1 hover:bg-white/10 transition-colors h-full w-full flex items-center justify-center cursor-pointer")}
+                >
+                    {icon}
+                    {children}
+                </Link>
+            </span>
+        );
+    }
+
+    // 4. Static Tag (Default or Custom Layout)
     return (
         <span
             className={cn(baseClasses, customLayout ? "p-0 overflow-hidden" : cn(paddingClasses, "gap-1 border border-transparent"))}

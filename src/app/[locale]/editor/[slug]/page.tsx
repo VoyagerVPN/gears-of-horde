@@ -1,5 +1,7 @@
 import VisualModEditor from "@/components/mod/VisualModEditor";
 import { fetchModBySlug } from "@/app/actions/admin-actions";
+import { notFound, redirect } from "next/navigation";
+import { ROUTES } from "@/lib/routes";
 
 interface PageProps {
     params: Promise<{ slug: string }>;
@@ -8,7 +10,16 @@ interface PageProps {
 export default async function EditModPage({ params }: PageProps) {
     const { slug } = await params;
 
-    const data = (await fetchModBySlug(slug)) || undefined;
+    // Redirect /editor/new to /editor (creation page)
+    if (slug === 'new') {
+        redirect(ROUTES.editor);
+    }
+
+    const data = (await fetchModBySlug(slug));
+
+    if (!data) {
+        notFound();
+    }
 
     return (
         <VisualModEditor

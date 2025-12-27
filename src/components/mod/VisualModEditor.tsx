@@ -5,7 +5,7 @@ import { Save, Loader2, Cloud, History, Eye, Pencil } from "lucide-react";
 import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 
-import { type ModData, type TagData } from "@/schemas";
+import { type ModData, type TagData, type ModLink } from "@/schemas";
 import UnifiedModLayout from "@/components/mod/UnifiedModLayout";
 import UnifiedTopBar from "@/components/ui/UnifiedTopBar";
 import { createMod } from "@/app/actions/mod-actions";
@@ -160,7 +160,10 @@ export default function VisualModEditor({
     const handleRestoreDraft = useCallback((draftId?: string) => {
         const restored = restoreDraft(draftId);
         if (restored) {
-            setData(restored.data);
+            // For existing mods, always preserve the original slug from initialData
+            const restoredData = !isNew && initialData?.slug ? { ...restored.data, slug: initialData.slug } : restored.data;
+            setData(restoredData);
+
             // Restore temp game version tags if present, recalculating colors
             if (restored.extraData?.tempGameVersionTags && restored.extraData.tempGameVersionTags.length > 0) {
                 const restoredTempTags = restored.extraData.tempGameVersionTags;
@@ -185,7 +188,7 @@ export default function VisualModEditor({
             }
         }
 
-    }, [restoreDraft, gameVersionTags]);
+    }, [restoreDraft, gameVersionTags, initialData?.slug, isNew]);
 
 
 
@@ -237,6 +240,49 @@ export default function VisualModEditor({
         });
     }, []);
 
+    // Auto-unfurl links that have URL but no Name (Shared logic)
+    const unfurlLinkList = async (list: ModLink[]) => {
+        return await Promise.all(list.map(async (link) => {
+            // If URL exists but Name is empty (and looks like a URL)
+            if (link.url && !link.name && link.url.startsWith('http')) {
+                try {
+                    const response = await fetch("/api/unfurl", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ url: link.url }),
+                    });
+                    const res = await response.json();
+                    if (res.success && res.title) {
+                        return { ...link, name: res.title };
+                    }
+                } catch (err) {
+                    console.error("Failed to auto-unfurl link:", link.url, err);
+                }
+            }
+            return link;
+        }));
+    };
+
+    const handlePreviewToggle = async () => {
+        // If entering preview mode, update links first
+        if (!isPreviewMode) {
+            const [newCommunity, newDonations] = await Promise.all([
+                unfurlLinkList(data.links.community),
+                unfurlLinkList(data.links.donations)
+            ]);
+
+            setData(prev => ({
+                ...prev,
+                links: {
+                    ...prev.links,
+                    community: newCommunity,
+                    donations: newDonations
+                }
+            }));
+        }
+        setIsPreviewMode(!isPreviewMode);
+    };
+
     const handleSave = async () => {
         // Pre-save validation
         const errors: string[] = [];
@@ -248,7 +294,8 @@ export default function VisualModEditor({
             errors.push(t("validationErrors.Title is required"));
             newInvalidFields.add('title');
         }
-        if (!data.author?.trim()) {
+        const authorTags = data.tags.filter(t => t.category === 'author');
+        if (!data.author?.trim() && authorTags.length === 0) {
             errors.push(t("validationErrors.Author is required"));
             newInvalidFields.add('author');
         }
@@ -274,7 +321,6 @@ export default function VisualModEditor({
 
         const contentTags = data.tags.filter(tag =>
             tag.category !== 'lang' &&
-            tag.category !== 'author' &&
             tag.category !== 'gamever'
         );
         if (contentTags.length === 0) {
@@ -317,9 +363,24 @@ export default function VisualModEditor({
         setWarningConfirmed(false);
 
         setIsSaving(true);
+        // Prepare data for saving - ensure author is synced from tags if empty
+        const saveData = { ...data };
+        if (!saveData.author?.trim() && authorTags.length > 0) {
+            saveData.author = authorTags[0].displayName;
+        }
+
         try {
+            // Process links concurrently before saving (using shared helper)
+            const [newCommunity, newDonations] = await Promise.all([
+                unfurlLinkList(saveData.links.community),
+                unfurlLinkList(saveData.links.donations)
+            ]);
+
+            saveData.links.community = newCommunity;
+            saveData.links.donations = newDonations;
+
             if (isNew) {
-                const result = await createMod(data);
+                const result = await createMod(saveData);
                 if (result.success) {
                     // Clear draft on successful save
                     clearModDraft(draftKey);
@@ -330,7 +391,7 @@ export default function VisualModEditor({
                     }
 
                     showToast(t("modCreatedSuccess"), "success");
-                    router.push(`/profile/mods/${result.data.slug}`);
+                    router.push(`/admin/mods/${result.data.slug}`);
                 } else {
                     // Helper to translate field paths to friendly names
                     const translateFieldPath = (path: string): string => {
@@ -378,10 +439,8 @@ export default function VisualModEditor({
                     showToast(formattedErrors.join('\n'), "error");
                 }
             } else {
-                await updateModAction(data.slug, {
-                    ...data,
-                    features: Array.isArray(data.features) ? data.features.join('\n') : data.features,
-                    installationSteps: Array.isArray(data.installationSteps) ? data.installationSteps.join('\n') : data.installationSteps
+                await updateModAction(initialData?.slug || data.slug, {
+                    ...saveData
                 });
                 // Clear draft on successful save
                 clearModDraft(draftKey);
@@ -394,8 +453,6 @@ export default function VisualModEditor({
             setIsSaving(false);
         }
     };
-
-
 
     if (!mounted) {
         return <div className="min-h-screen bg-zinc-950" />;
@@ -467,7 +524,7 @@ export default function VisualModEditor({
 
                 {/* Preview/Edit Toggle */}
                 <button
-                    onClick={() => setIsPreviewMode(!isPreviewMode)}
+                    onClick={handlePreviewToggle}
                     className={`p-2 rounded-lg transition-colors ${isPreviewMode ? 'bg-primary text-white' : 'text-textMuted hover:text-white hover:bg-white/5'}`}
                     title={isPreviewMode ? tCommon('edit') : tCommon('preview')}
                 >

@@ -99,7 +99,7 @@ export const ModDataSchema = z.object({
         .max(50, "Slug too long")
         .regex(/^[a-z0-9-]+$/, "Slug can only contain Latin letters, numbers, and hyphens"),
     version: z.string().min(1, "Version is required"),
-    author: z.string().min(1, "Author is required"),
+    author: z.string(),
     description: z.string().refine(
         (val) => val.trim().split(/\s+/).filter(word => word.length > 0).length >= 5,
         "Description must contain at least 5 words"
@@ -110,7 +110,7 @@ export const ModDataSchema = z.object({
     isSaveBreaking: z.boolean().default(false),
     features: z.array(z.string()).default([]),
     tags: z.array(TagDataSchema).refine(
-        (tags) => tags.filter(t => t.category !== 'lang' && t.category !== 'author' && t.category !== 'gamever').length >= 1,
+        (tags) => tags.filter(t => t.category !== 'lang' && t.category !== 'gamever').length >= 1,
         "At least one tag is required"
     ),
     installationSteps: z.array(z.string()).default([]),
@@ -132,6 +132,12 @@ export const ModDataSchema = z.object({
     localizations: z.array(ModLocalizationSchema).default([]),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional()
+}).refine(data => {
+    const hasAuthorTag = data.tags.some(t => t.category === 'author');
+    return data.author.trim().length > 0 || hasAuthorTag;
+}, {
+    message: "Author is required",
+    path: ["author"]
 });
 
 /**

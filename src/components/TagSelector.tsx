@@ -221,7 +221,7 @@ export default function TagSelector({
                 </div>
 
                 {/* Dropdown */}
-                {isOpen && (query.length > 0 || popularTags.length > 0) && (
+                {isOpen && (query.length > 0 || (showPopular && popularTags.length > 0)) && (
                     <div className="absolute top-full left-0 mt-1 bg-zinc-900 border border-white/10 rounded-lg shadow-xl z-50 max-h-64 overflow-y-auto overflow-x-hidden min-w-[280px]">
                         {/* 1. Immediate Action: Create Tag */}
                         {query && !isSelected(query) && (

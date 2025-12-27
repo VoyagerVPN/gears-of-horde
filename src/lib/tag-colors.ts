@@ -22,8 +22,8 @@ export const AUTHOR_TAG_COLOR = '#22d3ee'; // cyan-400 - higher contrast for bet
 /** Color for primary/accent elements */
 export const PRIMARY_COLOR = '#ce4729';
 
-/** Color for built-in language tags (dark primary) */
-export const LANG_BUILTIN_COLOR = '#8b3220'; // Darker shade of primary
+/** Color for built-in language tags (same as primary) */
+export const LANG_BUILTIN_COLOR = PRIMARY_COLOR;
 
 /** Game version gradient colors */
 export const GAME_VERSION_COLORS = {
@@ -64,11 +64,11 @@ export const TAG_CATEGORY_COLORS: Record<string, string> = {
     'newscat:status': '#a1a1a1',  // gray
 
     // === LANGUAGE (special handling) ===
-    // - builtin: uses dark primary color (non-clickable)
+    // - builtin: uses zinc color with primary text
     // - external: uses full primary color (clickable with download)
-    'lang': LANG_BUILTIN_COLOR,           // Dark primary for built-in language tags
-    'lang:builtin': LANG_BUILTIN_COLOR,    // Dark primary
-    'lang:external': PRIMARY_COLOR,        // Full primary for external
+    'lang': '#71717a',                      // zinc-500 for default/builtin
+    'lang:builtin': '#71717a',              // zinc-500
+    'lang:external': PRIMARY_COLOR,         // Full primary for external
 
     // === GAME VERSIONS ===
     // Colors are calculated dynamically via recalculateGameVersionColors()

@@ -125,10 +125,9 @@ model Mod {
 model Tag {
   id          String   @id @default(cuid())
   category    String   // "gamever", "author", "lang", "status", "newscat", "tag"
-  value       String   // "1_0", "khaine", "en", "active", "release", "survival"
+  value       String   // "1_0", "khaine", "english", "active", "release", "survival"
   displayName String
   color       String?  // Optional hex color or class name
-  isExternal  Boolean  @default(false) // Whether this tag represents external content by default
   
   modTags     ModTag[]
   
@@ -139,7 +138,7 @@ model ModTag {
   modId        String
   tagId        String
   
-  // Specific to the relationship (e.g., for language tags)
+  // For language tags only: whether translation is external (with link)
   isExternal   Boolean @default(false)
   externalLink String?
   

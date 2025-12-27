@@ -1,14 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from 'next-intl';
 import Image from "next/image";
-import { Star, Download, Calendar, Eye } from "lucide-react";
+import { Star, Download, Calendar, Eye, CircleUser } from "lucide-react";
 import DateDisplay from "@/components/DateDisplay";
 import VersionTag from "@/components/VersionTag";
 import Tag from "@/components/ui/Tag";
-import AuthorTag from "@/components/AuthorTag";
-import { TagData } from "@/types/mod";
+import { TagData, ModStatusType } from "@/types/mod";
+import { STATUS_CONFIG } from "@/lib/mod-constants";
 
 interface ModCardProps {
   title: string;
@@ -26,6 +27,7 @@ interface ModCardProps {
     views: string;
   };
   locale?: 'en' | 'ru';
+  status?: ModStatusType;
 }
 
 export default function ModCard({
@@ -39,12 +41,34 @@ export default function ModCard({
   updatedAt,
   bannerUrl,
   stats,
-  locale = 'en'
+  locale = 'en',
+  status = 'active'
 }: ModCardProps) {
   const t = useTranslations('ModCard');
 
-  // Find gamever tag to get database color (no displayName match needed - mod should have only one gamever tag)
+  // Get status config for icon and label
+  const statusConfig = STATUS_CONFIG[status];
+  const StatusIcon = statusConfig.icon;
+
+  // State for popovers
+  const [authorsPopoverOpen, setAuthorsPopoverOpen] = useState(false);
+  const [tagsPopoverOpen, setTagsPopoverOpen] = useState(false);
+
+  // Extract tags by category
+  const authorTags = tags.filter(t => t.category === 'author');
+  const genericTags = tags.filter(t => t.category === 'tag');
   const gameVerTag = tags.find(t => t.category === 'gamever');
+
+  // Author display logic
+  const mainAuthor = authorTags.length > 0 ? authorTags[0].displayName : author;
+  const additionalAuthors = authorTags.slice(1);
+  const hasMultipleAuthors = additionalAuthors.length > 0;
+
+  // Tags display logic - first 9 shown normally, 10th has sliver behind it
+  const normalTags = genericTags.slice(0, 9);
+  const lastVisibleTag = genericTags[9]; // The tag that will have sliver behind
+  const hiddenTags = genericTags.slice(10);
+  const hasHiddenTags = hiddenTags.length > 0 && lastVisibleTag;
 
   return (
     <div className="group block h-full relative">
@@ -70,48 +94,83 @@ export default function ModCard({
         </div>
 
         {/* CONTENT */}
-        <div className="p-3 flex-1 flex flex-col gap-2">
+        <div className="p-2.5 flex-1 flex flex-col gap-1.5">
 
           {/* Title */}
           <h3 className="text-base font-bold text-white group-hover:text-primary transition-colors line-clamp-1 font-exo2 uppercase tracking-wide">
             {title}
           </h3>
 
-          {/* Author & Versions Row */}
-          <div className="flex items-center gap-2 flex-wrap text-[10px] text-textMuted relative z-20">
-            {/* Author */}
-            <div className="flex items-center gap-1">
-              {tags.filter(t => t.category === 'author').length > 0 ? (
-                tags.filter(t => t.category === 'author').map((authorTag) => (
-                  <AuthorTag
-                    key={authorTag.displayName}
-                    author={authorTag.displayName}
-                  />
-                ))
-              ) : (
-                <AuthorTag author={author} />
+          {/* Author & Versions & Status Row */}
+          <div className="flex items-center gap-1.5 flex-wrap text-[10px] text-textMuted relative z-20">
+
+            {/* Author Section with stacked cards effect */}
+            <div className={`relative ${hasMultipleAuthors ? 'pr-7' : ''}`}>
+              {/* Stacked sliver BEHIND - styled like a tag peeking out */}
+              {hasMultipleAuthors && (
+                <span
+                  className="absolute top-0 bottom-0 right-0 w-10 bg-cyan-400/10 border border-cyan-400/20 rounded-md rounded-l-none border-l-0 overflow-hidden cursor-default z-0"
+                  onMouseEnter={() => setAuthorsPopoverOpen(true)}
+                  onMouseLeave={() => setAuthorsPopoverOpen(false)}
+                >
+                  <span className="w-full h-full flex items-center justify-end pr-2 text-[13px] font-bold text-cyan-400 hover:bg-white/10 transition-colors">
+                    +{additionalAuthors.length}
+                  </span>
+                </span>
+              )}
+
+              {/* Main Author Tag - ON TOP with solid background */}
+              <div className="relative z-10 bg-[#2b3e40] rounded-md">
+                <Tag category="author" href={`/search?author=${encodeURIComponent(mainAuthor)}`}>
+                  <CircleUser size={12} className="mr-1" />
+                  {mainAuthor}
+                </Tag>
+              </div>
+
+              {/* Tooltip with additional authors */}
+              {authorsPopoverOpen && (
+                <div className="absolute bottom-full right-0 mb-1 z-50 bg-surface border border-white/10 rounded-lg shadow-xl p-2 min-w-[120px]">
+                  <div className="flex flex-col gap-1">
+                    {additionalAuthors.map((authorTag) => (
+                      <Tag
+                        key={authorTag.displayName}
+                        category="author"
+                        href={`/search?author=${encodeURIComponent(authorTag.displayName)}`}
+                      >
+                        <CircleUser size={12} className="mr-1" />
+                        {authorTag.displayName}
+                      </Tag>
+                    ))}
+                  </div>
+                  {/* Arrow */}
+                  <div className="absolute top-full right-3 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white/10" />
+                </div>
               )}
             </div>
-
-            {/* Vertical Divider */}
-            <div className="w-px h-4 bg-white/20 self-center" />
 
             {/* Versions */}
             <div className="flex gap-1">
               <VersionTag type="game" version={gameVersion} color={gameVerTag?.color || undefined} />
               <VersionTag type="mod" version={version} />
             </div>
+
+            {/* Status Tag */}
+            <Tag
+              category="status"
+              value={status}
+              href={`/search?status=${status}`}
+            >
+              <StatusIcon size={12} className="mr-1" />
+              {statusConfig.label}
+            </Tag>
           </div>
 
-          {/* Divider above Tags */}
-          <div className="w-full h-px bg-white/5 my-0.5" />
+          {/* Divider between meta row and tags */}
+          <div className="w-full h-px bg-white/5" />
 
-          {/* Tags */}
+          {/* Tags Section */}
           <div className="flex flex-wrap gap-1 items-start content-start relative z-20">
-            <span className="text-[10px] text-textMuted/60 self-center mr-1">
-              {t('tagsLabel')}
-            </span>
-            {tags.filter(t => t.category !== 'author' && t.category !== 'gamever' && t.category !== 'language').slice(0, 4).map(tag => (
+            {normalTags.map(tag => (
               <Tag
                 key={tag.id || tag.displayName}
                 color={tag.color || undefined}
@@ -121,20 +180,67 @@ export default function ModCard({
                 {tag.displayName}
               </Tag>
             ))}
+
+            {/* Last visible tag with stacked sliver behind it */}
+            {lastVisibleTag && (
+              <div className={`relative ${hasHiddenTags ? 'pr-7' : ''}`}>
+                {/* Stacked sliver BEHIND - styled like a tag peeking out */}
+                {hasHiddenTags && (
+                  <span
+                    className="absolute top-0 bottom-0 right-0 w-10 bg-white/[0.025] border border-white/10 rounded-md rounded-l-none border-l-0 overflow-hidden cursor-default z-0"
+                    onMouseEnter={() => setTagsPopoverOpen(true)}
+                    onMouseLeave={() => setTagsPopoverOpen(false)}
+                  >
+                    <span className="w-full h-full flex items-center justify-end pr-2 text-[13px] font-bold text-textMuted hover:bg-white/10 transition-colors">
+                      +{hiddenTags.length}
+                    </span>
+                  </span>
+                )}
+
+                {/* Last visible tag - ON TOP with solid background */}
+                <div className="relative z-10 bg-surface rounded-md">
+                  <Tag
+                    color={lastVisibleTag.color || undefined}
+                    category={lastVisibleTag.category}
+                    href={`/search?tag=${encodeURIComponent(lastVisibleTag.displayName)}`}
+                  >
+                    {lastVisibleTag.displayName}
+                  </Tag>
+                </div>
+
+                {/* Tooltip with hidden tags */}
+                {tagsPopoverOpen && (
+                  <div className="absolute bottom-full right-0 mb-1 z-50 bg-surface border border-white/10 rounded-lg shadow-xl p-2 min-w-[120px]">
+                    <div className="flex flex-col gap-1">
+                      {hiddenTags.map(tag => (
+                        <Tag
+                          key={tag.id || tag.displayName}
+                          color={tag.color || undefined}
+                          category={tag.category}
+                          href={`/search?tag=${encodeURIComponent(tag.displayName)}`}
+                        >
+                          {tag.displayName}
+                        </Tag>
+                      ))}
+                    </div>
+                    {/* Arrow */}
+                    <div className="absolute top-full right-3 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white/10" />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Divider above Description */}
-          <div className="w-full h-px bg-white/5 my-0.5" />
-
-          {/* Description */}
-          <div className="text-[11px] text-white leading-relaxed line-clamp-2">
-            {description || t('noDescription')}
-          </div>
+          {/* Description - rendered with prose styling */}
+          <div
+            className="text-[11px] text-textMuted leading-relaxed line-clamp-2 prose prose-invert prose-sm max-w-none"
+            dangerouslySetInnerHTML={{ __html: description || t('noDescription') }}
+          />
 
         </div>
 
         {/* FOOTER */}
-        <div className="bg-black/20 px-3 py-2 border-t border-white/5 flex items-center justify-between text-[10px] text-textMuted mt-auto">
+        <div className="bg-black/20 px-3 py-1.5 border-t border-white/5 flex items-center justify-between text-[10px] text-textMuted mt-auto">
           <div className="flex gap-3">
             <span className="flex items-center gap-1.5 text-white font-bold">
               <Star size={12} className="text-yellow-500 fill-yellow-500" />

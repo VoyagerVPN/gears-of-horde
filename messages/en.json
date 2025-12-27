@@ -223,7 +223,12 @@
         "wipe": "Wipe",
         "edit": "Edit",
         "preview": "Preview",
-        "delete": "Delete"
+        "delete": "Delete",
+        "fetchTitle": "Fetch Title",
+        "pressEnterToUnfurl": "Press Enter to convert link",
+        "fetching": "Fetching...",
+        "builtIn": "Built-in",
+        "languageTooltip": "English is always built-in. Other languages become external when you add a download URL."
     },
     "Admin": {
         "pendingTranslations": "Pending Translations",
@@ -332,7 +337,6 @@
         "editing": "Editing",
         "discard": "Discard",
         "submitMod": "Submit",
-        "save": "Save",
         "saveDraft": "Save Draft",
         "draftFrom": "Draft {time}",
         "autoSaveStatus": {
@@ -379,12 +383,16 @@
             "At least one tag is required": "At least one tag is required",
             "At least one screenshot is required": "At least one screenshot is required",
             "Download link is required": "Download link is required"
-        }
+        },
+        "userRegistrationsLast30Days": "User Registrations (30 days)",
+        "modViewsLast30Days": "Mod Views (30 days)",
+        "totalDownloads": "Total Downloads",
+        "registrations": "Registrations",
+        "views": "Views"
     },
     "ModCard": {
         "by": "by",
-        "noDescription": "No description provided",
-        "tagsLabel": "Tags:"
+        "noDescription": "No description provided"
     },
     "Author": {
         "dashboard": "Developer Dashboard",

@@ -29,6 +29,7 @@ interface NavCategory {
     id: string
     label: string
     icon: LucideIcon
+    href?: string
     items: NavItem[]
     roles?: string[]
 }
@@ -48,6 +49,9 @@ export default function SidebarNav({ userRole }: SidebarNavProps) {
         if (href === '/profile') {
             return normalizedPath === '/profile' || normalizedPath === '/profile/'
         }
+        if (href === '/admin') {
+            return normalizedPath === '/admin' || normalizedPath === '/admin/'
+        }
         if (href === '/editor') {
             return normalizedPath === '/editor' || normalizedPath === '/editor/'
         }
@@ -60,8 +64,8 @@ export default function SidebarNav({ userRole }: SidebarNavProps) {
             id: 'profile',
             label: tProfile('publicProfile'),
             icon: User,
+            href: '/profile',
             items: [
-                { href: '/profile', icon: User, label: tProfile('overview') },
                 { href: '/profile/subscriptions', icon: Heart, label: tProfile('subscriptions') },
                 { href: '/profile/downloads', icon: Download, label: tProfile('downloads') },
                 { href: '/profile/history', icon: History, label: tProfile('history') },
@@ -72,6 +76,7 @@ export default function SidebarNav({ userRole }: SidebarNavProps) {
             id: 'admin',
             label: tAdmin('admin'),
             icon: User,
+            href: ROUTES.admin,
             roles: ['ADMIN'],
             items: [
                 { href: ROUTES.editor, icon: User, label: tAdmin('editor'), isEditorSection: true },
@@ -126,20 +131,37 @@ export default function SidebarNav({ userRole }: SidebarNavProps) {
 
     return (
         <nav className="flex-1 p-4 space-y-6 overflow-y-auto">
-            {filteredCategories.map((category) => (
-                <div key={category.id}>
-                    {/* Category Header */}
-                    <div className="flex items-center gap-3 px-3 py-2 mb-2 text-sm font-medium text-textMuted/60">
-                        <category.icon size={16} className="shrink-0" />
-                        {category.label}
-                    </div>
+            {filteredCategories.map((category) => {
+                const isHeaderActive = category.href ? isActive(category.href) : false;
 
-                    {/* Category Items */}
-                    <div className="space-y-0.5">
-                        {category.items.map((item) => renderNavItem(item))}
+                return (
+                    <div key={category.id}>
+                        {/* Category Header */}
+                        {category.href ? (
+                            <Link
+                                href={category.href}
+                                className={`flex items-center gap-3 px-3 py-2 mb-2 text-xs font-bold uppercase transition-colors rounded-lg ${isHeaderActive
+                                    ? 'text-primary bg-primary/10'
+                                    : 'text-textMuted hover:text-white hover:bg-white/5'
+                                    }`}
+                            >
+                                <category.icon size={16} className="shrink-0" />
+                                {category.label}
+                            </Link>
+                        ) : (
+                            <div className="flex items-center gap-3 px-3 py-2 mb-2 text-xs font-bold uppercase text-textMuted">
+                                <category.icon size={16} className="shrink-0" />
+                                {category.label}
+                            </div>
+                        )}
+
+                        {/* Category Items */}
+                        <div className="space-y-0.5 ml-2 border-l border-white/10 pl-2">
+                            {category.items.map((item) => renderNavItem(item))}
+                        </div>
                     </div>
-                </div>
-            ))}
+                );
+            })}
         </nav>
     )
 }

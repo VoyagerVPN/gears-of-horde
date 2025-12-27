@@ -3,11 +3,12 @@
  */
 export const ROUTES = {
     profile: '/profile',
-    mods: '/profile/mods',
-    tags: '/profile/tags',
-    users: '/profile/users',
-    settings: '/profile/settings',
-    news: '/profile/news',
+    admin: '/admin',
+    mods: '/admin/mods',
+    tags: '/admin/tags',
+    users: '/admin/users',
+    settings: '/admin/settings',
+    news: '/admin/news',
     myMods: '/profile/my-mods',
     editor: '/editor',
 } as const;

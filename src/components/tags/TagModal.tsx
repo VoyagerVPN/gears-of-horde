@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Save, Loader2 } from "lucide-react";
 import { useTranslations } from 'next-intl';
 import {
     Dialog,
@@ -29,7 +28,7 @@ export default function TagModal({ isOpen, onClose, tag, onSave, initialCategory
     const [category, setCategory] = useState("");
     const [value, setValue] = useState("");
     const [displayName, setDisplayName] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [showCategorySuggestions, setShowCategorySuggestions] = useState(false);
 
     useEffect(() => {
@@ -48,20 +47,22 @@ export default function TagModal({ isOpen, onClose, tag, onSave, initialCategory
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
+        setIsLoading(true);
         try {
             await onSave({ category, value, displayName });
             onClose();
         } catch (error) {
             console.error("Failed to save tag:", error);
         } finally {
-            setIsSubmitting(false);
+            setIsLoading(false);
         }
     };
 
     const filteredCategories = existingCategories.filter(c =>
         c.toLowerCase().includes(category.toLowerCase())
     );
+
+    const isDisabled = isLoading || !category.trim() || !value.trim() || !displayName.trim();
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -71,9 +72,9 @@ export default function TagModal({ isOpen, onClose, tag, onSave, initialCategory
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit}>
-                    <DialogBody className="space-y-5">
+                    <DialogBody className="space-y-4">
                         {/* Category Input with Autocomplete */}
-                        <DialogField label={t('category')}>
+                        <DialogField label={t('category')} smallLabel>
                             <div className="relative">
                                 <input
                                     id="tag-category"
@@ -111,7 +112,7 @@ export default function TagModal({ isOpen, onClose, tag, onSave, initialCategory
                         </DialogField>
 
                         {/* Value Input */}
-                        <DialogField label={t('value')}>
+                        <DialogField label={t('value')} smallLabel>
                             <input
                                 id="tag-value"
                                 name="value"
@@ -120,12 +121,12 @@ export default function TagModal({ isOpen, onClose, tag, onSave, initialCategory
                                 onChange={(e) => setValue(e.target.value)}
                                 placeholder="e.g. survival_mode"
                                 required
-                                className={`${dialogInputClass}`}
+                                className={dialogInputClass}
                             />
                         </DialogField>
 
                         {/* Display Name Input */}
-                        <DialogField label={t('displayName')}>
+                        <DialogField label={t('displayName')} smallLabel>
                             <input
                                 id="tag-display-name"
                                 name="displayName"
@@ -144,18 +145,13 @@ export default function TagModal({ isOpen, onClose, tag, onSave, initialCategory
                         <DialogButton type="button" variant="ghost" onClick={onClose}>
                             {t('cancel')}
                         </DialogButton>
-                        <DialogButton type="submit" variant="primary" loading={isSubmitting}>
-                            {isSubmitting ? (
-                                <>
-                                    <Loader2 size={16} className="animate-spin" />
-                                    {t('saving')}
-                                </>
-                            ) : (
-                                <>
-                                    <Save size={16} />
-                                    {t('save')}
-                                </>
-                            )}
+                        <DialogButton
+                            type="submit"
+                            variant="primary"
+                            disabled={isDisabled}
+                            loading={isLoading}
+                        >
+                            {isLoading ? t('saving') : t('save')}
                         </DialogButton>
                     </DialogFooter>
                 </form>

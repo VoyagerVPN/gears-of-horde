@@ -41,8 +41,8 @@ export interface ModUpdatePayload {
     gameVersion?: string;
     bannerUrl?: string;
     isSaveBreaking?: boolean;
-    features?: string;
-    installationSteps?: string;
+    features?: string | string[];
+    installationSteps?: string | string[];
     links?: unknown;
     videos?: unknown;
     changelog?: ModChangelogJson[];
@@ -101,8 +101,22 @@ export async function fetchAllMods(options: FetchModsOptions = {}): Promise<ModD
                     valB = parseInt(b.stats.views.replace(/[^0-9]/g, '') || '0');
                     break;
                 case 'updated':
-                    valA = new Date(a.updatedAt || 0).getTime();
-                    valB = new Date(b.updatedAt || 0).getTime();
+                    {
+                        const getLatestDate = (m: ModData) => {
+                            if (m.changelog && m.changelog.length > 0) {
+                                // Try to get the latest date from changelog
+                                const dates = m.changelog
+                                    .map(c => new Date(c.date).getTime())
+                                    .filter(t => !isNaN(t));
+                                if (dates.length > 0) {
+                                    return Math.max(...dates);
+                                }
+                            }
+                            return new Date(m.updatedAt || 0).getTime();
+                        };
+                        valA = getLatestDate(a);
+                        valB = getLatestDate(b);
+                    }
                     break;
                 default:
                     return 0;
@@ -162,7 +176,7 @@ export async function approveTranslationSuggestion(id: string) {
         if (!mod) return;
 
         // Create new lang tag if it doesn't exist
-        const langTag = await findOrCreateLangTag(suggestion.languageName, suggestion.languageCode);
+        const langTag = await findOrCreateLangTag(suggestion.languageName);
 
         // Link to mod with metadata
         await linkTagToModWithMetadata(suggestion.modSlug, langTag.id, {
@@ -197,6 +211,11 @@ export async function rejectTranslationSuggestion(id: string) {
 }
 
 export async function updateModAction(slug: string, updates: ModUpdatePayload) {
+    console.log(`Updating mod: ${slug}`, {
+        payloadSlug: updates.slug,
+        hasInitialData: !!updates.title
+    });
+
     // 1. Extract Mod fields safely
     const modFields = [
         'title', 'version', 'author', 'description', 'status', 'gameVersion',
@@ -214,7 +233,44 @@ export async function updateModAction(slug: string, updates: ModUpdatePayload) {
         if (updates[field] !== undefined) {
             // Skip description if it's a quick update
             if (field === 'description' && isQuickUpdate) continue;
-            prismaUpdates[field] = updates[field];
+
+            let value = updates[field];
+
+            // Convert string to array for features and installationSteps if needed
+            if ((field === 'features' || field === 'installationSteps') && typeof value === 'string') {
+                value = value.split('\n').map((s: string) => s.trim()).filter((s: string) => s !== '');
+            }
+
+            // Convert string to Date for createdAt and updatedAt if needed
+            if ((field === 'createdAt' || field === 'updatedAt') && typeof value === 'string' && value.trim() !== '') {
+                const date = new Date(value);
+                if (!isNaN(date.getTime())) {
+                    value = date;
+                }
+            }
+
+            prismaUpdates[field] = value;
+        }
+    }
+
+    // Verify mod existence and handle potential slug mismatch (e.g. case sensitivity)
+    let targetSlug = slug;
+    const existingMod = await prisma.mod.findUnique({ where: { slug } });
+
+    if (!existingMod) {
+        // Try case-insensitive lookup as fallback
+        const appoxMod = await prisma.mod.findFirst({
+            where: { slug: { equals: slug, mode: 'insensitive' } },
+            select: { slug: true }
+        });
+
+        if (appoxMod) {
+            console.log(`Mod found via case-insensitive search: '${slug}' -> '${appoxMod.slug}'`);
+            targetSlug = appoxMod.slug;
+        } else {
+            console.error(`Mod update failed: Record not found for slug '${slug}'`);
+            // Throwing a P2025-like error logic or just a clear error
+            throw new Error(`Mod not found: ${slug}`);
         }
     }
 
@@ -278,9 +334,10 @@ export async function updateModAction(slug: string, updates: ModUpdatePayload) {
 
     // 3. Update Mod
     await prisma.mod.update({
-        where: { slug },
+        where: { slug: targetSlug },
         data: prismaUpdates
     });
+
 
     // 4. Handle Tags - Separate logic for each category
     // - author: auto-created from mod.author field
@@ -290,7 +347,7 @@ export async function updateModAction(slug: string, updates: ModUpdatePayload) {
     const tagIdsToLink: string[] = [];
 
     // 4a. Handle AUTHOR tags (from tags array with category='author')
-    await removeModTagsByCategory(slug, 'author');
+    await removeModTagsByCategory(targetSlug, 'author');
 
     // Get author tags from updates.tags array
     const authorTagsFromUpdates: TagUpdate[] = updates.tags?.filter((t: TagUpdate) => t.category === 'author') || [];
@@ -311,14 +368,14 @@ export async function updateModAction(slug: string, updates: ModUpdatePayload) {
         // Update mod.author field with first author for backwards compatibility
         if (tagIdsToLink.length === 1) {
             await prisma.mod.update({
-                where: { slug },
+                where: { slug: targetSlug },
                 data: { author: authorName }
             });
         }
     }
 
     // 4b. Handle GAMEVER tag (auto from gameVersion field)
-    const rawGameVersion = updates.gameVersion || (await prisma.mod.findUnique({ where: { slug }, select: { gameVersion: true } }))?.gameVersion;
+    const rawGameVersion = updates.gameVersion || (await prisma.mod.findUnique({ where: { slug: targetSlug }, select: { gameVersion: true } }))?.gameVersion;
     if (rawGameVersion) {
         // Normalize game version to always have "V" prefix (e.g., "2.2" → "V2.2")
         const gameVersion = normalizeGameVersion(rawGameVersion);
@@ -326,7 +383,7 @@ export async function updateModAction(slug: string, updates: ModUpdatePayload) {
         // Update mod.gameVersion with normalized value if it changed
         if (gameVersion !== rawGameVersion) {
             await prisma.mod.update({
-                where: { slug },
+                where: { slug: targetSlug },
                 data: { gameVersion }
             });
         }
@@ -356,7 +413,7 @@ export async function updateModAction(slug: string, updates: ModUpdatePayload) {
     // 4c. Handle TAG category (manually managed)
     if (updates.tags) {
         // Remove old tag: category tags
-        await removeModTagsByCategory(slug, 'tag');
+        await removeModTagsByCategory(targetSlug, 'tag');
 
         // Get only tags with category 'tag' from the updates
         const manualTags = updates.tags.filter((t: TagUpdate) => t.category === 'tag' || !t.category);
@@ -373,20 +430,18 @@ export async function updateModAction(slug: string, updates: ModUpdatePayload) {
     // 4d. Handle LANG tags
     if (updates.tags) {
         // Remove old lang tags from this mod
-        await removeModTagsByCategory(slug, 'lang');
+        await removeModTagsByCategory(targetSlug, 'lang');
 
         // Filter tags with category 'lang'
         const langTags = updates.tags.filter((t: TagUpdate) => t.category === 'lang');
 
         for (const langData of langTags) {
-            // value is usually the code, displayName is name
             const langName = langData.displayName;
-            const langCode = langData.value || langData.displayName.substring(0, 2).toUpperCase();
 
-            const langTag = await findOrCreateLangTag(langName, langCode);
+            const langTag = await findOrCreateLangTag(langName);
 
             // Link with metadata
-            await linkTagToModWithMetadata(slug, langTag.id, {
+            await linkTagToModWithMetadata(targetSlug, langTag.id, {
                 isExternal: langData.isExternal,
                 externalLink: langData.externalLink
             });
@@ -394,10 +449,10 @@ export async function updateModAction(slug: string, updates: ModUpdatePayload) {
     }
 
     // 4e. Create all tag links using batch operation
-    await batchLinkTagsToMod(slug, tagIdsToLink);
+    await batchLinkTagsToMod(targetSlug, tagIdsToLink);
 
     revalidatePath(ROUTES.mods);
-    revalidatePath(`/${slug}`);
+    revalidatePath(`/${targetSlug}`);
 }
 
 export async function deleteModAction(slug: string) {

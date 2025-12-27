@@ -81,9 +81,7 @@ export default function AdminModsPage() {
 
     try {
       await updateModAction(selectedMod.slug, {
-        ...updates,
-        features: Array.isArray(updates.features) ? updates.features.join('\n') : updates.features as string | undefined,
-        installationSteps: Array.isArray(updates.installationSteps) ? updates.installationSteps.join('\n') : updates.installationSteps as string | undefined
+        ...updates
       });
       setRefreshTrigger(prev => prev + 1); // Refresh list
     } catch (error) {

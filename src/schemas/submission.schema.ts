@@ -19,7 +19,7 @@ export const ModSubmissionSchema = z.object({
     title: z.string().min(1, "Title is required").max(100),
     slug: z.string().min(1, "Slug is required").regex(/^[a-z0-9-]+$/, "Slug can only contain Latin letters, numbers, and hyphens"),
     version: z.string().min(1),
-    author: z.string().min(1),
+    author: z.string(),
     description: z.string(),
     gameVersion: z.string().min(1),
     bannerUrl: z.string().url().optional().or(z.literal('')),
@@ -44,6 +44,12 @@ export const ModSubmissionSchema = z.object({
     rejectionReason: z.string().optional(),
     submittedAt: z.string(),
     reviewedAt: z.string().optional()
+}).refine(data => {
+    const hasAuthorTag = data.tags.some(t => t.category === 'author');
+    return data.author.trim().length > 0 || hasAuthorTag;
+}, {
+    message: "Author is required",
+    path: ["author"]
 });
 
 /**
