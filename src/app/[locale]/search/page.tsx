@@ -32,7 +32,7 @@ export default async function SearchPage({ searchParams, params }: SearchPagePro
                 <div style={{ maxWidth: '1600px', margin: '0 auto' }}>
                     <h1 className="text-3xl font-bold text-white font-exo2 uppercase tracking-wide mb-4">
                         {t('title')}
-                        {q && <span className="text-textMuted font-normal normal-case ml-3">"{q}"</span>}
+                        {q && <span className="text-textMuted font-normal normal-case ml-3">&quot;{q}&quot;</span>}
                     </h1>
 
                     {/* Active Filters Display */}

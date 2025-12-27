@@ -6,7 +6,7 @@ import { TagData } from '@/types/mod';
 import TagSelector from '@/components/TagSelector';
 import { useTranslations } from 'next-intl';
 import { LANG_BUILTIN_COLOR, PRIMARY_COLOR } from '@/lib/tag-colors';
-import { STANDARD_INPUT_STYLE, INVALID_INPUT_STYLE } from "@/lib/constants/ui-constants";
+import { STANDARD_INPUT_STYLE } from "@/lib/constants/ui-constants";
 import { cn } from '@/lib/utils';
 
 interface EditableLanguageTagsProps {
@@ -23,7 +23,7 @@ export default function EditableLanguageTags({ items, onChange }: EditableLangua
         if (!hasEnglish) {
             onChange([{ displayName: 'English', category: 'lang', isExternal: false, externalLink: "" }, ...items]);
         }
-    }, []); // Only run on mount
+    }, [items, onChange]); // Ensure English is present on mount/update
 
     const handleTagsChange = (incomingTags: { displayName: string; category: string }[]) => {
         // Map incoming tags to existing items to preserve metadata
@@ -81,7 +81,7 @@ export default function EditableLanguageTags({ items, onChange }: EditableLangua
         onChange(newItems);
     };
 
-    const updateMetadata = (index: number, key: 'isExternal' | 'externalLink', value: any) => {
+    const updateMetadata = (index: number, key: 'isExternal' | 'externalLink', value: string | boolean) => {
         const newItems = [...items];
         const updatedItem = { ...newItems[index], [key]: value };
 

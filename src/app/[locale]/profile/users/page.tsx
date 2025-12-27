@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
+import Image from "next/image"
 import { useTranslations } from 'next-intl'
 import { Ban, RefreshCw, Check, ChevronDown } from "lucide-react"
 import { fetchAllUsers, updateUserRole, toggleUserBan, UserData } from "@/app/actions/user-actions"
@@ -31,7 +32,7 @@ export default function AdminUsersPage() {
     }
 
     const filteredUsers = useMemo(() => {
-        let result = users.filter(u =>
+        const result = users.filter(u =>
             u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             u.email?.toLowerCase().includes(searchQuery.toLowerCase())
         )
@@ -110,7 +111,7 @@ export default function AdminUsersPage() {
                                     <tr key={user.id} className="hover:bg-white/[0.02] transition-colors group">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                {user.image && <img src={user.image} className="w-8 h-8 rounded-full" alt="" />}
+                                                {user.image && <Image src={user.image} width={32} height={32} className="rounded-full object-cover" alt="" />}
                                                 <div>
                                                     <div className="text-white font-bold">{user.name || "Unknown"}</div>
                                                     <div className="text-textMuted text-xs">{user.email}</div>

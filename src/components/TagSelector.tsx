@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, X, Plus, Tag as TagIcon, TrendingUp, Check, CircleUser } from 'lucide-react';
+import { Search, Plus, TrendingUp, CircleUser } from 'lucide-react';
 import { searchTags, fetchPopularTags, TagData } from '@/app/actions/tag-actions';
 import Tag from '@/components/ui/Tag';
 import { cn } from '@/lib/utils';
-import { INVALID_INPUT_STYLE, STANDARD_INPUT_STYLE } from "@/lib/constants/ui-constants";
+import { INVALID_INPUT_STYLE } from "@/lib/constants/ui-constants";
 import { useTranslations } from 'next-intl';
 
 interface TagSelectorProps {
@@ -231,7 +231,7 @@ export default function TagSelector({
                             >
                                 <Plus size={14} className="text-primary" />
                                 <span className="text-sm text-white">
-                                    {t('createTag')} "<span className="text-primary truncate max-w-[200px] inline-block align-bottom">{query}</span>"
+                                    {t('createTag')} &quot;<span className="text-primary truncate max-w-[200px] inline-block align-bottom">{query}</span>&quot;
                                 </span>
                             </button>
                         )}

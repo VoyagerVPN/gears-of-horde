@@ -19,7 +19,7 @@ interface ScreenshotDropzoneProps {
 // Local compressToWebP removed in favor of shared utility
 import { compressImage } from '@/lib/imageCompression';
 import { cn } from '@/lib/utils';
-import { INVALID_INPUT_STYLE } from '@/lib/constants/ui-constants';
+
 
 export default function ScreenshotDropzone({ currentCount, onUploadComplete, invalid, onClear }: ScreenshotDropzoneProps) {
     const t = useTranslations('Common');

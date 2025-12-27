@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useTranslations } from "next-intl"
 import { FileEdit, Plus, Trash2, Eye, Edit } from "lucide-react"
 import { Link } from "@/i18n/routing"
@@ -19,55 +19,33 @@ export default function ProfileMyModsPage() {
     const [showUpdateModal, setShowUpdateModal] = useState(false)
     const [gameVersionTags, setGameVersionTags] = useState<TagData[]>([])
 
-    useEffect(() => {
-        loadMods()
-        fetchTagsByCategory('gamever').then(setGameVersionTags)
-    }, [])
-
-    const loadMods = async () => {
-        setLoading(true)
+    const fetchMods = async () => {
         try {
             const data = await getUserMods()
-            // Map the raw data to ModData format
-            const mappedMods: ModData[] = data.map((mod: any) => ({
-                slug: mod.slug,
-                title: mod.title,
-                version: mod.version,
-                author: mod.author,
-                description: mod.description,
-                status: mod.status as ModStatusType,
-                gameVersion: mod.gameVersion,
-                bannerUrl: mod.bannerUrl ?? undefined,
-                isSaveBreaking: mod.isSaveBreaking ?? false,
-                features: mod.features ?? [],
-                tags: mod.tags ?? [],
-                installationSteps: mod.installationSteps ?? [],
-                links: mod.links ?? { download: '', discord: '', community: [], donations: [] },
-                videos: mod.videos ?? { trailer: '', review: '' },
-                screenshots: mod.screenshots ?? [],
-                changelog: mod.changelog ?? [],
-                localizations: mod.localizations ?? [],
-                stats: {
-                    rating: mod.rating ?? 0,
-                    ratingCount: mod.ratingCount ?? 0,
-                    downloads: mod.downloads ?? '0',
-                    views: mod.views ?? '0'
-                },
-                createdAt: mod.createdAt,
-                updatedAt: mod.updatedAt
-            }))
-            setMods(mappedMods)
+            setMods(data)
         } catch (error) {
             console.error('Failed to load mods:', error)
         }
         setLoading(false)
     }
 
+    // Refresh function for manual updates
+    const refreshMods = useCallback(() => {
+        return fetchMods()
+    }, [])
+
+    // Initial load
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        fetchMods()
+        fetchTagsByCategory('gamever').then(setGameVersionTags)
+    }, [])
+
     const handleDelete = async (slug: string) => {
         if (!confirm(t('deleteModConfirm'))) return
         try {
             await deleteUserMod(slug)
-            await loadMods()
+            await refreshMods()
         } catch (error) {
             console.error('Failed to delete mod:', error)
         }
@@ -195,6 +173,7 @@ export default function ProfileMyModsPage() {
 
                 {/* Update Modal */}
                 <UpdateModModal
+                    key={selectedMod?.slug}
                     isOpen={showUpdateModal}
                     onClose={() => {
                         setShowUpdateModal(false)
@@ -204,7 +183,7 @@ export default function ProfileMyModsPage() {
                     onSave={async () => {
                         setShowUpdateModal(false)
                         setSelectedMod(null)
-                        await loadMods()
+                        await refreshMods()
                     }}
                     gameVersionTags={gameVersionTags}
                     onGameVersionTagsRefresh={() => fetchTagsByCategory('gamever').then(setGameVersionTags)}

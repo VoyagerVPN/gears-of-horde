@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   Save, AlertTriangle,
   ChevronDown, ExternalLink, HelpCircle
@@ -62,32 +62,19 @@ export default function UpdateModModal({
   const t_common = useTranslations('Common');
   const locale = useLocale() as 'en' | 'ru';
   const [formData, setFormData] = useState({
-    version: "",
-    gameVersion: "",
-    status: "active" as ModStatusType,
+    version: mod?.version || "",
+    gameVersion: mod?.gameVersion || "",
+    status: mod?.status || "active" as ModStatusType,
     isSaveBreaking: false,
-    date: "",
+    date: new Date().toISOString(),
     description: "",
     sourceUrl: "",
-    changes: [] as string[]
+    changes: [""] as string[]
   });
 
 
 
-  useEffect(() => {
-    if (mod && isOpen) {
-      setFormData({
-        version: mod.version,
-        gameVersion: mod.gameVersion,
-        status: mod.status,
-        isSaveBreaking: false,
-        date: new Date().toISOString(),
-        description: "",
-        sourceUrl: "",
-        changes: [""]
-      });
-    }
-  }, [mod, isOpen]);
+
 
   const isVersionChanged = mod ? formData.version !== mod.version : false;
   const isContentUpdate = useMemo(() => {

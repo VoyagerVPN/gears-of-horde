@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { signIn } from "next-auth/react";
-import { Heart, CheckCircle2, Bell, MessageSquare } from "lucide-react";
+import { Heart, Bell, MessageSquare } from "lucide-react";
 import { siDiscord } from "simple-icons/icons";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover";
 

@@ -2,10 +2,11 @@
 
 import { db as prisma } from "@/lib/db";
 import { NewsItem, FrozenTag } from "@/schemas/news.schema";
+import { Prisma } from "@/generated/prisma";
 
 export async function fetchLatestNews(limit: number = 10, skip: number = 0, tag?: string): Promise<NewsItem[]> {
     // Build filter for tag if provided
-    const where: any = {};
+    const where: Prisma.NewsWhereInput = {};
     if (tag) {
         // Filter by tags stored in JSON array
         where.tags = {
@@ -114,7 +115,7 @@ export async function updateNews(id: string, data: NewsUpdate) {
                 date: data.date,
                 wipeRequired: data.wipeRequired,
                 sourceUrl: data.sourceUrl,
-                tags: data.tags as any
+                tags: data.tags as Prisma.InputJsonValue
             }
         });
 

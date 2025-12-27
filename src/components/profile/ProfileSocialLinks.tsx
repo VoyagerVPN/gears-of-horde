@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useTranslations } from "next-intl"
-import { Link2, Plus, Trash2, Pencil, Check, X } from "lucide-react"
+import { Link2, Plus, Trash2, Pencil, X } from "lucide-react"
 import { updateSocialLinks, deleteSocialLink } from "@/app/actions/profile-actions"
 import {
     siDiscord,

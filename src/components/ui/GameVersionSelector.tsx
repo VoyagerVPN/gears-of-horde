@@ -32,7 +32,6 @@ export default function GameVersionSelector({
     value,
     onChange,
     gameVersionTags,
-    onTagsRefresh,
     onCreateVersion,
     currentVersion,
     compact = false,

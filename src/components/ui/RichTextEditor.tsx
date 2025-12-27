@@ -4,7 +4,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import { Bold, Italic, Heading1, List, LucideIcon } from "lucide-react";
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { INVALID_INPUT_STYLE } from "@/lib/constants/ui-constants";
 

@@ -4,7 +4,7 @@ import SortToolbar from "@/components/SortToolbar";
 import HeroSection from "@/components/HeroSection";
 import { fetchLatestNews } from "@/app/actions/news-actions";
 import { fetchAllMods } from "@/app/actions/admin-actions";
-import { getTranslations, getLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 
 type Props = {
@@ -19,8 +19,14 @@ export default async function Home({ params, searchParams }: Props) {
   const t = await getTranslations('HomePage');
   const news = await fetchLatestNews(5);
 
-  const sortBy = (typeof sort === 'string' ? sort : undefined) as any;
-  const sortDir = (typeof dir === 'string' ? dir : undefined) as any;
+  const validSortOptions = ['updated', 'rating', 'downloads', 'views'] as const;
+  const validSortDirs = ['asc', 'desc'] as const;
+
+  const rawSort = typeof sort === 'string' ? sort : undefined;
+  const rawDir = typeof dir === 'string' ? dir : undefined;
+
+  const sortBy = (validSortOptions as readonly string[]).includes(rawSort || '') ? (rawSort as typeof validSortOptions[number]) : undefined;
+  const sortDir = (validSortDirs as readonly string[]).includes(rawDir || '') ? (rawDir as typeof validSortDirs[number]) : undefined;
 
   const mods = await fetchAllMods({ sortBy, sortDir });
 

@@ -1,4 +1,3 @@
-import { getTranslations } from 'next-intl/server';
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import VisualModEditor from "@/components/mod/VisualModEditor";
@@ -17,7 +16,7 @@ export default async function AuthorPage({ searchParams }: PageProps) {
         redirect("/api/auth/signin");
     }
 
-    const t = await getTranslations('Author');
+    // const t = await getTranslations('Author');
 
     // Check if editing from a submission
     let initialData = null;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Star, User, ThumbsUp, MessageSquare, Flag, Clock, ArrowDown, ArrowUp } from "lucide-react";
 import { useTranslations } from 'next-intl';
 import DateDisplay from "@/components/DateDisplay";
@@ -82,16 +82,12 @@ export default function FeedbackSection({ locale = 'en' }: { locale?: 'en' | 'ru
   const [sortOption, setSortOption] = useState<SortOption>('newest');
 
   // Сброс сортировки на 'newest' при переключении вкладок, если текущая опция недоступна
-  useEffect(() => {
-    if (activeTab === 'all' && (sortOption === 'highestRating' || sortOption === 'lowestRating')) {
-      setSortOption('newest');
-    }
-  }, [activeTab, sortOption]);
+
 
   // --- ЛОГИКА СОРТИРОВКИ ---
   const processedFeedback = useMemo(() => {
     // 1. Фильтрация
-    let filtered = activeTab === 'all'
+    const filtered = activeTab === 'all'
       ? [...MOCK_FEEDBACK]
       : MOCK_FEEDBACK.filter(item => item.type === 'review');
 
@@ -185,7 +181,12 @@ export default function FeedbackSection({ locale = 'en' }: { locale?: 'en' | 'ru
           {/* Tab Switcher */}
           <div className="flex bg-black/20 rounded-lg p-1 border border-white/5">
             <button
-              onClick={() => setActiveTab('all')}
+              onClick={() => {
+                setActiveTab('all');
+                if (sortOption === 'highestRating' || sortOption === 'lowestRating') {
+                  setSortOption('newest');
+                }
+              }}
               className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${activeTab === 'all' ? 'bg-white/10 text-white' : 'text-textMuted hover:text-white'}`}
             >
               {t('all')}

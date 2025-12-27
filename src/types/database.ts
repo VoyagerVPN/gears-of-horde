@@ -180,18 +180,11 @@ export function mapPrismaModToModData(mod: PrismaModWithTags): import('@/schemas
         features: mod.features,
         tags: mod.tags.map(mapPrismaTagToTagData),
         installationSteps: mod.installationSteps,
-        links: mod.links as ModLinks,
-        videos: mod.videos as ModVideos,
+        links: (mod.links as ModLinks) ?? { download: '', discord: '', community: [], donations: [] },
+        videos: (mod.videos as ModVideos) ?? { trailer: '', review: '' },
         screenshots: mod.screenshots,
-        changelog: mod.changelog as ModChangelog[],
-        localizations: mod.tags
-            .filter(mt => mt.tag.category === 'lang')
-            .map(mt => ({
-                code: mt.tag.value,
-                name: mt.tag.displayName,
-                type: mt.isExternal ? 'external' : 'builtin',
-                url: mt.externalLink ?? undefined
-            } as ModLocalization)),
+        changelog: (mod.changelog as ModChangelog[]) ?? [],
+        localizations: (mod.localizations as ModLocalization[]) ?? [],
         stats: {
             rating: mod.rating,
             ratingCount: mod.ratingCount,

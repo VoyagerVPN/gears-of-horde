@@ -34,6 +34,7 @@ export default function EditorSubNav({ normalizedPath }: EditorSubNavProps) {
 
     // Load persisted state after mount to avoid hydration mismatch
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true)
         const stored = localStorage.getItem(EDITOR_COLLAPSED_KEY)
         if (stored === "true") {
@@ -68,6 +69,7 @@ export default function EditorSubNav({ normalizedPath }: EditorSubNavProps) {
     // Auto-expand if on editor page
     useEffect(() => {
         if (normalizedPath.startsWith('/editor')) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsExpanded(true)
         }
     }, [normalizedPath])

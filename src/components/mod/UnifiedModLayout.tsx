@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { ElementType } from "react";
 import {
     Download, ChevronLeft, Tags, Languages, Users, Coins, Trash2, Zap, FileCog,
-    Link as LinkIcon, ExternalLink, MessageSquare, History, AlertTriangle, Plus, X as XIcon, Disc as Discord, Check, GripVertical, Heart, Images
+    Link as LinkIcon, ExternalLink, MessageSquare, History, AlertTriangle, Plus, X as XIcon, GripVertical, Images
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { Link } from "@/i18n/routing";
 import { useTranslations, useLocale } from 'next-intl';
 import Image from "next/image";
-import { toggleSubscription, getSubscriptionStatus, recordDownload, recordView } from "@/app/actions/profile-actions";
 
 import { ModData, ModStatusType, ModLink, TagData } from "@/types/mod";
 import DateDisplay from "@/components/DateDisplay";
@@ -116,22 +115,7 @@ export default function UnifiedModLayout({
         updateField('links', newLinks);
     };
 
-    const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const val = e.currentTarget.value.trim();
-            if (val && !mod.tags.some(t => t.displayName === val && t.category === 'tag')) {
-                // New tags always go to category 'tag'
-                updateField('tags', [...mod.tags, { displayName: val, category: 'tag' }]);
-                e.currentTarget.value = "";
-            }
-        }
-    };
 
-    const removeTag = (tagToRemove: string) => {
-        // Only remove tags with category 'tag', not author/gamever
-        updateField('tags', mod.tags.filter(t => t.displayName !== tagToRemove || t.category !== 'tag'));
-    };
 
     // Handler for screenshot drag-and-drop reordering
     const onScreenshotDragEnd = (result: DropResult) => {
@@ -145,7 +129,7 @@ export default function UnifiedModLayout({
     };
 
     // --- RENDER HELPERS ---
-    const renderLinkBlock = (title: string, icon: any, links: ModLink[], category: 'community' | 'donations') => {
+    const renderLinkBlock = (title: string, icon: ElementType, links: ModLink[], category: 'community' | 'donations') => {
         if (isEditing) {
             return (
                 <div className="bg-surface rounded-xl p-4 border border-white/5 flex flex-col">
@@ -255,7 +239,6 @@ export default function UnifiedModLayout({
                             items={mod.features}
                             onChange={(newItems) => updateField('features', newItems)}
                             placeholder={t('featuresPlaceholder')}
-                            countLabel="features"
                             id="mod-features-editor"
                             name="features"
                             tooltip={t('featuresTooltip')}
@@ -542,7 +525,6 @@ export default function UnifiedModLayout({
                             items={mod.installationSteps}
                             onChange={(newItems) => updateField('installationSteps', newItems)}
                             placeholder={t('installationPlaceholder')}
-                            countLabel="steps"
                             id="mod-installation-editor"
                             name="installationSteps"
                             tooltip={t('installationTooltip')}
@@ -601,7 +583,9 @@ export default function UnifiedModLayout({
                                 onChange={(newLangTags) => {
                                     // Keep non-lang categories and replace 'lang' category
                                     const otherTags = mod.tags.filter(t => t.category !== 'lang');
-                                    onUpdate && onUpdate({ ...mod, tags: [...otherTags, ...newLangTags] });
+                                    if (onUpdate) {
+                                        onUpdate({ ...mod, tags: [...otherTags, ...newLangTags] });
+                                    }
                                 }}
                             />
                         ) : (

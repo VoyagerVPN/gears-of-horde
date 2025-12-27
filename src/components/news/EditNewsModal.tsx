@@ -5,16 +5,13 @@ import { useTranslations } from "next-intl";
 import {
     Dialog,
     DialogContent,
-    DialogHeader,
     DialogTitle,
-    DialogBody,
-    DialogFooter,
     DialogButton,
     DialogField,
     dialogInputClass,
 } from "@/components/ui/Dialog";
 import { updateNews } from "@/app/actions/news-actions";
-import { NewsItem as NewsItemType, FrozenTag } from "@/schemas/news.schema";
+import { NewsItem as NewsItemType } from "@/schemas/news.schema";
 import { AlertTriangle, Eye } from "lucide-react";
 import NewsItem from "@/components/NewsItem";
 
@@ -71,7 +68,7 @@ export default function EditNewsModal({
         tags: formData.tags ?? news?.tags ?? [],
     };
 
-    const handleChange = (field: keyof NewsItemType, value: any) => {
+    const handleChange = <K extends keyof NewsItemType>(field: K, value: NewsItemType[K]) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
     };
 

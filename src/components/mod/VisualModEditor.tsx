@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Save, Loader2, RotateCcw, X, Cloud, History, Eye, Pencil } from "lucide-react";
+import { Save, Loader2, Cloud, History, Eye, Pencil } from "lucide-react";
 import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 
@@ -95,7 +95,6 @@ export default function VisualModEditor({
     const [isSaving, setIsSaving] = useState(false);
     const [gameVersionTags, setGameVersionTags] = useState<TagData[]>([]);
     const [tempGameVersionTags, setTempGameVersionTags] = useState<TagData[]>([]);
-    const [showDraftBanner, setShowDraftBanner] = useState(true);
     const [showHistoryModal, setShowHistoryModal] = useState(false);
     const [isPreviewMode, setIsPreviewMode] = useState(false);
     const { showToast } = useToast();
@@ -104,7 +103,6 @@ export default function VisualModEditor({
     // Autosave hook
     const draftKey = isNew ? "new" : (initialData?.slug || "new");
     const {
-        hasDraft,
         draftHistory,
         isSaving: isAutosaving,
         restoreDraft,
@@ -121,7 +119,7 @@ export default function VisualModEditor({
     });
 
     // Fetch game version tags on mount
-    const refreshGameVersionTags = () => {
+    const refreshGameVersionTags = useCallback(() => {
         fetchTagsByCategory('gamever').then((tags) => {
             setGameVersionTags(tags);
 
@@ -137,7 +135,7 @@ export default function VisualModEditor({
                 });
             }
         });
-    };
+    }, [isNew]);
 
     const { addToRecent } = useRecentMods();
 
@@ -146,7 +144,7 @@ export default function VisualModEditor({
         if (!isNew && initialData?.slug && initialData?.title) {
             addToRecent(initialData.slug, initialData.title);
         }
-    }, [isNew, initialData]);
+    }, [isNew, initialData, refreshGameVersionTags, addToRecent]);
 
     // Track last saved time to show autosave toast
     const [lastToastKey, setLastToastKey] = useState<string | null>(null);
@@ -186,13 +184,10 @@ export default function VisualModEditor({
                 })));
             }
         }
-        setShowDraftBanner(false);
+
     }, [restoreDraft, gameVersionTags]);
 
-    const handleDiscardDraft = useCallback(() => {
-        clearAllDrafts();
-        setShowDraftBanner(false);
-    }, [clearAllDrafts]);
+
 
     const handleGameVersionCreate = (version: string) => {
         // Calculate all versions including db tags, existing temp tags, and the new one
@@ -383,7 +378,11 @@ export default function VisualModEditor({
                     showToast(formattedErrors.join('\n'), "error");
                 }
             } else {
-                await updateModAction(data.slug, data);
+                await updateModAction(data.slug, {
+                    ...data,
+                    features: Array.isArray(data.features) ? data.features.join('\n') : data.features,
+                    installationSteps: Array.isArray(data.installationSteps) ? data.installationSteps.join('\n') : data.installationSteps
+                });
                 // Clear draft on successful save
                 clearModDraft(draftKey);
                 showToast(t("modUpdatedSuccess"), "success");
@@ -396,11 +395,7 @@ export default function VisualModEditor({
         }
     };
 
-    // Format draft date for display
-    const formatDraftDate = (isoDate: string) => {
-        const date = new Date(isoDate);
-        return date.toLocaleString();
-    };
+
 
     if (!mounted) {
         return <div className="min-h-screen bg-zinc-950" />;

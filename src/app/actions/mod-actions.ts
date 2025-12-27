@@ -8,7 +8,7 @@ import {
     findOrCreateLangTag,
     findOrCreateGameVerTag
 } from "@/lib/tag-utils";
-import { ModDataSchema, type ModData } from "@/schemas";
+import { ModDataSchema } from "@/schemas";
 import { validate, ok, err, type Result } from "@/lib/result";
 import { revalidatePath } from "next/cache";
 import { ROUTES } from "@/lib/routes";
@@ -54,24 +54,30 @@ function preprocessModData(rawData: unknown): unknown {
 
         // Filter community links - only keep entries with valid name AND url
         if (Array.isArray(links.community)) {
-            links.community = links.community.filter((link: any) =>
-                link &&
-                typeof link.name === 'string' &&
-                link.name.trim() !== '' &&
-                typeof link.url === 'string' &&
-                isValidUrl(link.url)
-            );
+            links.community = links.community.filter((link: unknown) => {
+                if (!link || typeof link !== 'object') return false;
+                const l = link as Record<string, unknown>;
+                return (
+                    typeof l.name === 'string' &&
+                    l.name.trim() !== '' &&
+                    typeof l.url === 'string' &&
+                    isValidUrl(l.url)
+                );
+            });
         }
 
         // Filter donations links - only keep entries with valid name AND url
         if (Array.isArray(links.donations)) {
-            links.donations = links.donations.filter((link: any) =>
-                link &&
-                typeof link.name === 'string' &&
-                link.name.trim() !== '' &&
-                typeof link.url === 'string' &&
-                isValidUrl(link.url)
-            );
+            links.donations = links.donations.filter((link: unknown) => {
+                if (!link || typeof link !== 'object') return false;
+                const l = link as Record<string, unknown>;
+                return (
+                    typeof l.name === 'string' &&
+                    l.name.trim() !== '' &&
+                    typeof l.url === 'string' &&
+                    isValidUrl(l.url)
+                );
+            });
         }
     }
 
@@ -86,7 +92,7 @@ function preprocessModData(rawData: unknown): unknown {
 
     // Filter out empty screenshot URLs
     if (Array.isArray(data.screenshots)) {
-        data.screenshots = data.screenshots.filter((url: any) =>
+        data.screenshots = data.screenshots.filter((url: unknown) =>
             typeof url === 'string' && isValidUrl(url)
         );
     }
@@ -109,12 +115,15 @@ function preprocessModData(rawData: unknown): unknown {
 
     // Process Localizations (url field is optional but must be valid URL if present)
     if (Array.isArray(data.localizations)) {
-        data.localizations = data.localizations.map((loc: any) => {
-            if (loc && typeof loc.url === 'string' && loc.url.trim() !== '' && !isValidUrl(loc.url)) {
-                return { ...loc, url: undefined }; // remove invalid url
+        data.localizations = data.localizations.map((loc: unknown) => {
+            if (!loc || typeof loc !== 'object') return loc;
+            const l = loc as Record<string, unknown>;
+
+            if (typeof l.url === 'string' && l.url.trim() !== '' && !isValidUrl(l.url)) {
+                return { ...l, url: undefined }; // remove invalid url
             }
-            if (loc && typeof loc.url === 'string' && loc.url.trim() === '') {
-                return { ...loc, url: undefined }; // clean empty string
+            if (typeof l.url === 'string' && l.url.trim() === '') {
+                return { ...l, url: undefined }; // clean empty string
             }
             return loc;
         });
@@ -122,12 +131,15 @@ function preprocessModData(rawData: unknown): unknown {
 
     // Process Tags (externalLink is optional)
     if (Array.isArray(data.tags)) {
-        data.tags = data.tags.map((tag: any) => {
-            if (tag && typeof tag.externalLink === 'string' && tag.externalLink.trim() !== '' && !isValidUrl(tag.externalLink)) {
-                return { ...tag, externalLink: undefined };
+        data.tags = data.tags.map((tag: unknown) => {
+            if (!tag || typeof tag !== 'object') return tag;
+            const t = tag as Record<string, unknown>;
+
+            if (typeof t.externalLink === 'string' && t.externalLink.trim() !== '' && !isValidUrl(t.externalLink)) {
+                return { ...t, externalLink: undefined };
             }
-            if (tag && typeof tag.externalLink === 'string' && tag.externalLink.trim() === '') {
-                return { ...tag, externalLink: undefined };
+            if (typeof t.externalLink === 'string' && t.externalLink.trim() === '') {
+                return { ...t, externalLink: undefined };
             }
             return tag;
         });

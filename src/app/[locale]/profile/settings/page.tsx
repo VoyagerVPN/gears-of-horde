@@ -12,7 +12,7 @@ export default function AdminSettingsPage() {
     const [syncResult, setSyncResult] = useState<{
         success: boolean;
         message: string;
-        details?: any;
+        details?: unknown;
     } | null>(null);
 
     const handleSync = async () => {
@@ -86,9 +86,10 @@ export default function AdminSettingsPage() {
                             )}
                         </div>
 
-                        {syncResult?.details && (
+                        {!!syncResult?.details && (
                             <div className="bg-black/30 rounded-lg p-4 font-mono text-xs text-textMuted">
-                                <pre>{JSON.stringify(syncResult.details, null, 2)}</pre>
+                                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                <pre>{JSON.stringify(syncResult.details as any, null, 2)}</pre>
                             </div>
                         )}
                     </div>

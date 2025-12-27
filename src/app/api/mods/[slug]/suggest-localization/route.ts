@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 // Временное хранилище в памяти (в реальности это будет База Данных)
-let mockSuggestionsDb: any[] = [];
+const mockSuggestionsDb: unknown[] = [];
 
 export async function POST(
   request: Request,
@@ -39,7 +39,7 @@ export async function POST(
 
     return NextResponse.json({ success: true, suggestion: newSuggestion });
 
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Internal Server Error' },
       { status: 500 }

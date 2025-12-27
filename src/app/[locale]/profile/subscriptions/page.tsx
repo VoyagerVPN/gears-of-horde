@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
-import { Heart, ArrowUpDown, Calendar, RefreshCw } from "lucide-react"
+import { Heart, Calendar, RefreshCw } from "lucide-react"
 import ModCard from "@/components/ModCard"
 import { getSubscriptions } from "@/app/actions/profile-actions"
 import UnifiedTopBar from "@/components/ui/UnifiedTopBar"
@@ -37,22 +37,21 @@ export default function ProfileSubscriptionsPage() {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
+        const loadSubscriptions = async () => {
+            setLoading(true)
+            const data = await getSubscriptions(sortType)
+            setSubscriptions(data.map((sub) => ({
+                ...sub,
+                subscribedAt: typeof sub.subscribedAt === 'string' ? sub.subscribedAt : new Date(sub.subscribedAt).toISOString(),
+                mod: {
+                    ...sub.mod,
+                    updatedAt: typeof sub.mod.updatedAt === 'string' ? sub.mod.updatedAt : new Date(sub.mod.updatedAt).toISOString()
+                }
+            })) as SubscriptionWithMod[])
+            setLoading(false)
+        }
         loadSubscriptions()
     }, [sortType])
-
-    const loadSubscriptions = async () => {
-        setLoading(true)
-        const data = await getSubscriptions(sortType)
-        setSubscriptions(data.map((sub) => ({
-            ...sub,
-            subscribedAt: typeof sub.subscribedAt === 'string' ? sub.subscribedAt : new Date(sub.subscribedAt).toISOString(),
-            mod: {
-                ...sub.mod,
-                updatedAt: typeof sub.mod.updatedAt === 'string' ? sub.mod.updatedAt : new Date(sub.mod.updatedAt).toISOString()
-            }
-        })) as SubscriptionWithMod[])
-        setLoading(false)
-    }
 
     return (
         <div className="space-y-6">

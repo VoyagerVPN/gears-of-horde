@@ -3,14 +3,14 @@ import { Star, Eye, Download, Pencil } from "lucide-react";
 import * as Select from "@radix-ui/react-select";
 import { STATUS_CONFIG, STATUS_OPTIONS } from "@/lib/mod-constants";
 import { Check } from "lucide-react";
-import { STANDARD_INPUT_STYLE } from "@/lib/constants/ui-constants";
+
 import Tag from "@/components/ui/Tag";
 import AuthorTag from "@/components/AuthorTag";
 import TagSelector from "@/components/TagSelector";
 import BannerUpload from "@/components/ui/BannerUpload";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { INVALID_INPUT_STYLE } from "@/lib/constants/ui-constants";
+
 
 interface ModHeaderProps {
     mod: ModData;

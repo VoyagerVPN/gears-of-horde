@@ -17,7 +17,7 @@ try {
             process.env[key] = value;
         }
     });
-} catch (e) {
+} catch {
     console.log('Could not load .env file, assuming env vars are set.');
 }
 

@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { fetchAllNews, deleteNews } from "@/app/actions/news-actions";
+import { fetchAllNews } from "@/app/actions/news-actions";
 import NewsManagementClient from "./NewsManagementClient";
 import UnifiedTopBar from "@/components/ui/UnifiedTopBar";
 

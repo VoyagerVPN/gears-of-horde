@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
-import { User, Calendar, Eye, Package, Download, MessageSquare, Star } from "lucide-react"
+import { User } from "lucide-react"
 import { getUserProfileStats, getRecentActivity } from "@/app/actions/profile-actions"
 import ProfileAvatarCard from "./ProfileAvatarCard"
 import ProfileBioCard from "./ProfileBioCard"
@@ -51,10 +51,6 @@ export default function ProfileOverview() {
     const [activity, setActivity] = useState<ActivityItem[]>([])
     const [loading, setLoading] = useState(true)
 
-    useEffect(() => {
-        loadProfile()
-    }, [])
-
     const loadProfile = async () => {
         setLoading(true)
         const [profileData, activityData] = await Promise.all([
@@ -65,6 +61,11 @@ export default function ProfileOverview() {
         setActivity(activityData)
         setLoading(false)
     }
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        loadProfile()
+    }, [])
 
     if (loading) {
         return (

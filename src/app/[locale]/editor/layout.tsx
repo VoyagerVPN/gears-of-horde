@@ -1,5 +1,5 @@
 import { Link } from "@/i18n/routing";
-import { LogOut, ExternalLink } from "lucide-react";
+import { LogOut } from "lucide-react";
 import SidebarNav from "@/components/ui/SidebarNav";
 import ProfileBottomNav from "@/components/profile/ProfileBottomNav";
 import { auth } from "@/auth";

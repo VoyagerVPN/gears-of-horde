@@ -9,7 +9,7 @@ interface SimpleTextEditorProps {
   items: string[];
   onChange: (newItems: string[]) => void;
   placeholder?: string;
-  countLabel?: string;
+
   defaultExpanded?: boolean;
   minHeight?: string;
   tooltip?: string;
@@ -23,7 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/Tooltip";
-import { cn } from "@/lib/utils";
+
 
 export default function SimpleTextEditor({
   title,
@@ -31,7 +31,7 @@ export default function SimpleTextEditor({
   items,
   onChange,
   placeholder = "Enter items, one per line...",
-  countLabel = "items",
+
   defaultExpanded = true,
   minHeight = "150px",
   tooltip,
@@ -46,9 +46,10 @@ export default function SimpleTextEditor({
   // Only sync from parent when not focused (to avoid cursor jumping)
   useEffect(() => {
     if (!isFocused) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTextValue(items.join("\n"));
     }
-  }, [items, isFocused]);
+  }, [items, isFocused, onChange]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTextValue(e.target.value);

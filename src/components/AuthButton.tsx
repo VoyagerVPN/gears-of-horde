@@ -1,6 +1,7 @@
 "use client"
 
 import { signOut, useSession, signIn } from "next-auth/react"
+import Image from "next/image"
 import { LogOut, User } from "lucide-react"
 import { Link } from "@/i18n/routing"
 import { siDiscord } from "simple-icons/icons"
@@ -24,10 +25,12 @@ export default function AuthButton() {
                     className="flex items-center gap-3 pl-1 pr-3 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all group"
                 >
                     {session.user?.image ? (
-                        <img
+                        <Image
                             src={session.user.image}
                             alt={session.user.name || "User"}
-                            className="w-8 h-8 rounded-full border border-white/10 group-hover:border-primary/50 transition-colors"
+                            width={32}
+                            height={32}
+                            className="rounded-full border border-white/10 group-hover:border-primary/50 transition-colors object-cover"
                         />
                     ) : (
                         <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">

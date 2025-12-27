@@ -19,7 +19,7 @@ interface ViewModeActionsProps {
  * Handles download tracking, view tracking, and subscription state
  */
 export default function ViewModeActions({ mod, t }: ViewModeActionsProps) {
-    const { data: session, status } = useSession();
+    const { status } = useSession();
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isAuthOpen, setIsAuthOpen] = useState(false);

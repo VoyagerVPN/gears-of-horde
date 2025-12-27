@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { useTranslations } from "next-intl"
-import { Eye, EyeOff, Shield, Code, Star, User as UserIcon } from "lucide-react"
+import { Eye, EyeOff, Shield, Code, User as UserIcon } from "lucide-react"
+import Image from "next/image"
 import { toggleProfileVisibility } from "@/app/actions/profile-actions"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip"
 
@@ -55,10 +56,12 @@ export default function ProfileAvatarCard({
             {/* Avatar */}
             <div className="relative mb-4">
                 {image ? (
-                    <img
+                    <Image
                         src={image}
                         alt={name || 'User avatar'}
-                        className="w-24 h-24 rounded-full border-2 border-primary/30"
+                        width={96}
+                        height={96}
+                        className="rounded-full border-2 border-primary/30 object-cover"
                     />
                 ) : (
                     <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/30">

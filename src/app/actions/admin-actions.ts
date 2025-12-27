@@ -1,8 +1,8 @@
 'use server';
 
 import { db as prisma } from "@/lib/db";
-import { ModData, TranslationSuggestion, ModStatusType, ModChangelog, ModLocalization } from "@/types/mod";
-import { PrismaModWithTags, mapPrismaTagToTagData, mapPrismaModToModData, ModLinksJson, ModVideosJson, ModChangelogJson, ModLocalizationJson } from "@/types/database";
+import { ModData, TranslationSuggestion, ModStatusType } from "@/types/mod";
+import { PrismaModWithTags, mapPrismaModToModData, ModChangelogJson, ModLocalizationJson } from "@/types/database";
 import { revalidatePath } from "next/cache";
 import { ROUTES } from "@/lib/routes";
 import { normalizeGameVersion } from "@/lib/utils";
@@ -14,13 +14,54 @@ import {
     findOrCreateNewscatTag,
     removeModTagsByCategory,
     batchLinkTagsToMod,
-    linkTagToModWithMetadata,
-    AUTHOR_TAG_COLOR
+    linkTagToModWithMetadata
 } from "@/lib/tag-utils";
+
+
 
 export interface FetchModsOptions {
     sortBy?: 'updated' | 'rating' | 'downloads' | 'views';
     sortDir?: 'asc' | 'desc';
+}
+
+interface TagUpdate {
+    displayName: string;
+    category?: string;
+    value?: string;
+    isExternal?: boolean;
+    externalLink?: string;
+}
+
+export interface ModUpdatePayload {
+    [key: string]: unknown; // Allow indexing
+    title?: string;
+    version?: string;
+    description?: string;
+    status?: ModStatusType;
+    gameVersion?: string;
+    bannerUrl?: string;
+    isSaveBreaking?: boolean;
+    features?: string;
+    installationSteps?: string;
+    links?: unknown;
+    videos?: unknown;
+    changelog?: ModChangelogJson[];
+    localizations?: ModLocalizationJson[];
+    stats?: {
+        rating: number;
+        ratingCount: number;
+        downloads: string;
+        views: string;
+    };
+    screenshots?: string[];
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    eventType?: string;
+    changes?: string[];
+    date?: string;
+    sourceUrl?: string;
+    author?: string;
+    tags?: TagUpdate[];
 }
 
 export async function fetchAllMods(options: FetchModsOptions = {}): Promise<ModData[]> {
@@ -155,7 +196,7 @@ export async function rejectTranslationSuggestion(id: string) {
     }
 }
 
-export async function updateModAction(slug: string, updates: any) {
+export async function updateModAction(slug: string, updates: ModUpdatePayload) {
     // 1. Extract Mod fields safely
     const modFields = [
         'title', 'version', 'author', 'description', 'status', 'gameVersion',
@@ -163,7 +204,7 @@ export async function updateModAction(slug: string, updates: any) {
         'changelog', 'localizations', 'stats', 'screenshots', 'createdAt', 'updatedAt'
     ];
 
-    const prismaUpdates: any = {};
+    const prismaUpdates: Record<string, unknown> = {};
 
     // If this is a Quick Update (has eventType), we treat 'description' as News Title, 
     // so we exclude it from mod updates to prevent overwriting the main description.
@@ -189,7 +230,7 @@ export async function updateModAction(slug: string, updates: any) {
     // 2. Handle News Creation (Quick Update)
     if (isQuickUpdate && updates.changes) {
         // Create News Item - find or create the tag for eventType
-        const tag = await findOrCreateNewscatTag(updates.eventType);
+        const tag = await findOrCreateNewscatTag(updates.eventType as string);
 
         const newsContent = Array.isArray(updates.changes)
             ? updates.changes.map((c: string) => `- ${c}`).join('\n')
@@ -252,7 +293,6 @@ export async function updateModAction(slug: string, updates: any) {
     await removeModTagsByCategory(slug, 'author');
 
     // Get author tags from updates.tags array
-    interface TagUpdate { displayName: string; category?: string }
     const authorTagsFromUpdates: TagUpdate[] = updates.tags?.filter((t: TagUpdate) => t.category === 'author') || [];
 
     // If no author tags in updates but there's an author field, use that as fallback
@@ -306,7 +346,7 @@ export async function updateModAction(slug: string, updates: any) {
             // Refetch tag to get the assigned color
             const updatedTag = await prisma.tag.findUnique({ where: { id: gameVerTag.id } });
             if (updatedTag) {
-                gameVerTag = updatedTag as any;
+                gameVerTag = updatedTag;
             }
         }
 
@@ -336,7 +376,7 @@ export async function updateModAction(slug: string, updates: any) {
         await removeModTagsByCategory(slug, 'lang');
 
         // Filter tags with category 'lang'
-        const langTags = updates.tags.filter((t: any) => t.category === 'lang');
+        const langTags = updates.tags.filter((t: TagUpdate) => t.category === 'lang');
 
         for (const langData of langTags) {
             // value is usually the code, displayName is name

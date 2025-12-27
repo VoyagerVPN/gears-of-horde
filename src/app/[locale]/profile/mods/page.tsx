@@ -3,8 +3,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "@/i18n/routing";
 import {
-  Plus, Filter, MoreVertical, Edit, Eye,
-  Trash2, Download, Globe, Check, X, ExternalLink, RefreshCw,
+  Plus, Edit, Eye,
+  Trash2, Globe, Check, X, ExternalLink, RefreshCw,
   ArrowUp, ArrowDown, ArrowUpDown, Package, User
 } from "lucide-react";
 import SearchBar from "@/components/ui/SearchBar";
@@ -25,6 +25,16 @@ import { useTranslations } from 'next-intl';
 
 type SortColumn = 'title' | 'author' | 'gameVersion' | 'version' | 'tags' | 'status' | 'updatedAt';
 type SortDirection = 'asc' | 'desc';
+
+// Sort icon component
+const SortIcon = ({ column, currentSortColumn, sortDirection }: { column: SortColumn, currentSortColumn: SortColumn, sortDirection: SortDirection }) => {
+  if (currentSortColumn !== column) {
+    return <ArrowUpDown size={14} className="opacity-30" />;
+  }
+  return sortDirection === 'asc'
+    ? <ArrowUp size={14} className="text-primary" />
+    : <ArrowDown size={14} className="text-primary" />;
+};
 
 export default function AdminModsPage() {
   const t = useTranslations('Admin');
@@ -70,7 +80,11 @@ export default function AdminModsPage() {
     if (!selectedMod) return;
 
     try {
-      await updateModAction(selectedMod.slug, updates);
+      await updateModAction(selectedMod.slug, {
+        ...updates,
+        features: Array.isArray(updates.features) ? updates.features.join('\n') : updates.features as string | undefined,
+        installationSteps: Array.isArray(updates.installationSteps) ? updates.installationSteps.join('\n') : updates.installationSteps as string | undefined
+      });
       setRefreshTrigger(prev => prev + 1); // Refresh list
     } catch (error) {
       console.error("Failed to update mod:", error);
@@ -121,20 +135,12 @@ export default function AdminModsPage() {
     }
   };
 
-  // Sort icon component
-  const SortIcon = ({ column }: { column: SortColumn }) => {
-    if (sortColumn !== column) {
-      return <ArrowUpDown size={14} className="opacity-30" />;
-    }
-    return sortDirection === 'asc'
-      ? <ArrowUp size={14} className="text-primary" />
-      : <ArrowDown size={14} className="text-primary" />;
-  };
+  // SortIcon removed from here
 
   // Filter and sort mods
   const filteredAndSortedMods = useMemo(() => {
     // First filter
-    let result = mods.filter(mod =>
+    const result = mods.filter(mod =>
       mod.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       mod.author.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -383,7 +389,7 @@ export default function AdminModsPage() {
                   >
                     <div className="flex items-center gap-2">
                       {t('modName')}
-                      <SortIcon column="title" />
+                      <SortIcon column="title" currentSortColumn={sortColumn} sortDirection={sortDirection} />
                     </div>
                   </th>
                   <th
@@ -392,7 +398,7 @@ export default function AdminModsPage() {
                   >
                     <div className="flex items-center gap-2">
                       {t('author')}
-                      <SortIcon column="author" />
+                      <SortIcon column="author" currentSortColumn={sortColumn} sortDirection={sortDirection} />
                     </div>
                   </th>
                   <th
@@ -401,7 +407,7 @@ export default function AdminModsPage() {
                   >
                     <div className="flex items-center gap-2">
                       {t('gameVersion')}
-                      <SortIcon column="gameVersion" />
+                      <SortIcon column="gameVersion" currentSortColumn={sortColumn} sortDirection={sortDirection} />
                     </div>
                   </th>
                   <th
@@ -410,7 +416,7 @@ export default function AdminModsPage() {
                   >
                     <div className="flex items-center gap-2">
                       {t('version')}
-                      <SortIcon column="version" />
+                      <SortIcon column="version" currentSortColumn={sortColumn} sortDirection={sortDirection} />
                     </div>
                   </th>
                   <th
@@ -419,7 +425,7 @@ export default function AdminModsPage() {
                   >
                     <div className="flex items-center gap-2">
                       {t('tags')}
-                      <SortIcon column="tags" />
+                      <SortIcon column="tags" currentSortColumn={sortColumn} sortDirection={sortDirection} />
                     </div>
                   </th>
                   <th
@@ -428,7 +434,7 @@ export default function AdminModsPage() {
                   >
                     <div className="flex items-center gap-2">
                       {t('status')}
-                      <SortIcon column="status" />
+                      <SortIcon column="status" currentSortColumn={sortColumn} sortDirection={sortDirection} />
                     </div>
                   </th>
                   <th
@@ -437,7 +443,7 @@ export default function AdminModsPage() {
                   >
                     <div className="flex items-center gap-2">
                       {t('lastUpdated')}
-                      <SortIcon column="updatedAt" />
+                      <SortIcon column="updatedAt" currentSortColumn={sortColumn} sortDirection={sortDirection} />
                     </div>
                   </th>
                   <th className="px-6 py-4 text-right w-[140px]">{t('actions')}</th>

@@ -32,10 +32,6 @@ export default function ProfileHistoryPage() {
     const [history, setHistory] = useState<ViewWithMod[]>([])
     const [loading, setLoading] = useState(true)
 
-    useEffect(() => {
-        loadHistory()
-    }, [])
-
     const loadHistory = async () => {
         setLoading(true)
         const data = await getViewHistory()
@@ -49,6 +45,11 @@ export default function ProfileHistoryPage() {
         })) as ViewWithMod[])
         setLoading(false)
     }
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        loadHistory()
+    }, [])
 
     return (
         <div className="space-y-6">

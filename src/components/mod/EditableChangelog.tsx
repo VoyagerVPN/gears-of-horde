@@ -152,7 +152,6 @@ export default function EditableChangelog({ logs, onChange }: EditableChangelogP
             if (vIdx >= visibleCount) return null;
 
             const isLast = vIdx === logs.length - 1;
-            const isVisuallyLast = vIdx === visibleCount - 1;
 
             return (
               <div

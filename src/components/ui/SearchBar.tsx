@@ -22,13 +22,11 @@ export default function SearchBar({
     value,
     onChange,
     placeholder = "Search...",
-    variant = 'default',
     className,
     showTagSuggestions = false,
     locale = 'en',
 }: SearchBarProps) {
     const t = useTranslations('Common');
-    const tA11y = useTranslations('Accessibility');
     const router = useRouter();
     const inputRef = useRef<HTMLInputElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);

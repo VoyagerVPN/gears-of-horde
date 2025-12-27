@@ -8,9 +8,7 @@ import {
     TagCreateSchema,
     TagUpdateSchema,
     TagMergeSchema,
-    CategoryRenameSchema,
-    type TagCreate,
-    type TagUpdate
+    // CategoryRenameSchema,
 } from "@/schemas";
 import { validate, ok, err, type Result } from "@/lib/result";
 import { PrismaTagWithCount, mapPrismaTagWithCountToTagData } from "@/types/database";
@@ -147,7 +145,8 @@ export async function updateTag(id: string, rawData: unknown): Promise<Result<{ 
     if (!validated.success) {
         return validated;
     }
-    const data = validated.data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data = (validated.data as any);
 
     if (!id || id.trim() === '') {
         return err("Tag ID is required");
@@ -211,7 +210,8 @@ export async function mergeTags(rawData: unknown): Promise<Result<{ merged: true
     if (!validated.success) {
         return validated;
     }
-    const { sourceId, targetId } = validated.data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { sourceId, targetId } = (validated.data as any);
 
     try {
         // 1. Get all ModTags for source

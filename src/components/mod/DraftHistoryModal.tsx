@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { History, RotateCcw, Trash2, AlertTriangle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { DraftData } from "@/hooks/useAutosave";
@@ -55,11 +55,7 @@ export default function DraftHistoryModal({
     const t = useTranslations("Admin");
     const [confirmClearAll, setConfirmClearAll] = useState(false);
 
-    useEffect(() => {
-        if (!isOpen) {
-            setConfirmClearAll(false);
-        }
-    }, [isOpen]);
+
 
     const handleRestore = (draftId: string) => {
         onRestore(draftId);
@@ -76,7 +72,12 @@ export default function DraftHistoryModal({
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <Dialog open={isOpen} onOpenChange={(open) => {
+            if (!open) {
+                setConfirmClearAll(false);
+                onClose();
+            }
+        }}>
             <DialogContent size="lg">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-3">

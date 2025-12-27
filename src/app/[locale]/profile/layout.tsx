@@ -1,6 +1,6 @@
 import { Link } from "@/i18n/routing";
 import { getTranslations } from 'next-intl/server';
-import { LogOut, ExternalLink } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import SidebarNav from "@/components/ui/SidebarNav";
@@ -18,7 +18,6 @@ export default async function ProfileLayout({
         redirect("/api/auth/signin");
     }
 
-    const t = await getTranslations('Profile');
     const tCommon = await getTranslations('Admin'); // Reuse logout key
 
     return (

@@ -1,6 +1,6 @@
 "use client";
 
-import SectionHeader from "@/components/ui/SectionHeader";
+
 import RichTextEditor from "@/components/ui/RichTextEditor";
 import { Info } from "lucide-react";
 

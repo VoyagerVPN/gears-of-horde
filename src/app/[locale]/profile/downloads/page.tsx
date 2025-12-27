@@ -33,10 +33,6 @@ export default function ProfileDownloadsPage() {
     const [downloads, setDownloads] = useState<DownloadWithMod[]>([])
     const [loading, setLoading] = useState(true)
 
-    useEffect(() => {
-        loadDownloads()
-    }, [])
-
     const loadDownloads = async () => {
         setLoading(true)
         const data = await getDownloadHistory()
@@ -50,6 +46,11 @@ export default function ProfileDownloadsPage() {
         })) as DownloadWithMod[])
         setLoading(false)
     }
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        loadDownloads()
+    }, [])
 
     return (
         <div className="space-y-6">

@@ -2,10 +2,11 @@
 
 import { useTranslations, useLocale } from 'next-intl';
 import { Menu } from 'lucide-react';
-import { Link, useRouter } from '@/i18n/routing';
+import { Link } from '@/i18n/routing';
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import AuthButton from "@/components/AuthButton";
 import SearchBar from "@/components/ui/SearchBar";
+
 import { useState } from "react";
 import Image from "next/image";
 import Banner from "@/images/Banner.png";
@@ -14,7 +15,7 @@ export default function Navbar() {
   const t = useTranslations('Navigation');
   const tA11y = useTranslations('Accessibility');
   const locale = useLocale();
-  const router = useRouter();
+
   const [query, setQuery] = useState("");
 
   return (

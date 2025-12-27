@@ -1,7 +1,8 @@
 'use server';
 
 import { db as prisma } from "@/lib/db";
-import { ModData, ModStatusType } from "@/types/mod";
+import { ModData } from "@/types/mod";
+import { Prisma } from "@/generated/prisma";
 import { PrismaModWithTags, mapPrismaModToModData } from "@/types/database";
 
 interface SearchFilters {
@@ -14,13 +15,16 @@ interface SearchFilters {
 export async function searchMods(query: string, filters: SearchFilters = {}): Promise<ModData[]> {
     const { tag, lang, version, status } = filters;
 
-    const whereClause: any = {
+    const whereClause: Prisma.ModWhereInput = {
         AND: []
     };
+    // Ensure AND is initialized as array (typescript knows because of above, but runtime safety)
+    if (!whereClause.AND) whereClause.AND = [];
+    const andFilters = whereClause.AND as Prisma.ModWhereInput[];
 
     // Text Search (Title or Description)
     if (query) {
-        whereClause.AND.push({
+        andFilters.push({
             OR: [
                 { title: { contains: query, mode: 'insensitive' } },
                 { description: { contains: query, mode: 'insensitive' } }
@@ -30,7 +34,7 @@ export async function searchMods(query: string, filters: SearchFilters = {}): Pr
 
     // Tag Filter
     if (tag) {
-        whereClause.AND.push({
+        andFilters.push({
             tags: {
                 some: {
                     tag: {
@@ -43,7 +47,7 @@ export async function searchMods(query: string, filters: SearchFilters = {}): Pr
 
     // Language Filter
     if (lang) {
-        whereClause.AND.push({
+        andFilters.push({
             tags: {
                 some: {
                     tag: {
@@ -57,14 +61,14 @@ export async function searchMods(query: string, filters: SearchFilters = {}): Pr
 
     // Game Version Filter
     if (version) {
-        whereClause.AND.push({
+        andFilters.push({
             gameVersion: version
         });
     }
 
     // Status Filter
     if (status) {
-        whereClause.AND.push({
+        andFilters.push({
             status: status
         });
     }
@@ -82,5 +86,5 @@ export async function searchMods(query: string, filters: SearchFilters = {}): Pr
     });
 
     // Map to ModData
-    return mods.map((mod: PrismaModWithTags) => mapPrismaModToModData(mod));
+    return mods.map((mod) => mapPrismaModToModData(mod as unknown as PrismaModWithTags));
 }

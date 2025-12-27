@@ -27,27 +27,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         openGraph: {
             title: modData.title,
             description: modData.description || `Check out ${modData.title} by ${modData.author} for 7 Days to Die.`,
-            ...(originalObj => {
-                const obj: any = {
-                    type: 'website',
-                };
-                if (ogImages.length > 0) {
-                    obj.images = ogImages;
-                }
-                return obj;
-            })({})
+            type: 'website',
+            images: ogImages.length > 0 ? ogImages : undefined
         },
         twitter: {
             card: 'summary_large_image',
             title: modData.title,
             description: modData.description || `Check out ${modData.title} by ${modData.author} for 7 Days to Die.`,
-            ...(originalObj => {
-                const obj: any = {};
-                if (ogImages.length > 0) {
-                    obj.images = ogImages;
-                }
-                return obj;
-            })({})
+            images: ogImages.length > 0 ? ogImages : undefined
         }
     };
 }

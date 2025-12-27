@@ -12,8 +12,11 @@ import {
     PrismaViewHistoryWithMod,
     PrismaDownloadHistoryWithMod,
     PrismaModWithTags,
-    mapPrismaTagToTagData
+
+    mapPrismaTagToTagData,
+    mapPrismaModToModData
 } from "@/types/database"
+import { ModData } from "@/schemas"
 
 // ============ SUBSCRIPTIONS ============
 
@@ -476,7 +479,7 @@ export async function cleanupOldAnonymousData() {
 
 // ============ USER MODS (FOR AUTHORS) ============
 
-export async function getUserMods() {
+export async function getUserMods(): Promise<ModData[]> {
     const session = await auth()
     if (!session?.user?.id) return []
 
@@ -495,12 +498,7 @@ export async function getUserMods() {
         orderBy: { updatedAt: 'desc' }
     })
 
-    return mods.map((mod: PrismaModWithTags) => ({
-        ...mod,
-        tags: mod.tags.map(mapPrismaTagToTagData),
-        updatedAt: mod.updatedAt.toISOString(),
-        createdAt: mod.createdAt.toISOString()
-    }))
+    return mods.map((mod: PrismaModWithTags) => mapPrismaModToModData(mod))
 }
 
 export async function toggleModVisibility(slug: string) {
