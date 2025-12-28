@@ -135,13 +135,19 @@ export default function SearchBar({
     };
 
     const performSearch = () => {
-        const tagParams = selectedTags.map(t => `tag=${encodeURIComponent(t.displayName)}`).join('&');
         const query = currentValue.trim();
-        const queryParam = query ? `q=${encodeURIComponent(query)}` : '';
-        const params = [queryParam, tagParams].filter(Boolean).join('&');
+        const params = new URLSearchParams();
 
-        if (params) {
-            router.push(`/${locale}/search?${params}`);
+        if (query) {
+            params.set('q', query);
+        }
+
+        if (selectedTags.length > 0) {
+            params.set('tags', selectedTags.map(t => t.displayName).join(','));
+        }
+
+        if (params.toString()) {
+            router.push(`/${locale}/mods?${params.toString()}`);
             setSelectedTags([]);
             if (isControlled && onChange) {
                 onChange("");

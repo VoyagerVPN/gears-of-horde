@@ -11,7 +11,9 @@
         "loadMore": "Load More Mods",
         "latestNews": "Latest News",
         "newsArchive": "News Archive",
-        "noNewsYet": "No news yet."
+        "noNewsYet": "No news yet.",
+        "recentlyUpdated": "Recently Updated",
+        "viewAll": "View All"
     },
     "HeroSection": {
         "info": "Info",
@@ -73,6 +75,30 @@
         "resultsFound": "Results Found",
         "noResultsTitle": "No mods found",
         "noResultsDesc": "Try adjusting your search or filters to find what you're looking for."
+    },
+    "ModsPage": {
+        "title": "Browse Mods",
+        "filters": "Filters",
+        "gameVersion": "Game Version",
+        "allVersions": "All Versions",
+        "status": "Status",
+        "statusAnyMatch": "(any match)",
+        "tags": "Tags",
+        "searchTags": "Search tags...",
+        "noModsFound": "No mods found",
+        "noModsFoundDesc": "Try adjusting your filters or search query.",
+        "loadingMore": "Loading more...",
+        "noMoreMods": "No more mods to show",
+        "clearFilters": "Clear all filters",
+        "resultsCount": "{count} mods found",
+        "sortBy": "Sort by",
+        "recentlyUpdated": "Recently Updated",
+        "topRated": "Top Rated",
+        "mostDownloaded": "Most Downloaded",
+        "mostViewed": "Most Viewed",
+        "newestAdded": "Newest Added",
+        "include": "Include",
+        "exclude": "Exclude"
     },
     "Common": {
         "backToCatalog": "Back to Catalog",

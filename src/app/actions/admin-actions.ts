@@ -131,6 +131,134 @@ export async function fetchAllMods(options: FetchModsOptions = {}): Promise<ModD
     return mappedMods;
 }
 
+export type ModCategory = 'updated' | 'featured' | 'top_rated';
+
+/**
+ * Fetch mods for main page sections by category
+ */
+export async function fetchModsByCategory(category: ModCategory, limit: number = 6): Promise<ModData[]> {
+    switch (category) {
+        case 'updated':
+            return fetchRecentlyUpdatedMods(limit);
+        case 'featured':
+            return fetchFeaturedMods(limit);
+        case 'top_rated':
+            return fetchTopRatedMods(limit);
+        default:
+            return [];
+    }
+}
+
+/**
+ * Fetch recently updated mods (by changelog date or updatedAt)
+ */
+export async function fetchRecentlyUpdatedMods(limit: number = 6): Promise<ModData[]> {
+    const mods = await prisma.mod.findMany({
+        orderBy: { updatedAt: 'desc' },
+        take: limit * 2, // Fetch extra to allow filtering
+        include: {
+            tags: {
+                include: {
+                    tag: true
+                }
+            }
+        }
+    });
+
+    const mappedMods = mods.map((mod: PrismaModWithTags) => mapPrismaModToModData(mod));
+
+    // Sort by latest changelog date
+    mappedMods.sort((a, b) => {
+        const getLatestDate = (m: ModData) => {
+            if (m.changelog && m.changelog.length > 0) {
+                const dates = m.changelog
+                    .map(c => new Date(c.date).getTime())
+                    .filter(t => !isNaN(t));
+                if (dates.length > 0) {
+                    return Math.max(...dates);
+                }
+            }
+            return new Date(m.updatedAt || 0).getTime();
+        };
+        return getLatestDate(b) - getLatestDate(a);
+    });
+
+    return mappedMods.slice(0, limit);
+}
+
+/**
+ * Fetch featured mods (most downloads)
+ * Uses total downloads as primary metric
+ * TODO: Switch to downloadsThisMonth once tracking is implemented
+ */
+export async function fetchFeaturedMods(limit: number = 6): Promise<ModData[]> {
+    // For now, use total downloads until monthly tracking is implemented
+    const mods = await prisma.mod.findMany({
+        orderBy: [
+            { downloads: 'desc' },
+            { updatedAt: 'desc' } // Fallback sort
+        ],
+        take: limit,
+        include: {
+            tags: {
+                include: {
+                    tag: true
+                }
+            }
+        }
+    });
+
+    return mods.map((mod: PrismaModWithTags) => mapPrismaModToModData(mod));
+}
+
+/**
+ * Fetch top rated mods (minimum 3 ratings required)
+ */
+export async function fetchTopRatedMods(limit: number = 6, minRatings: number = 3): Promise<ModData[]> {
+    const mods = await prisma.mod.findMany({
+        where: {
+            ratingCount: { gte: minRatings }
+        },
+        orderBy: [
+            { rating: 'desc' },
+            { ratingCount: 'desc' } // Tiebreaker: more ratings = more trusted
+        ],
+        take: limit,
+        include: {
+            tags: {
+                include: {
+                    tag: true
+                }
+            }
+        }
+    });
+
+    // If not enough mods meet the threshold, fill with any mods sorted by rating
+    if (mods.length < limit) {
+        const additionalMods = await prisma.mod.findMany({
+            where: {
+                ratingCount: { lt: minRatings },
+                slug: { notIn: mods.map(m => m.slug) }
+            },
+            orderBy: [
+                { rating: 'desc' },
+                { ratingCount: 'desc' }
+            ],
+            take: limit - mods.length,
+            include: {
+                tags: {
+                    include: {
+                        tag: true
+                    }
+                }
+            }
+        });
+        mods.push(...additionalMods);
+    }
+
+    return mods.map((mod: PrismaModWithTags) => mapPrismaModToModData(mod));
+}
+
 export async function fetchModBySlug(slug: string): Promise<ModData | null> {
     const mod = await prisma.mod.findUnique({
         where: { slug },

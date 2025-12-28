@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from 'next-intl';
 import Image from "next/image";
@@ -53,6 +53,32 @@ export default function ModCard({
   // State for popovers
   const [authorsPopoverOpen, setAuthorsPopoverOpen] = useState(false);
   const [tagsPopoverOpen, setTagsPopoverOpen] = useState(false);
+
+  // Timeouts for hover interaction
+  const authorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const tagTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleAuthorEnter = () => {
+    if (authorTimeoutRef.current) clearTimeout(authorTimeoutRef.current);
+    setAuthorsPopoverOpen(true);
+  };
+
+  const handleAuthorLeave = () => {
+    authorTimeoutRef.current = setTimeout(() => {
+      setAuthorsPopoverOpen(false);
+    }, 150);
+  };
+
+  const handleTagEnter = () => {
+    if (tagTimeoutRef.current) clearTimeout(tagTimeoutRef.current);
+    setTagsPopoverOpen(true);
+  };
+
+  const handleTagLeave = () => {
+    tagTimeoutRef.current = setTimeout(() => {
+      setTagsPopoverOpen(false);
+    }, 150);
+  };
 
   // Extract tags by category
   const authorTags = tags.filter(t => t.category === 'author');
@@ -110,8 +136,8 @@ export default function ModCard({
               {hasMultipleAuthors && (
                 <span
                   className="absolute top-0 bottom-0 right-0 w-10 bg-cyan-400/10 border border-cyan-400/20 rounded-md rounded-l-none border-l-0 overflow-hidden cursor-default z-0"
-                  onMouseEnter={() => setAuthorsPopoverOpen(true)}
-                  onMouseLeave={() => setAuthorsPopoverOpen(false)}
+                  onMouseEnter={handleAuthorEnter}
+                  onMouseLeave={handleAuthorLeave}
                 >
                   <span className="w-full h-full flex items-center justify-end pr-2 text-[13px] font-bold text-cyan-400 hover:bg-white/10 transition-colors">
                     +{additionalAuthors.length}
@@ -121,7 +147,7 @@ export default function ModCard({
 
               {/* Main Author Tag - ON TOP with solid background */}
               <div className="relative z-10 bg-[#2b3e40] rounded-md">
-                <Tag category="author" href={`/search?author=${encodeURIComponent(mainAuthor)}`}>
+                <Tag category="author" href={`/mods?author=${encodeURIComponent(mainAuthor)}`}>
                   <CircleUser size={12} className="mr-1" />
                   {mainAuthor}
                 </Tag>
@@ -129,13 +155,17 @@ export default function ModCard({
 
               {/* Tooltip with additional authors */}
               {authorsPopoverOpen && (
-                <div className="absolute bottom-full right-0 mb-1 z-50 bg-surface border border-white/10 rounded-lg shadow-xl p-2 min-w-[120px]">
+                <div
+                  className="absolute bottom-full right-0 mb-1 z-50 bg-surface border border-white/10 rounded-lg shadow-xl p-2 min-w-[120px]"
+                  onMouseEnter={handleAuthorEnter}
+                  onMouseLeave={handleAuthorLeave}
+                >
                   <div className="flex flex-col gap-1">
                     {additionalAuthors.map((authorTag) => (
                       <Tag
                         key={authorTag.displayName}
                         category="author"
-                        href={`/search?author=${encodeURIComponent(authorTag.displayName)}`}
+                        href={`/mods?author=${encodeURIComponent(authorTag.displayName)}`}
                       >
                         <CircleUser size={12} className="mr-1" />
                         {authorTag.displayName}
@@ -158,7 +188,7 @@ export default function ModCard({
             <Tag
               category="status"
               value={status}
-              href={`/search?status=${status}`}
+              href={`/mods?status=${status}`}
             >
               <StatusIcon size={12} className="mr-1" />
               {statusConfig.label}
@@ -175,7 +205,7 @@ export default function ModCard({
                 key={tag.id || tag.displayName}
                 color={tag.color || undefined}
                 category={tag.category}
-                href={`/search?tag=${encodeURIComponent(tag.displayName)}`}
+                href={`/mods?tags=${encodeURIComponent(tag.displayName)}`}
               >
                 {tag.displayName}
               </Tag>
@@ -188,8 +218,8 @@ export default function ModCard({
                 {hasHiddenTags && (
                   <span
                     className="absolute top-0 bottom-0 right-0 w-10 bg-white/[0.025] border border-white/10 rounded-md rounded-l-none border-l-0 overflow-hidden cursor-default z-0"
-                    onMouseEnter={() => setTagsPopoverOpen(true)}
-                    onMouseLeave={() => setTagsPopoverOpen(false)}
+                    onMouseEnter={handleTagEnter}
+                    onMouseLeave={handleTagLeave}
                   >
                     <span className="w-full h-full flex items-center justify-end pr-2 text-[13px] font-bold text-textMuted hover:bg-white/10 transition-colors">
                       +{hiddenTags.length}
@@ -202,7 +232,7 @@ export default function ModCard({
                   <Tag
                     color={lastVisibleTag.color || undefined}
                     category={lastVisibleTag.category}
-                    href={`/search?tag=${encodeURIComponent(lastVisibleTag.displayName)}`}
+                    href={`/mods?tags=${encodeURIComponent(lastVisibleTag.displayName)}`}
                   >
                     {lastVisibleTag.displayName}
                   </Tag>
@@ -210,14 +240,18 @@ export default function ModCard({
 
                 {/* Tooltip with hidden tags */}
                 {tagsPopoverOpen && (
-                  <div className="absolute bottom-full right-0 mb-1 z-50 bg-surface border border-white/10 rounded-lg shadow-xl p-2 min-w-[120px]">
+                  <div
+                    className="absolute bottom-full right-0 mb-1 z-50 bg-surface border border-white/10 rounded-lg shadow-xl p-2 min-w-[120px]"
+                    onMouseEnter={handleTagEnter}
+                    onMouseLeave={handleTagLeave}
+                  >
                     <div className="flex flex-col gap-1">
                       {hiddenTags.map(tag => (
                         <Tag
                           key={tag.id || tag.displayName}
                           color={tag.color || undefined}
                           category={tag.category}
-                          href={`/search?tag=${encodeURIComponent(tag.displayName)}`}
+                          href={`/mods?tags=${encodeURIComponent(tag.displayName)}`}
                         >
                           {tag.displayName}
                         </Tag>

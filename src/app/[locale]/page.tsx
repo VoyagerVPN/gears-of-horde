@@ -1,37 +1,27 @@
-import ModCard from "@/components/ModCard";
 import NewsItem from "@/components/NewsItem";
-import SortToolbar from "@/components/SortToolbar";
 import HeroSection from "@/components/HeroSection";
+import ModSection from "@/components/ModSection";
 import { fetchLatestNews } from "@/app/actions/news-actions";
-import { fetchAllMods } from "@/app/actions/admin-actions";
+import { fetchModsByCategory } from "@/app/actions/admin-actions";
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-export default async function Home({ params, searchParams }: Props) {
+export default async function Home({ params }: Props) {
   const { locale } = await params;
-  const { sort, dir } = await searchParams;
 
   const t = await getTranslations('HomePage');
-  const news = await fetchLatestNews(5);
 
-  const validSortOptions = ['updated', 'rating', 'downloads', 'views'] as const;
-  const validSortDirs = ['asc', 'desc'] as const;
-
-  const rawSort = typeof sort === 'string' ? sort : undefined;
-  const rawDir = typeof dir === 'string' ? dir : undefined;
-
-  const sortBy = (validSortOptions as readonly string[]).includes(rawSort || '') ? (rawSort as typeof validSortOptions[number]) : undefined;
-  const sortDir = (validSortDirs as readonly string[]).includes(rawDir || '') ? (rawDir as typeof validSortDirs[number]) : undefined;
-
-  const mods = await fetchAllMods({ sortBy, sortDir });
-
-  const now = new Date();
-  const todayISO = now.toISOString();
+  // Fetch data for all three sections in parallel
+  const [news, updatedMods, featuredMods, topRatedMods] = await Promise.all([
+    fetchLatestNews(5),
+    fetchModsByCategory('updated', 6),
+    fetchModsByCategory('featured', 6),
+    fetchModsByCategory('top_rated', 6)
+  ]);
 
   return (
     <div className="w-[95%] max-w-[1800px] mx-auto py-8">
@@ -42,36 +32,36 @@ export default async function Home({ params, searchParams }: Props) {
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
 
-        {/* === LEFT: Mod Grid (3 columns on large screens) === */}
+        {/* === LEFT: Mod Sections (3 columns on large screens) === */}
         <div className="lg:col-span-3 space-y-6">
 
-          <SortToolbar />
+          {/* Recently Updated Section */}
+          <ModSection
+            titleKey="recentlyUpdated"
+            iconType="updated"
+            mods={updatedMods}
+            viewAllHref="/mods?sort=updated"
+            locale={locale as 'en' | 'ru'}
+          />
 
-          <div data-testid="mod-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {mods.map((mod) => (
-              <ModCard
-                key={mod.slug}
-                title={mod.title}
-                slug={mod.slug}
-                version={mod.version}
-                gameVersion={mod.gameVersion}
-                author={mod.author}
-                description={mod.description || ''}
-                tags={mod.tags}
-                updatedAt={mod.changelog?.[0]?.date || todayISO}
-                bannerUrl={mod.bannerUrl}
-                stats={{ rating: mod.stats.rating, downloads: mod.stats.downloads, views: mod.stats.views || '0' }}
-                locale={locale as 'en' | 'ru'}
-                status={mod.status}
-              />
-            ))}
-          </div>
+          {/* Featured Section (Hot this month by downloads) */}
+          <ModSection
+            titleKey="featured"
+            iconType="featured"
+            mods={featuredMods}
+            viewAllHref="/mods?sort=downloads"
+            locale={locale as 'en' | 'ru'}
+          />
 
-          <div className="flex justify-center pt-6">
-            <button className="text-xs uppercase tracking-widest text-textMuted hover:text-white border-b border-transparent hover:border-primary transition-all pb-1 font-bold">
-              {t('loadMore')}
-            </button>
-          </div>
+          {/* Top Rated Section */}
+          <ModSection
+            titleKey="topRated"
+            iconType="topRated"
+            mods={topRatedMods}
+            viewAllHref="/mods?sort=rating"
+            locale={locale as 'en' | 'ru'}
+          />
+
         </div>
 
         {/* === RIGHT: News Sidebar === */}

@@ -190,10 +190,10 @@ export default function ModHeader({ mod, isEditing = false, initialStatus, onUpd
                             <p className="flex items-center gap-1 flex-wrap">
                                 {t('createdBy')}{' '}
                                 {mod.tags.filter(t => t.category === 'author').map((authorTag) => (
-                                    <AuthorTag key={authorTag.displayName} author={authorTag.displayName} href={`/search?tag=${authorTag.displayName}`} className="hover:opacity-80 transition-opacity cursor-pointer" />
+                                    <AuthorTag key={authorTag.displayName} author={authorTag.displayName} href={`/mods?author=${encodeURIComponent(authorTag.displayName)}`} className="hover:opacity-80 transition-opacity cursor-pointer" />
                                 ))}
                                 {mod.tags.filter(t => t.category === 'author').length === 0 && (
-                                    <AuthorTag author={mod.author} href={`/search?tag=${mod.author}`} className="hover:opacity-80 transition-opacity cursor-pointer" />
+                                    <AuthorTag author={mod.author} href={`/mods?author=${encodeURIComponent(mod.author)}`} className="hover:opacity-80 transition-opacity cursor-pointer" />
                                 )}
                             </p>
                         )}

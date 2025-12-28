@@ -34,7 +34,7 @@ export default function HeroSection() {
 
                 {/* Mod Wheel Panel */}
                 <div className="col-span-6 md:col-span-3 lg:col-span-2 bg-surface/80 rounded-lg border border-white/5 p-4 flex flex-col items-center justify-center">
-                    <RotateCw className="w-12 h-12 text-primary mb-3" />
+                    <RotateCw className="w-20 h-20 text-primary mb-3" />
                     <h3 className="font-bold text-white text-xs uppercase tracking-wider text-center font-exo2">
                         {t("spinWheel")}
                     </h3>

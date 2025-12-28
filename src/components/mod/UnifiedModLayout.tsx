@@ -581,7 +581,7 @@ export default function UnifiedModLayout({
                                         <Tag
                                             key={tag.id || tag.displayName}
                                             color={tag.color || undefined}
-                                            href={`/search?tag=${tag.displayName}`}
+                                            href={`/mods?tags=${encodeURIComponent(tag.displayName)}`}
                                         >
                                             {tag.displayName}
                                         </Tag>
@@ -626,7 +626,7 @@ export default function UnifiedModLayout({
                                                     key={idx}
                                                     category="lang"
                                                     value="external"
-                                                    href={`/search?lang=${loc.value}`}
+                                                    href={`/mods?lang=${encodeURIComponent(loc.value || '')}`}
                                                     onAction={() => window.open(loc.externalLink, '_blank')}
                                                     actionIcon={<Download size={14} />}
                                                 >

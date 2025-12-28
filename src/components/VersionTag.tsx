@@ -35,7 +35,7 @@ export default function VersionTag({ type, version, className, color }: VersionT
             category={isGame ? 'gamever' : undefined}
             color={color}
             className={`${className || ''} font-bold tracking-wide gap-1.5`}
-            href={isGame ? `/search?version=${encodeURIComponent(version)}` : undefined}
+            href={isGame ? `/mods?version=${encodeURIComponent(version)}` : undefined}
         >
             <Icon size={14} className={isGame ? undefined : "text-zinc-400"} />
             {displayVersion}

@@ -5,6 +5,7 @@ export const ROUTES = {
     profile: '/profile',
     admin: '/admin',
     mods: '/admin/mods',
+    publicMods: '/mods', // Public mods browse page
     tags: '/admin/tags',
     users: '/admin/users',
     settings: '/admin/settings',

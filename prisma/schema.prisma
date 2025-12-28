@@ -103,6 +103,7 @@ model Mod {
   ratingCount       Int      @default(0)
   downloads         String   @default("0")
   views             String   @default("0")
+  downloadsThisMonth Int     @default(0)  // Rolling 30-day download count for Featured section
   
   screenshots       String[]
   

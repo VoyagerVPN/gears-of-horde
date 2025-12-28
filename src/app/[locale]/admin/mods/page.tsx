@@ -452,7 +452,7 @@ export default function AdminModsPage() {
                   <tr key={mod.slug} className="hover:bg-white/[0.02] transition-colors group">
                     <td className="px-6 py-4 font-bold text-white text-base truncate max-w-0" title={mod.title}>{mod.title}</td>
                     <td className="px-6 py-4">
-                      <AuthorTag author={mod.author} href={`/search?author=${mod.author}`} />
+                      <AuthorTag author={mod.author} href={`/mods?author=${encodeURIComponent(mod.author)}`} />
                     </td>
                     <td className="px-6 py-4">
                       <VersionTag

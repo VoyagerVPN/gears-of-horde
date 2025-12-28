@@ -11,7 +11,9 @@
         "loadMore": "Загрузить еще",
         "latestNews": "Последние новости",
         "newsArchive": "Архив новостей",
-        "noNewsYet": "Новостей пока нет."
+        "noNewsYet": "Новостей пока нет.",
+        "recentlyUpdated": "Недавно обновленные",
+        "viewAll": "Показать все"
     },
     "HeroSection": {
         "info": "Информация",
@@ -73,6 +75,30 @@
         "resultsFound": "Найдено результатов",
         "noResultsTitle": "Моды не найдены",
         "noResultsDesc": "Попробуйте изменить параметры поиска или фильтры."
+    },
+    "ModsPage": {
+        "title": "Все моды",
+        "filters": "Фильтры",
+        "gameVersion": "Версия игры",
+        "allVersions": "Все версии",
+        "status": "Статус",
+        "statusAnyMatch": "(любой)",
+        "tags": "Теги",
+        "searchTags": "Поиск тегов...",
+        "noModsFound": "Моды не найдены",
+        "noModsFoundDesc": "Попробуйте изменить параметры фильтрации или поиска.",
+        "loadingMore": "Загрузка...",
+        "noMoreMods": "Больше модов нет",
+        "clearFilters": "Сбросить фильтры",
+        "resultsCount": "{count} модов найдено",
+        "sortBy": "Сортировка",
+        "recentlyUpdated": "Недавно обновленные",
+        "topRated": "По рейтингу",
+        "mostDownloaded": "По загрузкам",
+        "mostViewed": "По просмотрам",
+        "newestAdded": "Новые",
+        "include": "Включить",
+        "exclude": "Исключить"
     },
     "Common": {
         "backToCatalog": "Назад в каталог",
