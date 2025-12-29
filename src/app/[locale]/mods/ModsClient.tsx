@@ -8,6 +8,8 @@ import ModCard from "@/components/ModCard";
 import { ModData, TagData } from "@/types/mod";
 import { searchModsAdvanced, SortOption } from "@/app/actions/search-actions";
 import GameVersionSelector from "@/components/ui/GameVersionSelector";
+import Tag from "@/components/ui/Tag";
+import { cn } from "@/lib/utils";
 
 interface ModsClientProps {
     locale: 'en' | 'ru';
@@ -39,6 +41,7 @@ export default function ModsClient({
     popularTags
 }: ModsClientProps) {
     const t = useTranslations("ModsPage");
+    const tCommon = useTranslations("Common");
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
@@ -288,18 +291,29 @@ export default function ModsClient({
                             <div className="flex flex-wrap gap-2">
                                 {statuses.map(status => {
                                     const state = getStatusState(status);
+                                    const isActive = state === 'include';
+                                    const isExcluded = state === 'exclude';
+
                                     return (
                                         <button
                                             key={status}
                                             onClick={() => handleStatusClick(status)}
-                                            className={`px-2.5 py-1 rounded text-xs font-medium transition-all capitalize ${state === 'include'
-                                                ? 'bg-green-500/20 text-green-400 border border-green-500/50'
-                                                : state === 'exclude'
-                                                    ? 'bg-red-500/20 text-red-400 border border-red-500/50 line-through'
-                                                    : 'bg-white/5 text-textMuted border border-white/10 hover:bg-white/10'
-                                                }`}
+                                            className="transition-all active:scale-95"
                                         >
-                                            {status.replace('_', ' ')}
+                                            <Tag
+                                                category="status"
+                                                value={status}
+                                                showIcon={true}
+                                                className={cn(
+                                                    "cursor-pointer transition-all duration-200",
+                                                    isExcluded && "line-through opacity-70",
+                                                    !isActive && !isExcluded && "grayscale opacity-100 !bg-white/5 hover:!bg-white/10 hover:!opacity-100"
+                                                )}
+                                                // If not active or excluded, we want a neutral look
+                                                color={(!isActive && !isExcluded) ? "#a1a1aa" : undefined}
+                                            >
+                                                {tCommon(`statuses.${status}`)}
+                                            </Tag>
                                         </button>
                                     );
                                 })}
@@ -314,19 +328,26 @@ export default function ModsClient({
                             <div className="flex flex-wrap gap-2">
                                 {popularTags.map(tag => {
                                     const state = getTagState(tag.displayName);
+                                    const isActive = state === 'include';
+                                    const isExcluded = state === 'exclude';
+
                                     return (
                                         <button
                                             key={tag.displayName}
                                             onClick={() => handleTagClick(tag.displayName)}
-                                            className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${state === 'include'
-                                                ? 'bg-green-500/20 text-green-400 border border-green-500/50'
-                                                : state === 'exclude'
-                                                    ? 'bg-red-500/20 text-red-400 border border-red-500/50 line-through'
-                                                    : 'bg-white/5 text-textMuted border border-white/10 hover:bg-white/10'
-                                                }`}
+                                            className="transition-all active:scale-95"
                                             title={`${tag.count} mods`}
                                         >
-                                            {tag.displayName}
+                                            <Tag
+                                                color={(!isActive && !isExcluded) ? "#a1a1aa" : tag.color}
+                                                className={cn(
+                                                    "cursor-pointer transition-all duration-200",
+                                                    isExcluded && "line-through opacity-70",
+                                                    !isActive && !isExcluded && "grayscale opacity-100 !bg-white/5 hover:!bg-white/10 hover:!opacity-100"
+                                                )}
+                                            >
+                                                {tag.displayName}
+                                            </Tag>
                                         </button>
                                     );
                                 })}
@@ -368,7 +389,6 @@ export default function ModsClient({
                                         title={mod.title}
                                         slug={mod.slug}
                                         version={mod.version}
-                                        gameVersion={mod.gameVersion}
                                         author={mod.author}
                                         description={mod.description || ''}
                                         tags={mod.tags}

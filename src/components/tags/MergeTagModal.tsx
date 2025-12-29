@@ -65,8 +65,8 @@ function SearchableTagSelect({
     const inputRef = useRef<HTMLInputElement>(null);
 
     const selectedTag = options.find(t => t.id === value);
-    const selectedColor = selectedTag?.color || (selectedTag ? getTagColor(selectedTag.category, selectedTag.displayName) : undefined);
-    const SelectedIcon = selectedTag ? getCategoryIcon(selectedTag.category) : TagIcon;
+    const selectedColor = selectedTag?.color || (selectedTag ? getTagColor(selectedTag.category ?? 'tag', selectedTag.displayName) : undefined);
+    const SelectedIcon = selectedTag ? getCategoryIcon(selectedTag.category ?? 'tag') : TagIcon;
 
     const filtered = useMemo(() => {
         if (!search.trim()) return options;
@@ -158,15 +158,15 @@ function SearchableTagSelect({
                             </div>
                         ) : (
                             filtered.map((tag) => {
-                                const tagColor = tag.color || getTagColor(tag.category, tag.displayName);
-                                const Icon = getCategoryIcon(tag.category);
+                                const tagColor = tag.color || getTagColor(tag.category ?? 'tag', tag.displayName);
+                                const Icon = getCategoryIcon(tag.category ?? 'tag');
                                 const isSelected = tag.id === value;
                                 return (
                                     <button
                                         key={tag.id}
                                         type="button"
                                         onClick={() => {
-                                            onChange(tag.id);
+                                            onChange(tag.id!);
                                             setOpen(false);
                                         }}
                                         className={cn(

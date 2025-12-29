@@ -44,12 +44,7 @@ export default function FAQPage() {
 
             {/* FAQ Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <FAQCard
-                    title={t("whoAmI.title")}
-                    icon={<User size={18} />}
-                >
-                    {t("whoAmI.content")}
-                </FAQCard>
+
 
                 <FAQCard
                     title={t("whatIsGoH.title")}

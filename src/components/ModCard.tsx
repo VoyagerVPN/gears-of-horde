@@ -15,7 +15,6 @@ interface ModCardProps {
   title: string;
   slug: string;
   version: string;
-  gameVersion: string;
   author: string;
   description: string;
   tags: TagData[];
@@ -34,7 +33,6 @@ export default function ModCard({
   title,
   slug,
   version,
-  gameVersion,
   author,
   description,
   tags = [],
@@ -45,6 +43,7 @@ export default function ModCard({
   status = 'active'
 }: ModCardProps) {
   const t = useTranslations('ModCard');
+  const tCommon = useTranslations('Common');
 
   // Get status config for icon and label
   const statusConfig = STATUS_CONFIG[status] || STATUS_CONFIG.unknown;
@@ -116,7 +115,7 @@ export default function ModCard({
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-900" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
         </div>
 
         {/* CONTENT */}
@@ -145,10 +144,14 @@ export default function ModCard({
                 </span>
               )}
 
-              {/* Main Author Tag - ON TOP with solid background */}
-              <div className="relative z-10 bg-[#2b3e40] rounded-md">
-                <Tag category="author" href={`/mods?author=${encodeURIComponent(mainAuthor)}`}>
-                  <CircleUser size={12} className="mr-1" />
+              {/* Main Author Tag - ON TOP with surface background to mask sliver */}
+              <div className="relative z-10 bg-surface rounded-md">
+                <Tag
+                  category="author"
+                  value={mainAuthor} // Pass value for potential specific color/icon logic
+                  showIcon={true}
+                  href={`/mods?author=${encodeURIComponent(mainAuthor)}`}
+                >
                   {mainAuthor}
                 </Tag>
               </div>
@@ -165,9 +168,10 @@ export default function ModCard({
                       <Tag
                         key={authorTag.displayName}
                         category="author"
+                        value={authorTag.displayName}
+                        showIcon={true}
                         href={`/mods?author=${encodeURIComponent(authorTag.displayName)}`}
                       >
-                        <CircleUser size={12} className="mr-1" />
                         {authorTag.displayName}
                       </Tag>
                     ))}
@@ -180,7 +184,9 @@ export default function ModCard({
 
             {/* Versions */}
             <div className="flex gap-1">
-              <VersionTag type="game" version={gameVersion} color={gameVerTag?.color || undefined} />
+              {gameVerTag && (
+                <VersionTag type="game" version={gameVerTag.displayName} color={gameVerTag.color || undefined} />
+              )}
               <VersionTag type="mod" version={version} />
             </div>
 
@@ -189,9 +195,9 @@ export default function ModCard({
               category="status"
               value={status}
               href={`/mods?status=${status}`}
+              showIcon={true}
             >
-              <StatusIcon size={12} className="mr-1" />
-              {statusConfig.label}
+              {tCommon(`statuses.${status}`)}
             </Tag>
           </div>
 

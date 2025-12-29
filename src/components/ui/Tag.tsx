@@ -2,7 +2,17 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import { Link } from "@/i18n/routing";
 import { getTagColor, colorToTagStyles } from "@/lib/tag-colors";
-import { X, CircleUser, Gamepad2, Settings } from "lucide-react";
+import {
+    X,
+    CircleUser,
+    Gamepad2,
+    Settings,
+    CheckCircle2,
+    PauseCircle,
+    Ban,
+    ArrowUpCircle,
+    HelpCircle
+} from "lucide-react";
 
 interface TagAction {
     icon: React.ReactNode;
@@ -125,9 +135,19 @@ export default function Tag({
     // Get category icon
     const getCategoryIcon = () => {
         switch (category) {
-            case 'author': return <CircleUser size={14} className="mr-1.5" />;
-            case 'gamever': return <Gamepad2 size={14} className="mr-1.5" />;
-            case 'modver': return <Settings size={14} className="mr-1.5" />;
+            case 'author': return <CircleUser size={14} />;
+            case 'gamever': return <Gamepad2 size={14} />;
+            case 'modver': return <Settings size={14} />;
+            case 'status': {
+                switch (value) {
+                    case 'active': return <CheckCircle2 size={14} />;
+                    case 'on_hold': return <PauseCircle size={14} />;
+                    case 'discontinued': return <Ban size={14} />;
+                    case 'upcoming': return <ArrowUpCircle size={14} />;
+                    case 'unknown': return <HelpCircle size={14} />;
+                    default: return <HelpCircle size={14} />;
+                }
+            }
             default: return null;
         }
     };
@@ -215,13 +235,13 @@ export default function Tag({
                     <button
                         type="button"
                         onClick={onContentClick}
-                        className={cn(paddingClasses, "flex items-center self-stretch hover:bg-white/10 transition-colors text-left")}
+                        className={cn(paddingClasses, "flex items-center gap-1.5 self-stretch hover:bg-white/10 transition-colors text-left")}
                     >
                         {icon}
                         <span className="leading-none">{children}</span>
                     </button>
                 ) : (
-                    <span className={cn(paddingClasses, "flex items-center self-stretch")}>
+                    <span className={cn(paddingClasses, "flex items-center gap-1.5 self-stretch")}>
                         {icon}
                         <span className="leading-none">{children}</span>
                     </span>
@@ -283,7 +303,7 @@ export default function Tag({
             >
                 <Link
                     href={href}
-                    className={cn(paddingClasses, "gap-1 hover:bg-white/10 transition-colors h-full w-full flex items-center justify-center cursor-pointer")}
+                    className={cn(paddingClasses, "gap-1.5 hover:bg-white/10 transition-colors h-full w-full flex items-center justify-center cursor-pointer")}
                 >
                     {icon}
                     {children}
@@ -295,7 +315,7 @@ export default function Tag({
     // 4. Static Tag (Default or Custom Layout)
     return (
         <span
-            className={cn(baseClasses, customLayout ? "p-0 overflow-hidden" : cn(paddingClasses, "gap-1 border border-transparent"))}
+            className={cn(baseClasses, customLayout ? "p-0 overflow-hidden" : cn(paddingClasses, "gap-1.5 border border-transparent"))}
             style={dynamicStyle}
             title={title}
         >

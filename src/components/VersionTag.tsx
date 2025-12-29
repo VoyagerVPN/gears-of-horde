@@ -32,12 +32,13 @@ export default function VersionTag({ type, version, className, color }: VersionT
     // Mod versions use neutral styling via category
     return (
         <Tag
-            category={isGame ? 'gamever' : undefined}
+            category={isGame ? 'gamever' : 'modver'}
+            value={version}
             color={color}
+            showIcon={true}
             className={`${className || ''} font-bold tracking-wide gap-1.5`}
             href={isGame ? `/mods?version=${encodeURIComponent(version)}` : undefined}
         >
-            <Icon size={14} className={isGame ? undefined : "text-zinc-400"} />
             {displayVersion}
         </Tag>
     );

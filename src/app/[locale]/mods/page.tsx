@@ -34,7 +34,7 @@ export default async function ModsPage({ params, searchParams }: Props) {
         }),
         fetchGameVersions(),
         fetchStatuses(),
-        fetchPopularTagsForFilters(20)
+        fetchPopularTagsForFilters()
     ]);
 
     return (

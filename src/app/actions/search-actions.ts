@@ -310,31 +310,26 @@ export async function fetchStatuses(): Promise<string[]> {
 /**
  * Fetch popular tags with usage counts for filter sidebar
  */
-export async function fetchPopularTagsForFilters(limit: number = 20): Promise<{ displayName: string; color?: string; count: number }[]> {
-    const tagCounts = await prisma.modTag.groupBy({
-        by: ['tagId'],
-        _count: { tagId: true },
-        orderBy: { _count: { tagId: 'desc' } },
-        take: limit * 2 // Fetch more to filter
-    });
+export async function fetchPopularTagsForFilters(limit: number = 1000): Promise<{ displayName: string; color?: string; count: number }[]> {
+    try {
+        const results = await prisma.$queryRaw<Array<{ displayName: string, color: string | null, count: bigint }>>`
+            SELECT t."displayName", t.color, COUNT(mt."tagId") as count
+            FROM "Tag" t
+            JOIN "ModTag" mt ON t.id = mt."tagId"
+            WHERE t.category = 'tag'
+            GROUP BY t.id, t."displayName", t.color
+            ORDER BY t."displayName" ASC
+            LIMIT ${limit};
+        `;
 
-    const tagIds = tagCounts.map(t => t.tagId);
-    const tags = await prisma.tag.findMany({
-        where: {
-            id: { in: tagIds },
-            category: 'tag' // Only show generic tags, not author/gamever/lang
-        }
-    });
-
-    const tagMap = new Map(tags.map(t => [t.id, t]));
-
-    return tagCounts
-        .filter(tc => tagMap.has(tc.tagId))
-        .map(tc => ({
-            displayName: tagMap.get(tc.tagId)!.displayName,
-            color: tagMap.get(tc.tagId)!.color || undefined,
-            count: tc._count.tagId
-        }))
-        .slice(0, limit);
+        return results.map(r => ({
+            displayName: r.displayName,
+            color: r.color || undefined,
+            count: Number(r.count)
+        }));
+    } catch (error) {
+        console.error('Error fetching popular tags:', error);
+        return [];
+    }
 }
 

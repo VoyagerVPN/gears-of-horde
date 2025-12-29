@@ -1,7 +1,7 @@
 "use client";
 
 import { Search, X, TrendingUp } from "lucide-react";
-import { useState, useRef, useEffect, useCallback, ChangeEvent, KeyboardEvent } from "react";
+import { useState, useRef, useEffect, useCallback, ChangeEvent, KeyboardEvent, useId } from "react";
 import { useRouter } from "next/navigation";
 import { searchTags, fetchPopularTags, TagData } from "@/app/actions/tag-actions";
 import Tag from "@/components/ui/Tag";
@@ -148,12 +148,7 @@ export default function SearchBar({
 
         if (params.toString()) {
             router.push(`/${locale}/mods?${params.toString()}`);
-            setSelectedTags([]);
-            if (isControlled && onChange) {
-                onChange("");
-            } else {
-                setInternalValue("");
-            }
+            // Keep the search query and tags visible - don't clear them
             setIsOpen(false);
         }
     };
@@ -187,6 +182,8 @@ export default function SearchBar({
 
     const shouldShowDropdown = showTagSuggestions && isOpen && (suggestions.length > 0 || (currentValue.length < 2 && popularTags.length > 0));
 
+    const searchId = useId();
+
     return (
         <div
             ref={dropdownRef}
@@ -199,6 +196,8 @@ export default function SearchBar({
                 {/* Input */}
                 <input
                     ref={inputRef}
+                    id={searchId}
+                    name="GohSearch"
                     type="text"
                     value={currentValue}
                     onChange={handleChange}

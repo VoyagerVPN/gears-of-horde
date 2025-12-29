@@ -7,7 +7,8 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 import AuthButton from "@/components/AuthButton";
 import SearchBar from "@/components/ui/SearchBar";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams, usePathname } from "next/navigation";
 import Image from "next/image";
 import Banner from "@/images/Banner.png";
 
@@ -15,8 +16,21 @@ export default function Navbar() {
   const t = useTranslations('Navigation');
   const tA11y = useTranslations('Accessibility');
   const locale = useLocale();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  // Sync search query with URL when on mods page
+  const urlQuery = searchParams.get('q') || '';
+  const isOnModsPage = pathname.includes('/mods');
 
   const [query, setQuery] = useState("");
+
+  // Sync search query with URL when on mods page
+  useEffect(() => {
+    if (isOnModsPage) {
+      setQuery(urlQuery);
+    }
+  }, [isOnModsPage, urlQuery]);
 
   return (
     <nav

@@ -85,7 +85,6 @@ export default function ProfileHistoryPage() {
                                 title={view.mod.title}
                                 slug={view.mod.slug}
                                 version={view.mod.version}
-                                gameVersion={view.mod.gameVersion}
                                 author={view.mod.author}
                                 tags={view.mod.tags}
                                 updatedAt={view.mod.updatedAt}

@@ -110,7 +110,6 @@ export default function ProfileSubscriptionsPage() {
                                     title={sub.mod.title}
                                     slug={sub.mod.slug}
                                     version={sub.mod.version}
-                                    gameVersion={sub.mod.gameVersion}
                                     author={sub.mod.author}
                                     tags={sub.mod.tags}
                                     updatedAt={sub.mod.updatedAt}

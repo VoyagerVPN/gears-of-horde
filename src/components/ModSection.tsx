@@ -58,7 +58,7 @@ export default function ModSection({
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                     <Icon size={18} className="text-primary" />
-                    <h2 className="text-sm font-bold text-white uppercase tracking-widest font-exo2">
+                    <h2 className="text-2xl font-bold text-white uppercase tracking-widest font-exo2">
                         {t(titleKey)}
                     </h2>
                 </div>
@@ -79,7 +79,6 @@ export default function ModSection({
                         title={mod.title}
                         slug={mod.slug}
                         version={mod.version}
-                        gameVersion={mod.gameVersion}
                         author={mod.author}
                         description={mod.description || ''}
                         tags={mod.tags}

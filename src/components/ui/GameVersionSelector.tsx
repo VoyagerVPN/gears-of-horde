@@ -156,8 +156,21 @@ export default function GameVersionSelector({
                     "
                 >
                     <Select.Viewport className="p-1.5 max-h-[300px]">
-                        <div className="px-2 py-1.5 mb-1 text-[10px] font-bold text-textMuted uppercase tracking-wider font-exo2 opacity-50">
-                            {t('availableVersions')}
+                        <div className="px-2 py-1.5 mb-1 text-[10px] font-bold text-textMuted uppercase tracking-wider font-exo2 opacity-50 flex justify-between items-center">
+                            <span>{t('availableVersions')}</span>
+                            {value && (
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        onChange("");
+                                        onClear?.();
+                                    }}
+                                    className="text-primary hover:text-white transition-colors lowercase font-normal"
+                                >
+                                    {t('clear')}
+                                </button>
+                            )}
                         </div>
 
                         {gameVersionTags.map((tag) => {
@@ -167,6 +180,12 @@ export default function GameVersionSelector({
                                 <Select.Item
                                     key={tag.id}
                                     value={tag.displayName}
+                                    onPointerDown={(e) => {
+                                        if (value === tag.displayName) {
+                                            onChange("");
+                                            onClear?.();
+                                        }
+                                    }}
                                     className="
                                         flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm
                                         text-textMuted cursor-pointer outline-none relative select-none

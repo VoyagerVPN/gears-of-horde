@@ -68,7 +68,7 @@ export default async function Home({ params }: Props) {
         <div className="lg:col-span-1">
           <div className="sticky top-24 space-y-4">
             <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-2">
-              <h3 className="font-bold text-sm text-white uppercase tracking-widest font-exo2">
+              <h3 className="font-bold text-xl text-white uppercase tracking-widest font-exo2">
                 {t('latestNews')}
               </h3>
             </div>

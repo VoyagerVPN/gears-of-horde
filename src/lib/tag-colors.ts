@@ -58,7 +58,7 @@ export const TAG_CATEGORY_COLORS: Record<string, string> = {
     'status:on_hold': '#eab308',     // yellow-500
     'status:discontinued': '#ef4444', // red-500
     'status:upcoming': '#22d3ee',     // cyan-400
-    'status:unknown': '#71717a',      // zinc-500
+    'status:unknown': '#d4d4d8',      // zinc-300 (brighter for better distinction when active)
 
     // === NEWS CATEGORIES ===
     'newscat:new': '#a855f7',     // purple-500

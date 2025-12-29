@@ -86,7 +86,6 @@ export default function ProfileDownloadsPage() {
                                 title={dl.mod.title}
                                 slug={dl.mod.slug}
                                 version={dl.mod.version}
-                                gameVersion={dl.mod.gameVersion}
                                 author={dl.mod.author}
                                 tags={dl.mod.tags}
                                 updatedAt={dl.mod.updatedAt}

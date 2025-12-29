@@ -19,10 +19,11 @@ export default function AuthorTag({ author, className, href }: AuthorTagProps) {
     return (
         <Tag
             category="author"
+            value={author}
+            showIcon={true}
             href={href}
             className={`${className || ''} gap-1.5`}
         >
-            <CircleUser size={14} />
             {author}
         </Tag>
     );
