@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useTranslations } from 'next-intl';
-import { Plus, Merge, RefreshCw, FolderEdit, FolderX, Check, X } from "lucide-react";
+import { Plus, Merge, RefreshCw, FolderEdit, FolderX, Check, X, CircleUser, Gamepad2, Globe, Newspaper, Tag as TagIcon } from "lucide-react";
 import SearchBar from "@/components/ui/SearchBar";
 import { fetchAllTags, createTag, updateTag, deleteTag, mergeTags, renameCategory, deleteCategory, TagData } from "@/app/actions/tag-actions";
 import TagModal from "@/components/tags/TagModal";
@@ -150,9 +150,8 @@ export default function AdminTagsPage() {
         setIsMergeTagModalOpen(true);
     };
 
-    const handleMergeTags = async (targetId: string) => {
-        if (!selectedTag || !selectedTag.id) return;
-        const result = await mergeTags({ sourceId: selectedTag.id, targetId });
+    const handleMergeTags = async (sourceId: string, targetId: string) => {
+        const result = await mergeTags({ sourceId, targetId });
         if (result.success) {
             setRefreshTrigger(prev => prev + 1);
         } else {
@@ -198,9 +197,20 @@ export default function AdminTagsPage() {
             case 'gamever': return t('gameVersion');
             case 'tag': return t('tags');
             case 'author': return t('author');
-            case 'lang': return t('lang');
+            case 'lang': return t('language'); // Updated to language (was lang)
+            case 'newscat': return t('news'); // Added newscat
             case 'status': return t('status');
             default: return category;
+        }
+    };
+
+    const getCategoryIcon = (category: string) => {
+        switch (category) {
+            case 'author': return { Icon: CircleUser, color: 'text-blue-400' };
+            case 'gamever': return { Icon: Gamepad2, color: 'text-green-500' };
+            case 'lang': return { Icon: Globe, color: 'text-primary' };
+            case 'newscat': return { Icon: Newspaper, color: 'text-violet-400' };
+            default: return { Icon: TagIcon, color: 'text-zinc-400' };
         }
     };
 
@@ -261,6 +271,10 @@ export default function AdminTagsPage() {
                                 {/* Category Header */}
                                 <div className="px-6 py-4 bg-white/5 border-b border-white/5 flex items-center justify-between group">
                                     <div className="flex items-center gap-3">
+                                        {(() => {
+                                            const { Icon, color } = getCategoryIcon(category);
+                                            return <Icon className={color} size={20} />;
+                                        })()}
                                         <h2 className="text-xl font-bold text-white capitalize">
                                             {getCategoryDisplayName(category)}
                                         </h2>

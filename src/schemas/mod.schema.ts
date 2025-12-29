@@ -8,7 +8,7 @@ import { z } from 'zod';
  * Schema for external links (community, donations)
  */
 export const ModLinkSchema = z.object({
-    name: z.string().min(1, "Link name is required"),
+    name: z.string().optional().default(''),
     url: z.string().url("Invalid URL format")
 });
 
@@ -34,7 +34,9 @@ export const ModVideosSchema = z.object({
  * Schema for changelog entries
  */
 export const ModChangelogSchema = z.object({
-    version: z.string().min(1, "Version is required"),
+    version: z.string()
+        .min(1, "Version is required")
+        .regex(/^(N\/A|A\d+|V?[\d.]+(?:b\d+)?)$/i, "Invalid version format. Use formats like: V1.0, A20, V1.1b14, or N/A"),
     date: z.string().min(1, "Date is required"),
     changes: z.array(z.string()),
     isSaveBreaking: z.boolean().optional()
@@ -105,7 +107,9 @@ export const ModDataSchema = z.object({
         "Description must contain at least 5 words"
     ),
     status: ModStatusSchema.default('active'),
-    gameVersion: z.string().min(1, "Game version is required"),
+    gameVersion: z.string()
+        .min(1, "Game version is required")
+        .regex(/^(N\/A|A\d+|V?[\d.]+(?:b\d+)?)$/i, "Invalid game version format. Use formats like: V1.0, A20, V1.1b14, or N/A"),
     bannerUrl: z.string().min(1, "Banner is required").url("Invalid banner URL"),
     isSaveBreaking: z.boolean().default(false),
     features: z.array(z.string()).default([]),

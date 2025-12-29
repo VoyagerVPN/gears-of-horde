@@ -5,15 +5,16 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { RefreshCw, Star, Download, Eye, Clock, X, Filter, Loader2 } from "lucide-react";
 import ModCard from "@/components/ModCard";
-import { ModData } from "@/types/mod";
+import { ModData, TagData } from "@/types/mod";
 import { searchModsAdvanced, SortOption } from "@/app/actions/search-actions";
+import GameVersionSelector from "@/components/ui/GameVersionSelector";
 
 interface ModsClientProps {
     locale: 'en' | 'ru';
     initialMods: ModData[];
     initialTotalCount: number;
     initialHasMore: boolean;
-    gameVersions: string[];
+    gameVersions: TagData[];
     statuses: string[];
     popularTags: { displayName: string; color?: string; count: number }[];
 }
@@ -271,16 +272,12 @@ export default function ModsClient({
                             <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-3">
                                 {t('gameVersion')}
                             </h3>
-                            <select
+                            <GameVersionSelector
                                 value={version}
-                                onChange={(e) => handleVersionChange(e.target.value)}
-                                className="w-full bg-background border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-primary"
-                            >
-                                <option value="">{t('allVersions')}</option>
-                                {gameVersions.map(v => (
-                                    <option key={v} value={v}>{v}</option>
-                                ))}
-                            </select>
+                                onChange={handleVersionChange}
+                                gameVersionTags={gameVersions}
+                                compact={false}
+                            />
                         </div>
 
                         {/* Status Filter */}
@@ -296,10 +293,10 @@ export default function ModsClient({
                                             key={status}
                                             onClick={() => handleStatusClick(status)}
                                             className={`px-2.5 py-1 rounded text-xs font-medium transition-all capitalize ${state === 'include'
-                                                    ? 'bg-green-500/20 text-green-400 border border-green-500/50'
-                                                    : state === 'exclude'
-                                                        ? 'bg-red-500/20 text-red-400 border border-red-500/50 line-through'
-                                                        : 'bg-white/5 text-textMuted border border-white/10 hover:bg-white/10'
+                                                ? 'bg-green-500/20 text-green-400 border border-green-500/50'
+                                                : state === 'exclude'
+                                                    ? 'bg-red-500/20 text-red-400 border border-red-500/50 line-through'
+                                                    : 'bg-white/5 text-textMuted border border-white/10 hover:bg-white/10'
                                                 }`}
                                         >
                                             {status.replace('_', ' ')}
@@ -322,10 +319,10 @@ export default function ModsClient({
                                             key={tag.displayName}
                                             onClick={() => handleTagClick(tag.displayName)}
                                             className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${state === 'include'
-                                                    ? 'bg-green-500/20 text-green-400 border border-green-500/50'
-                                                    : state === 'exclude'
-                                                        ? 'bg-red-500/20 text-red-400 border border-red-500/50 line-through'
-                                                        : 'bg-white/5 text-textMuted border border-white/10 hover:bg-white/10'
+                                                ? 'bg-green-500/20 text-green-400 border border-green-500/50'
+                                                : state === 'exclude'
+                                                    ? 'bg-red-500/20 text-red-400 border border-red-500/50 line-through'
+                                                    : 'bg-white/5 text-textMuted border border-white/10 hover:bg-white/10'
                                                 }`}
                                             title={`${tag.count} mods`}
                                         >
@@ -350,8 +347,8 @@ export default function ModsClient({
                                     key={option.key}
                                     onClick={() => handleSortChange(option.key)}
                                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${isActive
-                                            ? 'bg-primary text-black'
-                                            : 'bg-white/5 text-textMuted hover:bg-white/10 hover:text-white'
+                                        ? 'bg-primary text-black'
+                                        : 'bg-white/5 text-textMuted hover:bg-white/10 hover:text-white'
                                         }`}
                                 >
                                     <Icon size={12} />

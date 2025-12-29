@@ -7,18 +7,32 @@
 // ============================================================================
 
 /**
- * Normalize game version to always have "V" prefix
+ * Normalize game version format
  * Examples:
  *   "2.2" → "V2.2"
  *   "v2.2" → "V2.2"
  *   "V2.2" → "V2.2"
- *   "1.0" → "V1.0"
+ *   "a20" → "A20"
+ *   "A21" → "A21"
+ *   "v1.1b14" → "V1.1b14"
+ *   "N/A" → "N/A"
  */
 export function normalizeGameVersion(version: string): string {
     if (!version) return version;
 
+    const trimmed = version.trim();
+
+    // N/A is special case - keep as-is
+    if (trimmed.toUpperCase() === 'N/A') return 'N/A';
+
+    // Alpha versions (A20, a21, etc.)
+    if (trimmed.match(/^[aA]\d+/)) {
+        return trimmed.toUpperCase();
+    }
+
+    // V versions (with or without build number)
     // Remove any existing V/v prefix, then add uppercase V
-    const cleaned = version.trim().replace(/^[vV]/, '');
+    const cleaned = trimmed.replace(/^[vV]/, '');
     return `V${cleaned}`;
 }
 
@@ -26,34 +40,73 @@ export function normalizeGameVersion(version: string): string {
  * Convert game version to tag value format for database storage
  * Examples:
  *   "V2.2" → "2_2"
- *   "2.2" → "2_2"
- *   "v1.0" → "1_0"
+ *   "A20" → "a20"
+ *   "V1.1b14" → "1_1b14"
+ *   "N/A" → "na"
  */
 export function gameVersionToTagValue(version: string): string {
     if (!version) return version;
 
-    return version
-        .trim()
+    const trimmed = version.trim();
+
+    // N/A special case
+    if (trimmed.toUpperCase() === 'N/A') return 'na';
+
+    // Alpha versions keep the 'a' prefix in lowercase
+    if (trimmed.match(/^[aA]\d+/)) {
+        return trimmed.toLowerCase();
+    }
+
+    // V versions: remove V prefix, replace dots with underscores
+    return trimmed
         .replace(/^[vV]/, '')  // Remove V prefix
         .replace(/\./g, '_');   // Replace dots with underscores
 }
 
 /**
- * Compare two game versions (e.g. "V1.0" vs "V1.1")
+ * Compare two game versions
+ * Order: A20 < A21 < V1.0 < V1.1 < V1.1b14 < V1.2
+ * N/A is treated as oldest (for sorting purposes)
  * Returns: < 0 if v1 < v2, 0 if v1 == v2, > 0 if v1 > v2
  */
 export function compareGameVersions(v1: string, v2: string): number {
-    const v1Clean = (v1 || '').replace(/^[vV]/, '');
-    const v2Clean = (v2 || '').replace(/^[vV]/, '');
-    const v1Parts = v1Clean.split('.').map(Number);
-    const v2Parts = v2Clean.split('.').map(Number);
+    const v1Upper = (v1 || '').toUpperCase();
+    const v2Upper = (v2 || '').toUpperCase();
 
+    // N/A handling - treat as oldest
+    if (v1Upper === 'N/A' && v2Upper === 'N/A') return 0;
+    if (v1Upper === 'N/A') return -1;
+    if (v2Upper === 'N/A') return 1;
+
+    const v1IsAlpha = v1Upper.startsWith('A');
+    const v2IsAlpha = v2Upper.startsWith('A');
+
+    // Alpha versions come before V versions
+    if (v1IsAlpha && !v2IsAlpha) return -1;
+    if (!v1IsAlpha && v2IsAlpha) return 1;
+
+    // Extract version parts and build number
+    const parseVersion = (v: string): { parts: number[], build: number } => {
+        const clean = v.replace(/^[AVav]/, '');
+        const buildMatch = clean.match(/b(\d+)$/);
+        const build = buildMatch ? parseInt(buildMatch[1]) : 0;
+        const versionStr = clean.replace(/b\d+$/, '');
+        const parts = versionStr.split('.').map(n => parseInt(n) || 0);
+        return { parts, build };
+    };
+
+    const { parts: v1Parts, build: v1Build } = parseVersion(v1Upper);
+    const { parts: v2Parts, build: v2Build } = parseVersion(v2Upper);
+
+    // Compare version numbers
     for (let i = 0; i < Math.max(v1Parts.length, v2Parts.length); i++) {
         const p1 = v1Parts[i] || 0;
         const p2 = v2Parts[i] || 0;
         if (p1 !== p2) return p1 - p2;
     }
-    return 0;
+
+    // If versions are equal, compare build numbers
+    return v1Build - v2Build;
 }
 
 /**
@@ -69,9 +122,10 @@ export function getLatestGameVersion(tags: { displayName: string }[], defaultVer
 /**
  * Calculate the gradient color for a game version based on its position among all versions.
  * Uses the same red-to-green gradient as the server-side recalculateGameVersionColors.
+ * N/A versions get a constant zinc color and don't participate in gradient calculation.
  * 
- * @param version - The version to calculate color for (e.g., "V2.6")
- * @param allVersions - List of all versions (including the new one)
+ * @param version - The version to calculate color for (e.g., "V2.6", "A20", "N/A")
+ * @param allVersions - List of all versions (including N/A if present)
  * @returns Hex color string
  */
 export function calculateGameVersionColor(
@@ -80,12 +134,19 @@ export function calculateGameVersionColor(
 ): string {
     const OLDEST_COLOR = '#ef4444'; // red-500
     const NEWEST_COLOR = '#22c55e'; // green-500
+    const NA_COLOR = '#71717a';     // zinc-500
 
-    if (allVersions.length === 0) return NEWEST_COLOR;
-    if (allVersions.length === 1) return NEWEST_COLOR;
+    // N/A gets constant zinc color
+    if (version.toUpperCase() === 'N/A') return NA_COLOR;
+
+    // Filter out N/A from gradient calculation
+    const validVersions = allVersions.filter(v => v.toUpperCase() !== 'N/A');
+
+    if (validVersions.length === 0) return NEWEST_COLOR;
+    if (validVersions.length === 1) return NEWEST_COLOR;
 
     // Sort versions oldest to newest
-    const sorted = [...allVersions].sort((a, b) => compareGameVersions(a, b));
+    const sorted = [...validVersions].sort((a, b) => compareGameVersions(a, b));
 
     // Find position of this version
     const index = sorted.findIndex(v => v === version);
@@ -135,6 +196,31 @@ export function getDomain(url: string): string {
     } catch {
         return "";
     }
+}
+
+/**
+ * Get fixed name for specific domains (Paypal, Boosty, X)
+ */
+export function getFixedLinkName(url: string): string | null {
+    try {
+        const normalizedUrl = url.trim();
+        if (!normalizedUrl) return null;
+
+        const hostname = new URL(normalizedUrl.startsWith('http') ? normalizedUrl : `https://${normalizedUrl}`).hostname.toLowerCase().replace('www.', '');
+
+        if (hostname === 'paypal.com' || hostname === 'paypal.me') {
+            return 'Paypal';
+        }
+        if (hostname === 'boosty.to') {
+            return 'Boosty';
+        }
+        if (hostname === 'twitter.com' || hostname === 'x.com') {
+            return 'X';
+        }
+    } catch {
+        // invalid URL
+    }
+    return null;
 }
 
 // Number formatting (e.g., 1500 -> 1.5K)

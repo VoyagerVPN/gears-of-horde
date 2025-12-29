@@ -346,7 +346,7 @@ export async function updateModAction(slug: string, updates: ModUpdatePayload) {
 
     // 1. Extract Mod fields safely
     const modFields = [
-        'title', 'version', 'author', 'description', 'status', 'gameVersion',
+        'title', 'slug', 'version', 'author', 'description', 'status', 'gameVersion',
         'bannerUrl', 'isSaveBreaking', 'features', 'installationSteps', 'links', 'videos',
         'changelog', 'localizations', 'stats', 'screenshots', 'createdAt', 'updatedAt'
     ];

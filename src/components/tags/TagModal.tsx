@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslations } from 'next-intl';
+import { CircleUser, Gamepad2, Globe, Newspaper, Tag as TagIcon, LucideIcon } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -13,6 +14,7 @@ import {
     DialogField,
     dialogInputClass,
 } from "@/components/ui/Dialog";
+import RichSelector, { RichSelectorOption } from "@/components/ui/RichSelector";
 
 interface TagModalProps {
     isOpen: boolean;
@@ -23,13 +25,22 @@ interface TagModalProps {
     existingCategories: string[];
 }
 
+// Configuration for fixed categories with specific styling
+const CATEGORY_CONFIG: Record<string, { icon: LucideIcon; color: string; labelKey: string }> = {
+    author: { icon: CircleUser, color: "text-blue-400", labelKey: "author" },
+    gamever: { icon: Gamepad2, color: "text-green-500", labelKey: "gameVersion" },
+    lang: { icon: Globe, color: "text-primary", labelKey: "language" },
+    newscat: { icon: Newspaper, color: "text-violet-400", labelKey: "news" },
+    tag: { icon: TagIcon, color: "text-zinc-400", labelKey: "tags" },
+};
+
 export default function TagModal({ isOpen, onClose, tag, onSave, initialCategory, existingCategories }: TagModalProps) {
     const t = useTranslations('Admin');
+    const t_common = useTranslations('Common');
     const [category, setCategory] = useState("");
     const [value, setValue] = useState("");
     const [displayName, setDisplayName] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const [showCategorySuggestions, setShowCategorySuggestions] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -58,9 +69,30 @@ export default function TagModal({ isOpen, onClose, tag, onSave, initialCategory
         }
     };
 
-    const filteredCategories = existingCategories.filter(c =>
-        c.toLowerCase().includes(category.toLowerCase())
-    );
+    // Generate options merging hardcoded config with any existing custom categories
+    const categoryOptions: RichSelectorOption[] = useMemo(() => {
+        // Start with the fixed categories
+        const fixedCategories = Object.entries(CATEGORY_CONFIG).map(([key, config]) => ({
+            value: key,
+            label: t(config.labelKey) || key.charAt(0).toUpperCase() + key.slice(1), // Fallback to capitalized key
+            icon: config.icon,
+            iconColor: config.color,
+            isCurrent: tag?.category === key,
+        }));
+
+        // Find any existing categories that aren't in the fixed list
+        const extraCategories = existingCategories
+            .filter(cat => !CATEGORY_CONFIG[cat])
+            .map(cat => ({
+                value: cat,
+                label: cat, // Use raw category name
+                icon: TagIcon, // Default icon
+                iconColor: "text-zinc-400", // Neutral color
+                isCurrent: tag?.category === cat,
+            }));
+
+        return [...fixedCategories, ...extraCategories];
+    }, [existingCategories, tag?.category, t]);
 
     const isDisabled = isLoading || !category.trim() || !value.trim() || !displayName.trim();
 
@@ -73,42 +105,15 @@ export default function TagModal({ isOpen, onClose, tag, onSave, initialCategory
 
                 <form onSubmit={handleSubmit}>
                     <DialogBody className="space-y-4">
-                        {/* Category Input with Autocomplete */}
+                        {/* Category Selector */}
                         <DialogField label={t('category')} smallLabel>
-                            <div className="relative">
-                                <input
-                                    id="tag-category"
-                                    name="category"
-                                    type="text"
-                                    value={category}
-                                    onChange={(e) => {
-                                        setCategory(e.target.value);
-                                        setShowCategorySuggestions(true);
-                                    }}
-                                    onFocus={() => setShowCategorySuggestions(true)}
-                                    onBlur={() => setTimeout(() => setShowCategorySuggestions(false), 200)}
-                                    placeholder={t('selectCategory')}
-                                    required
-                                    className={dialogInputClass}
-                                />
-                                {showCategorySuggestions && filteredCategories.length > 0 && (
-                                    <div className="absolute z-10 w-full mt-1 bg-zinc-800 border border-white/10 rounded-lg max-h-48 overflow-y-auto">
-                                        {filteredCategories.map((cat) => (
-                                            <button
-                                                key={cat}
-                                                type="button"
-                                                onClick={() => {
-                                                    setCategory(cat);
-                                                    setShowCategorySuggestions(false);
-                                                }}
-                                                className="w-full text-left px-4 py-2 text-sm text-textMuted hover:bg-white/5 hover:text-white transition-colors"
-                                            >
-                                                {cat}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                            <RichSelector
+                                value={category}
+                                onChange={setCategory}
+                                options={categoryOptions}
+                                placeholder={t('selectCategory')}
+                                currentLabel={t_common('current')}
+                            />
                         </DialogField>
 
                         {/* Value Input */}

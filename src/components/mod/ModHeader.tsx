@@ -126,13 +126,12 @@ export default function ModHeader({ mod, isEditing = false, initialStatus, onUpd
                                 onFocus={() => onClearField?.('slug')}
                                 className={cn(
                                     "bg-transparent border-none outline-none px-0 py-0 text-sm font-mono placeholder:text-white/20 transition-all leading-none",
-                                    isNew ? "text-textMuted hover:text-white/70 focus:text-white/70" : "text-textMuted/50 cursor-not-allowed",
+                                    "text-textMuted hover:text-white/70 focus:text-white/70",
                                     invalidFields.has('slug') ? "text-red-400" : ""
                                 )}
                                 placeholder="mod-name"
                                 maxLength={45}
-                                disabled={!isNew}
-                                title={!isNew ? "Slug cannot be changed after creation" : "Auto-generated from title"}
+                                title={t("slugEditTooltip")}
                                 style={{ width: mod.slug ? `${Math.min(Math.max(mod.slug.length, 8), 45)}ch` : '8ch' }}
                             />
                         </div>

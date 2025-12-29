@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as cheerio from 'cheerio';
+import { getFixedLinkName } from '@/lib/utils';
 
 // List of blocked hosts to prevent SSRF attacks
 const BLOCKED_HOSTS = [
@@ -95,9 +96,11 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnfurlRes
         // For 403/blocked sites, fallback to extracting site name from domain
         if (!response.ok) {
             const parsedUrl = new URL(url);
-            // Extract a readable name from the domain (e.g., "ko-fi.com" -> "Ko-fi")
+            // Hardcoded overrides for specific domains
+            const fixedName = getFixedLinkName(url);
             const domainParts = parsedUrl.hostname.replace('www.', '').split('.');
-            const siteName = domainParts[0].charAt(0).toUpperCase() + domainParts[0].slice(1);
+            const siteName = fixedName || domainParts[0].charAt(0).toUpperCase() + domainParts[0].slice(1);
+
             const icon = `https://www.google.com/s2/favicons?domain=${parsedUrl.hostname}&sz=32`;
 
             return NextResponse.json(
@@ -132,6 +135,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<UnfurlRes
         } else if (title.includes(' - ') && !$('meta[property="og:site_name"]').attr('content')) {
             const parts = title.split(' - ');
             title = parts[parts.length - 1].trim();
+        }
+
+        // Hardcoded overrides for specific domains
+        const fixedName = getFixedLinkName(url);
+        if (fixedName) {
+            title = fixedName;
         }
 
         // Get favicon/icon URL

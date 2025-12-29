@@ -105,6 +105,7 @@
         "download": "Download",
         "downloadMod": "Download Mod",
         "slug": "Slug",
+        "slugEditTooltip": "Auto-generated from title. Can be edited manually.",
         "joinDiscord": "Join Discord Server",
         "wipeRequired": "Wipe Required",
         "wipeRequiredDesc": "Old saves are incompatible with this version.",
@@ -254,12 +255,15 @@
         "pressEnterToUnfurl": "Press Enter to convert link",
         "fetching": "Fetching...",
         "builtIn": "Built-in",
-        "languageTooltip": "English is always built-in. Other languages become external when you add a download URL."
+        "languageTooltip": "English is always built-in. Other languages become external when you add a download URL.",
+        "selectVersion": "Select version"
     },
     "Admin": {
         "pendingTranslations": "Pending Translations",
         "mod": "Mod",
         "lang": "Lang",
+        "language": "Language",
+        "news": "News",
         "author": "Author",
         "link": "Link",
         "approve": "Approve",
@@ -397,6 +401,11 @@
         "updateTagError": "Failed to update tag",
         "createTagError": "Failed to create tag",
         "mergeTagsError": "Failed to merge tags",
+        "mergeTagWarning": "Merging will reassign all mods and news from {tag} to the target tag, and then permanently delete the source tag.",
+        "selectTag": "Select tag...",
+        "availableTags": "Available Tags",
+        "sourceTag": "Source",
+        "targetTag": "Target",
         "validationErrors": {
             "Author is required": "Author is required",
             "Title is required": "Title is required",

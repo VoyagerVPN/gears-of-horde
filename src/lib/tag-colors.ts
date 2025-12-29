@@ -17,7 +17,7 @@
 export const FALLBACK_TAG_COLOR = '#a1a1a1'; // gray
 
 /** Color for author tags */
-export const AUTHOR_TAG_COLOR = '#22d3ee'; // cyan-400 - higher contrast for better readability
+export const AUTHOR_TAG_COLOR = '#22d3ee'; // cyan-400
 
 /** Color for primary/accent elements */
 export const PRIMARY_COLOR = '#ce4729';
@@ -29,6 +29,7 @@ export const LANG_BUILTIN_COLOR = PRIMARY_COLOR;
 export const GAME_VERSION_COLORS = {
     oldest: '#ef4444', // red-500 (RGB: 239, 68, 68)
     newest: '#22c55e', // green-500 (RGB: 34, 197, 94)
+    na: '#71717a',     // zinc-500 (for N/A unreleased mods)
 } as const;
 
 /**
@@ -43,12 +44,14 @@ export const TAG_CATEGORY_COLORS: Record<string, string> = {
     'author': AUTHOR_TAG_COLOR,
 
     // === GENERIC TAGS ===
-    'tag': '#a1a1a1', // gray (neutral)
+    'tag': '#a1a1aa', // zinc-400 (neutral)
 
     // === GAME VERSIONS ===
     // Default to newest green as fallback
     // (actual colors are calculated dynamically via recalculateGameVersionColors)
+    // N/A versions get constant zinc color
     'gamever': GAME_VERSION_COLORS.newest,
+    'gamever:na': GAME_VERSION_COLORS.na,
 
     // === STATUS ===
     'status:active': '#22c55e',      // green-500

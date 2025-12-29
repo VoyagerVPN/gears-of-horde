@@ -272,15 +272,28 @@ export async function searchModsAdvanced(filters: AdvancedSearchFilters = {}): P
 }
 
 /**
- * Fetch all unique game versions for filter dropdown
+ * Fetch all game version tags for filter dropdown
+ * (Fetches from Tag table to exclude deleted tags)
  */
-export async function fetchGameVersions(): Promise<string[]> {
-    const versions = await prisma.mod.findMany({
-        select: { gameVersion: true },
-        distinct: ['gameVersion'],
-        orderBy: { gameVersion: 'desc' }
+export async function fetchGameVersions() {
+    const tags = await prisma.tag.findMany({
+        where: { category: 'gamever' },
+        include: {
+            _count: {
+                select: { modTags: true }
+            }
+        },
+        orderBy: { displayName: 'desc' }
     });
-    return versions.map(v => v.gameVersion).filter(Boolean);
+
+    return tags.map(tag => ({
+        id: tag.id,
+        category: tag.category,
+        value: tag.value,
+        displayName: tag.displayName,
+        color: tag.color || undefined,
+        usageCount: tag._count.modTags
+    }));
 }
 
 /**

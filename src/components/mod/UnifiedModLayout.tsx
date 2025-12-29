@@ -187,6 +187,7 @@ export default function UnifiedModLayout({
                 <div className="flex flex-col gap-2 flex-1">
                     {links.map((link, idx) => {
                         const domain = getDomain(link.url);
+                        const displayName = link.name?.trim() || domain || 'Link';
                         return (
                             <a
                                 key={idx}
@@ -198,14 +199,14 @@ export default function UnifiedModLayout({
                                 {domain && (
                                     <Image
                                         src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
-                                        alt={link.name}
+                                        alt={displayName}
                                         width={16}
                                         height={16}
                                         className="rounded-sm opacity-80 group-hover:opacity-100 transition-opacity shrink-0"
                                         unoptimized
                                     />
                                 )}
-                                <span className="text-xs font-bold text-textMain group-hover:text-white truncate">{link.name}</span>
+                                <span className="text-xs font-bold text-textMain group-hover:text-white truncate">{displayName}</span>
                                 <ExternalLink size={12} className="ml-auto text-textMuted group-hover:text-white opacity-50 group-hover:opacity-100 transition-all shrink-0" />
                             </a>
                         );

@@ -127,18 +127,16 @@ export default function GameVersionSelector({
                         : 'w-full h-[46px] px-4 rounded-md text-sm shadow-sm'
                 )}
             >
-                <Select.Value asChild>
-                    <div className="flex items-center gap-2.5">
-                        {value ? (
-                            <Gamepad2 size={compact ? 14 : 18} style={{ color: selectedGameVersionColor }} className="drop-shadow-md" />
-                        ) : (
-                            <Gamepad2 size={compact ? 14 : 18} className="text-textMuted" />
-                        )}
-                        <span className={`font-bold tracking-wide ${!value ? "text-textMuted" : ""}`}>
-                            {value || t('selectVersion')}
-                        </span>
-                    </div>
-                </Select.Value>
+                <div className="flex items-center gap-2.5">
+                    {value ? (
+                        <Gamepad2 size={compact ? 14 : 18} style={{ color: selectedGameVersionColor }} className="drop-shadow-md" />
+                    ) : (
+                        <Gamepad2 size={compact ? 14 : 18} className="text-textMuted" />
+                    )}
+                    <span className={`font-bold tracking-wide ${!value ? "text-textMuted" : ""}`}>
+                        <Select.Value placeholder={t('selectVersion')} />
+                    </span>
+                </div>
                 <Select.Icon>
                     <ChevronDown size={compact ? 14 : 16} className="text-textMuted group-hover:text-white transition-colors opacity-70" />
                 </Select.Icon>
@@ -177,16 +175,16 @@ export default function GameVersionSelector({
                                         data-[state=checked]:text-white data-[state=checked]:bg-white/10
                                     "
                                 >
-                                    <Select.ItemText asChild>
-                                        <div className="flex items-center gap-3">
-                                            <Gamepad2
-                                                size={16}
-                                                style={{ color: tagColor }}
-                                                className="shrink-0 transition-transform group-hover:scale-110"
-                                            />
+                                    <div className="flex items-center gap-3">
+                                        <Gamepad2
+                                            size={16}
+                                            style={{ color: tagColor }}
+                                            className="shrink-0 transition-transform group-hover:scale-110"
+                                        />
+                                        <Select.ItemText>
                                             <span className="font-bold tracking-wide">{tag.displayName}</span>
-                                        </div>
-                                    </Select.ItemText>
+                                        </Select.ItemText>
+                                    </div>
 
                                     <div className="flex items-center gap-2">
                                         {isCurrent && (
@@ -202,58 +200,61 @@ export default function GameVersionSelector({
                             );
                         })}
 
-                        {/* Create new version section */}
-                        <div className="border-t border-white/10 mt-2 mx-1" onPointerDown={(e) => e.stopPropagation()}>
-                            <div className="px-1 py-2">
-                                <label className="text-[10px] font-bold text-textMuted uppercase tracking-wider font-exo2 pl-1 mb-1 block">
-                                    {t('addVersion')}
-                                </label>
-                                <div className="flex items-center gap-2 bg-black/30 rounded-lg p-1 border border-white/5 focus-within:border-primary/50 transition-colors">
-                                    <input
-                                        type="text"
-                                        value={newVersionInput}
-                                        onChange={(e) => {
-                                            setNewVersionInput(e.target.value);
-                                            setVersionInputError(null);
-                                        }}
-                                        onKeyDown={(e) => {
-                                            e.stopPropagation();
-                                            if (e.key === 'Enter') {
-                                                e.preventDefault();
+
+                        {/* Create new version section - only show if onCreateVersion callback is provided */}
+                        {onCreateVersion && (
+                            <div className="border-t border-white/10 mt-2 mx-1" onPointerDown={(e) => e.stopPropagation()}>
+                                <div className="px-1 py-2">
+                                    <label className="text-[10px] font-bold text-textMuted uppercase tracking-wider font-exo2 pl-1 mb-1 block">
+                                        {t('addVersion')}
+                                    </label>
+                                    <div className="flex items-center gap-2 bg-black/30 rounded-lg p-1 border border-white/5 focus-within:border-primary/50 transition-colors">
+                                        <input
+                                            type="text"
+                                            value={newVersionInput}
+                                            onChange={(e) => {
+                                                setNewVersionInput(e.target.value);
+                                                setVersionInputError(null);
+                                            }}
+                                            onKeyDown={(e) => {
+                                                e.stopPropagation();
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    handleCreateVersion();
+                                                }
+                                            }}
+                                            onFocus={(e) => e.stopPropagation()}
+                                            onClick={(e) => e.stopPropagation()}
+                                            placeholder={suggestedNextVersion}
+                                            className="flex-1 bg-transparent border-none text-sm text-white px-2 py-1 outline-none placeholder:text-textMuted/30"
+                                            disabled={isCreatingVersion}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
                                                 handleCreateVersion();
-                                            }
-                                        }}
-                                        onFocus={(e) => e.stopPropagation()}
-                                        onClick={(e) => e.stopPropagation()}
-                                        placeholder={suggestedNextVersion}
-                                        className="flex-1 bg-transparent border-none text-sm text-white px-2 py-1 outline-none placeholder:text-textMuted/30"
-                                        disabled={isCreatingVersion}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleCreateVersion();
-                                        }}
-                                        disabled={isCreatingVersion || !newVersionInput.trim() || !!versionInputError}
-                                        className={`
-                                            p-1.5 rounded-md transition-all duration-200
-                                            ${newVersionInput.trim() && !versionInputError
-                                                ? 'bg-primary text-white hover:bg-red-600 shadow-lg shadow-red-900/20'
-                                                : 'bg-white/5 text-white/20 cursor-not-allowed'
-                                            }
-                                        `}
-                                    >
-                                        {isCreatingVersion ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                                    </button>
+                                            }}
+                                            disabled={isCreatingVersion || !newVersionInput.trim() || !!versionInputError}
+                                            className={`
+                                                p-1.5 rounded-md transition-all duration-200
+                                                ${newVersionInput.trim() && !versionInputError
+                                                    ? 'bg-primary text-white hover:bg-red-600 shadow-lg shadow-red-900/20'
+                                                    : 'bg-white/5 text-white/20 cursor-not-allowed'
+                                                }
+                                            `}
+                                        >
+                                            {isCreatingVersion ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                                        </button>
+                                    </div>
+                                    {versionInputError && (
+                                        <p className="text-red-400 text-[10px] mt-1.5 ml-1 animate-in fade-in slide-in-from-left-1">
+                                            {versionInputError}
+                                        </p>
+                                    )}
                                 </div>
-                                {versionInputError && (
-                                    <p className="text-red-400 text-[10px] mt-1.5 ml-1 animate-in fade-in slide-in-from-left-1">
-                                        {versionInputError}
-                                    </p>
-                                )}
                             </div>
-                        </div>
+                        )}
                     </Select.Viewport>
                 </Select.Content>
             </Select.Portal>

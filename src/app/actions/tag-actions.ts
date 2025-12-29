@@ -262,21 +262,37 @@ export async function recalculateGameVersionColors() {
         where: { category: 'gamever' }
     });
 
-    // Sort by version number (oldest first, newest last)
-    // Use value as the source for version comparison (e.g., "1_4")
-    gameVerTags.sort((a: { value: string }, b: { value: string }) =>
+    if (gameVerTags.length === 0) return;
+
+    // Separate N/A from regular versions
+    const naTags = gameVerTags.filter(t => t.value.toLowerCase() === 'na');
+    const regularTags = gameVerTags.filter(t => t.value.toLowerCase() !== 'na');
+
+    // Sort regular tags by version (exclude N/A from gradient)
+    regularTags.sort((a: { value: string }, b: { value: string }) =>
         compareVersions(a.value, b.value)
     );
 
-    const count = gameVerTags.length;
-    if (count === 0) return;
+    const count = regularTags.length;
 
     // Gradient from Red (oldest) to Green (newest)
     const startColor = hexToRgb(GAME_VERSION_COLORS.oldest);
     const endColor = hexToRgb(GAME_VERSION_COLORS.newest);
 
+    // Update N/A tags with constant zinc color
+    for (const tag of naTags) {
+        const naColor = GAME_VERSION_COLORS.na;
+        if (tag.color !== naColor) {
+            await prisma.tag.update({
+                where: { id: tag.id },
+                data: { color: naColor }
+            });
+        }
+    }
+
+    // Update regular version tags with gradient colors
     for (let i = 0; i < count; i++) {
-        const tag = gameVerTags[i];
+        const tag = regularTags[i];
         let colorHex;
 
         if (count === 1) {

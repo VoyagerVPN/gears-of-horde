@@ -1,0 +1,2243 @@
+[
+  {
+    "slug": "28-alphas-later",
+    "title": "28 Alphas Later",
+    "version": "3.0.5",
+    "author": "Hells Janitor",
+    "description": "The idea behind this mod is to slow progression, make traders less powerful, and generally extend the time for a playthrough, while keeping the vanilla look and feel.",
+    "status": "active",
+    "gameVersion": "V1.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://7daystodiemods.com/28-alphas-later/",
+      "discord": "https://discord.gg/GTQecRSMjM",
+      "community": [
+        {
+          "url": "https://community.7daystodie.com/topic/34695-28-alphas-later/"
+        },
+        {
+          "url": "https://www.youtube.com/c/Hells_Janitor"
+        },
+        {
+          "url": "https://www.twitch.tv/hellsjanitortv"
+        },
+        {
+          "url": "https://twitter.com/HellsJanitorTV"
+        },
+        {
+          "url": "https://kick.com/hellsjanitor"
+        }
+      ],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "https://youtu.be/rBKfCw0qd2E",
+      "review": "https://youtu.be/rBKfCw0qd2E"
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "5th-day",
+    "title": "5th day",
+    "version": "v56",
+    "author": "SarahAndJeff",
+    "description": "Jeff had this weird thought that he should take the idea from Crystal Hell mod (Thanks Shavick) and build upon the learn by doing system. Then along the way was like. ok I don't like the workbechs let's make our own and change how you craft them, Then out of the blue was like I don't like the weapons and how you craft ammo let's change that too, etc.",
+    "status": "active",
+    "gameVersion": "V2.1",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://github.com/SarahandJeff/5thDay",
+      "discord": "https://discord.gg/WuEVwMqj8e",
+      "community": [
+        {
+          "url": "https://discord.gg/ARM7zYD9Jb"
+        }
+      ],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "advanced-survival-overhaul",
+    "title": "Advanced Survival Overhaul",
+    "version": "V0.01",
+    "author": "Dullahan_Reaper",
+    "description": "The idea behind this mod is to slow progression, make traders less powerful, and generally extend the time for a playthrough, while keeping the vanilla look and feel.",
+    "status": "active",
+    "gameVersion": "V1.1 b14",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://www.nexusmods.com/7daystodie/mods/7465",
+      "discord": "https://discord.gg/7nMH6gvu6a",
+      "community": [
+        {
+          "url": "https://www.twitch.tv/greezelife"
+        }
+      ],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "age-of-oblivion",
+    "title": "Age of Oblivion",
+    "version": "A7.1",
+    "author": "Pipermac, Nams",
+    "description": "This project started with myself taking over the [Farm Life Expanded](https://7daystodiemods.com/farm-life-expanded/) mod. I first start to fix thing with the mod but as I began to learn more about modding I decided that rather then trying to fix it would be best to rebuild. What started a “Farming” mod has now become so much more.\nWelcome to “**The Age of Oblivion**”!",
+    "status": "active",
+    "gameVersion": "A21.2",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://7daystodiemods.com/age-of-oblivion/",
+      "discord": "https://discord.gg/hBqXBTbjTV",
+      "community": [
+        {
+          "url": "https://ageofoblivion.com/"
+        },
+        {
+          "url": "https://community.7daystodie.com/topic/23943-age-of-oblivion-alpha-710212-stable-a212/"
+        }
+      ],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "https://youtu.be/6FYPlzEl_60",
+      "review": "https://youtu.be/Pm-lREf8QtQ"
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "apocalypse-now",
+    "title": "Apocalypse Now",
+    "version": "3.1",
+    "author": "Killerbunny264",
+    "description": "",
+    "status": "on_hold",
+    "gameVersion": "A20.7",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://www.nexusmods.com/7daystodie/mods/1446",
+      "discord": "https://discord.gg/t9gp97mFrA",
+      "community": [
+        {
+          "url": "https://gitlab.com/killerbunny264/Apoc-Now-V3-1-Stable"
+        },
+        {
+          "url": "https://www.youtube.com/@killerbunny2648"
+        }
+      ],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "",
+      "review": "https://youtu.be/IP-kzPYZKts"
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "asia-mod",
+    "title": "Asia Mod",
+    "version": "4.2.2002",
+    "author": "HessenBub",
+    "description": "The Asia Mod is a far-reaching revision of 7 Days to Die. This overhaul mod has a very strong focus on survival. Therefore, you can not play this mod like the vanilla game or many other mods where you no longer have problems as soon as you can make bacon with eggs (by the way, these do not exist at all). But if you are willing to learn you find lots of detailed cooking recipes and lots of crafting possibilities.\nEverything that is put in this mod has to fit the theme of Asia in the 16th century. (there is really a lot of research in here).",
+    "status": "on_hold",
+    "gameVersion": "V1.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://git.asia-mod.net/",
+      "discord": "https://discord.gg/Nd5zXQyYTX",
+      "community": [
+        {
+          "url": "https://asia-mod.net/"
+        },
+        {
+          "url": "https://youtube.asia-mod.net/"
+        },
+        {
+          "url": "https://x.com/asiamod7days"
+        },
+        {
+          "url": "https://instagram.asia-mod.net/"
+        }
+      ],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "https://youtu.be/YDaGNW2r6h0",
+      "review": "https://youtu.be/i7O646F9FUA?si=OJGNc1sBOYs9rK3J"
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      },
+      {
+        "code": "German",
+        "name": "German",
+        "type": "builtin"
+      },
+      {
+        "code": "Japanese",
+        "name": "Japanese",
+        "type": "builtin"
+      },
+      {
+        "code": "Brazilian",
+        "name": "Brazilian",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "the-asylum",
+    "title": "The Asylum",
+    "version": "2.4b7",
+    "author": "badbunny87",
+    "description": "A massive overhaul mod for 7 Days to Die that transforms the game into a hellish survival horror experience. With 750+ custom content pieces, 600+ entities, 7 character classes, and 320 unique quests - The Asylum offers a completely new gameplay experience where nightmares become reality.",
+    "status": "active",
+    "gameVersion": "V2.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://asylumstn.com/",
+      "discord": "https://discord.gg/H5qfhSNXwn",
+      "community": [
+        {
+          "url": "https://www.mediafire.com/file_premium/35uh4e2s26fqgwn/Asylum2.4b7.zip/file"
+        },
+        {
+          "url": "https://drive.google.com/file/d/1jqqewHI-JjwXgA23IWm8ezC-dIiVzNdv/view?usp=sharing"
+        },
+        {
+          "url": "https://asylumstn.com/"
+        }
+      ],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "",
+      "review": "https://youtu.be/LP-JmfkG_KI"
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "back-to-origins",
+    "title": "Back To Origins",
+    "version": "6.08",
+    "author": "RaDee",
+    "description": "BTO is a comprehensive overhaul mod for *7 Days to Die* that significantly enhances and complicates nearly every aspect of the game, making it more immersive, challenging, and diverse.\nThe mod reworks biomes, turning environmental hazards like overheating or frostbite into life-threatening concerns rather than mere inconveniences. The Wasteland has become completely uninhabitable due to persistent, deadly radiation levels, requiring specialized protective gear to survive. However, venturing into this hostile zone is worth the risk, as it’s the only place to find titanium—a rare and incredibly durable metal that has surfaced there for unknown reasons.\nTo help you survive, BTO introduces a massive arsenal of weapons, crafted by the mod’s creator, RaDee, using models from open sources, as well as contributions from the renowned weapon pack creator Izayo. But that’s just the beginning. At the start of the game, you can choose your character’s backstory—soldier, farmer, wanderer, or more—each shaping your journey and skills, letting you decide who you’ll become in this post-apocalyptic world.\nBecome a legend with the mod’s legendary skill system, master crafting with an expanded crafting system, take to the skies by repairing a helicopter, or live a quieter life by the sea with an overhauled gardening and animal husbandry system.\nThis and much more awaits you in BTO.",
+    "status": "active",
+    "gameVersion": "V1.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://www.nexusmods.com/7daystodie/mods/4899",
+      "discord": "https://discord.gg/QWNrA5WwBn",
+      "community": [
+        {
+          "url": "https://drive.google.com/file/d/1h6-CBBq-GWRGX4P7p1AAPp90nR-uCnES/view?usp=sharing"
+        },
+        {
+          "url": "https://disk.yandex.ru/d/CrZHUNFbPKBO0Q"
+        },
+        {
+          "url": "https://mega.nz/file/fQxGHKTC#hitvqTRMuLQ7v3vo4Ltmq0GhDtW70V92XoY0WM32eQM"
+        },
+        {
+          "url": "https://drive.google.com/file/d/16v1oLQyTl-Nx3c5Nfzq1Wx9VjGBFbaQ1/view?usp=sharing"
+        },
+        {
+          "url": "https://www.youtube.com/channel/UCiqBsc_cysDq_jYBsocJKQg"
+        },
+        {
+          "url": "https://trovo.live/_RaDee_"
+        }
+      ],
+      "donations": [
+        {
+          "url": "https://boosty.to/radeechannel"
+        }
+      ]
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      },
+      {
+        "code": "Russian",
+        "name": "Russian",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "black-forrest",
+    "title": "Black Forrest",
+    "version": "1.0.0",
+    "author": "Black Forrest Team",
+    "description": "- custom/unique Pois\n- bigger wandering hordes\n- various music radios\n- elite vanilla gameplay\n- when things get rough, **run Forrest, run**",
+    "status": "active",
+    "gameVersion": "V1.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://www.nexusmods.com/7daystodie/mods/6692",
+      "discord": "https://discord.gg/qQ6zyKH2Ee",
+      "community": [
+        {
+          "url": "https://7daystodiemods.com/black-forrest/"
+        },
+        {
+          "url": "https://www.twitch.tv/antipas66"
+        }
+      ],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "cloud-mod",
+    "title": "Cloud Mod",
+    "version": "0.7.4",
+    "author": "nocloud4u",
+    "description": "An attempt at adding realistic mechanics while retaining QOL features. Cloud Mod adds an increase in difficulty and includes lots of popular mods.",
+    "status": "active",
+    "gameVersion": "V24",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://www.nexusmods.com/7daystodie/mods/4606",
+      "discord": "https://discord.gg/HDPdwMTBtX",
+      "community": [],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "darkness-falls",
+    "title": "Darkness Falls",
+    "version": "6.0.0.20",
+    "author": "Khaine",
+    "description": "Darkness Falls is not an easy mod. The primary intent is to drag out the early game, so it will take you longer than usual to get to Iron and Steel. Several things you are used to being able to make now require classes or perks to be purchased, and night-time is not fun time. The wasteland? Even less so.\nThis is a mod I originally created to fix a few \"issues\" myself, my wife and some friends felt the game had. Turns out I really enjoy modding so I've expanded on it quite a bit. The intent is to drag out the early game, so it will take you longer than usual to get to Iron and Steel. As I started playing in Alpha 8,  I wanted to try and bring back a few things from that era. Sharp rocks and sticks are pretty good examples of that, and I want to try and incorporate more features from that era of gameplay.\nThe behemoth, originally unveiled in A16 and then scrapped is alive and well in this mod, along with some extra friends. Expect to see new zombies, new horrors and don't anticipate an easy ride. A mostly comprehensive list of features can be found below.",
+    "status": "active",
+    "gameVersion": "V1.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://www.nexusmods.com/7daystodie/mods/235",
+      "discord": "https://discord.gg/darknessfallsmod",
+      "community": [
+        {
+          "url": "https://dev.azure.com/KhaineUK/_git/Darkness%20Falls%20V6"
+        },
+        {
+          "url": "https://www.youtube.com/channel/UC3yu4ucbt_3_KJAki5jncBg"
+        },
+        {
+          "url": "https://www.twitch.tv/khaineskorner"
+        },
+        {
+          "url": "https://x.com/KhainesKorner"
+        },
+        {
+          "url": "https://www.redbubble.com/people/darkness-falls/shop"
+        }
+      ],
+      "donations": [
+        {
+          "url": "https://www.patreon.com/darknessfallsmod"
+        },
+        {
+          "url": "https://www.paypal.me/khainegb"
+        }
+      ]
+    },
+    "videos": {
+      "trailer": "https://youtu.be/zHnO5xrt178",
+      "review": "https://youtu.be/zgYXb0wAWh4"
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      },
+      {
+        "code": "Russian",
+        "name": "Russian",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/7007"
+      },
+      {
+        "code": "German",
+        "name": "German",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/2438"
+      },
+      {
+        "code": "Japanese",
+        "name": "Japanese",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/2621"
+      },
+      {
+        "code": "Portugese",
+        "name": "Portugese",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/6449"
+      },
+      {
+        "code": "Spanish",
+        "name": "Spanish",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/4264"
+      },
+      {
+        "code": "Ukrainian",
+        "name": "Ukrainian",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/4245"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "district-zero",
+    "title": "District Zero",
+    "version": "2.3.4",
+    "author": "Zilox",
+    "description": "In a dystopian world ravaged by zombies, robots were deployed with strict orders to eliminate any signs of life to try and contain the outbreak. As a result, many remaining survivors that had not been infected were wiped out and the animals that once roamed the grasslands became extinct. The year is now 2034 and the zombie outbreak still rages across the wastelands fuelled by a mysterious glow that keeps the undead alive. Inspired by sci-fi games such as Generation Zero, Prey and Detroit: Become Human.",
+    "status": "active",
+    "gameVersion": "V1.2",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://www.nexusmods.com/7daystodie/mods/3174",
+      "discord": "https://discord.gg/5HrpRdGxKd",
+      "community": [
+        {
+          "url": "https://7daystodiemods.com/district-zero/"
+        },
+        {
+          "url": "https://dev.azure.com/Zilox135/_git/DistrictZeroV2.3"
+        },
+        {
+          "url": "https://community.7daystodie.com/topic/32797-district-zero/"
+        }
+      ],
+      "donations": [
+        {
+          "url": "https://www.paypal.com/donate/?hosted_button_id=S96TPW9B2MSBW"
+        }
+      ]
+    },
+    "videos": {
+      "trailer": "",
+      "review": "https://youtu.be/qd_1psz1EfQ"
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      },
+      {
+        "code": "Chinese",
+        "name": "Chinese",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/7041"
+      },
+      {
+        "code": "Spanish",
+        "name": "Spanish",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/6041"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "endz",
+    "title": "EndZ",
+    "version": "2.0.1",
+    "author": "TheeLegion",
+    "description": "This mod was designed to walk the line between realism and fun engaging gameplay. Where realism became grindy or not fun I tried to aim for engaging gameplay mechanics with a focus on risk and reward and a strong sense of consequences. Death in this mod is permanent with few exceptions. In this mod when death occurs your player data is wiped and you will respawn as a fresh new player",
+    "status": "active",
+    "gameVersion": "V2.0",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://dev.azure.com/ryanmfranks1989/_git/EndZ%201.0%20Release",
+      "discord": "https://discord.gg/mRUFdcqUjp",
+      "community": [],
+      "donations": [
+        {
+          "url": "https://www.paypal.me/EndZTheeLegion"
+        }
+      ]
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "escape-from-tarkov",
+    "title": "Escape From Tarkov",
+    "version": "1.0",
+    "author": "BryanDVS, M14",
+    "description": "This is a work in progress mod, that adds 100+ new guns, 45+ types of ammo, 200+ new item modifiers and 70+ new items. It changes the vanilla mechanics drastically, extends the endgame and makes everything a bit harder, but not frustrating. All guns feature custom animations, visible attachments, grip poses, multiaction (underbarrel-launcher) etc.",
+    "status": "active",
+    "gameVersion": "V1.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://7daystodiemods.com/escape-from-tarkov-overhaul/",
+      "discord": "https://discord.gg/WpVPJWj7Xk",
+      "community": [],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "",
+      "review": "https://youtu.be/fwP53XRxFhg"
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      },
+      {
+        "code": "Russian",
+        "name": "Russian",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/6197"
+      },
+      {
+        "code": "Japanese",
+        "name": "Japanese",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/6754"
+      },
+      {
+        "code": "Chinese",
+        "name": "Chinese",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/7043"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "forsaken-trail",
+    "title": "Forsaken Trail",
+    "version": "1.1.2.0",
+    "author": "HaidrGna",
+    "description": "Forsaken Trail is a complete overhaul of the game and is the successor of Gnamod. The mod focuses on wilderness survival, exploration and improving the overal survival experience. This mod changes most of the game systems in an attempt to create something unique and it does not try to hold the player’s hand that much, making it quite challenging for anyone new to it. The world mostly decides the gamestage so going into higher level POIs or biomes may not be the wisest strategy because of this. You can find any item from the first day due to the unique way loot is generated where player level and gamestage only influence the amount you find.\nThe mod also comes with a unique character creation system where you select your attributes, skills and background before you spawn into the game. You will begin the game with gear and technology unlocked based on these choices. This gear in addition to a number of tutorial challenges will help you survive your first day and first week.\nThe zombies and animals in the world are all randomized, their walk, abilities and sizes will be decided the moment they spawn and are further influence by their type. You will encounter zombies that can puke or walk on all four legs. In the more natural biomes animals are more prevalent, while near cities and destroyed areas you will see a lot more zombies. Be careful around buildings as zombies will be awake and roaming around and they have keen ears.",
+    "status": "active",
+    "gameVersion": "V1.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://drive.google.com/drive/folders/1AKFQyQFZFopZuhDB3dOk8Mrwt4snGcaX?usp=sharing",
+      "discord": "https://discord.gg/RSkrUwvxpe",
+      "community": [
+        {
+          "url": "https://www.youtube.com/@haidrgna"
+        },
+        {
+          "url": "https://community.7daystodie.com/topic/41759-forsaken-trail/"
+        }
+      ],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "https://youtu.be/ssLzFVfjLF8",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      },
+      {
+        "code": "[Russian",
+        "name": "[Russian",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "gorenogodsk",
+    "title": "Gorenogodsk",
+    "version": "2.1.0",
+    "author": "Grumbleman",
+    "description": "The idea of this modification has long been on the surface – to transfer the player from the realities of the US state of Arizona to an authentic town somewhere in the CIS (post-Soviet countries) with post-Soviet peculiar buildings.\nIn addition to houses, transport, weapons, and partially the appearance of zombies, and the interior will be redesigned. The gameplay, which is not related to the visual, will also undergo changes: there are plans to create new traps, including distracting ones; rebalancing weapons; creating new types (subspecies) of quests and creating quests of higher complexity than tier 5 or even 6; recoverable transport in the world; partial complexity of crafting and much more.\nAn additional idea of the mod is to make it only through xml, without additional programming and getting into the game code. There are two main reasons for this: I'm a bad coder; I don't want the mod to need special guides on how to install it, it should be enough to throw it into a folder – and that's it.\nSome plans and ideas have already been tested, have prototypes, some are only in the \"in theory it should work\" stage. You can get acquainted with them, as well as with the general development plan below.",
+    "status": "active",
+    "gameVersion": "A21",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://www.nexusmods.com/7daystodie/mods/2605",
+      "discord": "https://discord.gg/xD5r5f6",
+      "community": [
+        {
+          "url": "https://www.youtube.com/@GamesnGrumble"
+        },
+        {
+          "url": "https://t.me/GamesnGrumble"
+        }
+      ],
+      "donations": [
+        {
+          "url": "https://boosty.to/gng"
+        }
+      ]
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      },
+      {
+        "code": "Russian",
+        "name": "Russian",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "greys-prophesy",
+    "title": "Grey’s Prophesy",
+    "version": "1.4.2.0",
+    "author": "GanTheGrey",
+    "description": "Grey’s Prophecy is a flavoring of the default game. The goal of the mod is to add fun stuff, and some humor, while keeping close to the vanilla formula.",
+    "status": "active",
+    "gameVersion": "V1.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://dev.azure.com/greysprophecy/Greys_Prophecy/_git/GP_V1?Branch=main",
+      "discord": "https://discord.gg/dqC3qrSH9F",
+      "community": [
+        {
+          "url": "https://community.7daystodie.com/topic/18933-greys-prophecy-mod/"
+        }
+      ],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "i-am-legend",
+    "title": "I am Legend",
+    "version": "2.0.0",
+    "author": "Hells Janitor",
+    "description": "Six billion people on Earth when the infection hit...\nThe Krippin Virus had a 90 percent kill rate; that's 5.4 BILLION people, dead. Crashed and bled out. Dead. Less than one-percent immunity.\nThat left 12 million healthy people, like you. The other 588 MILLION turned into Dark Seekers, and then they got hungry, and they killed and fed on everybody. **EVERYBODY!**\nEvery single person that you or I has ever known is dead! DEAD!\n**THERE IS NO GOD!**\nZombies (Dark Seekers) DO NOT spawn in the wild during the day. You are free to move about the world, but be warned...\nBuildings are DANGEROUS. They are filled with fast-moving enemies, and you'll need to be careful when looking for supplies.\nThere are no traders; all trader compounds have been abandoned.\nWhen night falls, you'll want to be inside and well hidden. Dark Seekers will be out in force, and they're hungry",
+    "status": "unknown",
+    "gameVersion": "V1",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://7daystodiemods.com/i-am-legend/",
+      "discord": "https://discord.gg/GTQecRSMjM",
+      "community": [
+        {
+          "url": "https://community.7daystodie.com/topic/35153-i-am-legend/"
+        },
+        {
+          "url": "https://www.youtube.com/c/Hells_Janitor"
+        },
+        {
+          "url": "https://www.twitch.tv/hellsjanitortv"
+        },
+        {
+          "url": "https://twitter.com/HellsJanitorTV"
+        },
+        {
+          "url": "https://kick.com/hellsjanitor"
+        }
+      ],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "joke-mod",
+    "title": "Joke mod",
+    "version": "5.3.0",
+    "author": "RizzoMF,Zilox",
+    "description": "This mod is about 85% a joke, 10% serious, 5% butterscotch ripple. It has been an idea for years and is finally a realization. It literally started as a joke and grew from there. The mod has been made so that players can have a serious playthrough and not just log in for 5 minutes, have some laughs, and never play it again. Although some people might still do that. Rude!",
+    "status": "active",
+    "gameVersion": "V2.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://www.nexusmods.com/7daystodie/mods/1834",
+      "discord": "https://discord.gg/awS7euCwtd",
+      "community": [
+        {
+          "url": "https://dev.azure.com/RizzoMF/_git/JokeModV5"
+        },
+        {
+          "url": "https://community.7daystodie.com/topic/35415-joke-mod-version-4/"
+        },
+        {
+          "url": "https://twitter.com/joke_mod"
+        }
+      ],
+      "donations": [
+        {
+          "url": "https://paypal.me/rizzomf"
+        },
+        {
+          "url": "https://www.paypal.com/donate/?hosted_button_id=S96TPW9B2MSBW"
+        }
+      ]
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "never-alone",
+    "title": "Never Alone",
+    "version": "1.0.0",
+    "author": "IceRogue",
+    "description": "**Inspired by Project Zomboid, you will notice the simularities from the start. Mobs will surround you at times with a never ending horde. Various Romero mod settings, so headshots are important. There are four skyscrapers you can complete as your final goals**",
+    "status": "unknown",
+    "gameVersion": "A21",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://www.dropbox.com/scl/fi/adiq3oko51kfpls21ph63/Never-Alone-202140530.zip?rlkey=nujggs4iphpo0d57d6xgi0o01&dl=0",
+      "discord": "https://discord.gg/pgcx7MthNS",
+      "community": [],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "nord-army",
+    "title": "Nord Army",
+    "version": "3.1.3",
+    "author": "NORDMANN",
+    "description": "The NordArmy Mod 3.1 revolutionizes the classic survival experience of 7 Days to Die, bringing a fresh and thrilling new gameplay dynamic.\nWith unique mechanics, innovative features, and a massive content overhaul, this mod introduces elements never seen before in the game.\nExpect enhanced combat, detailed world-building, and a deeper survival challenge that transforms the way players navigate the apocalypse.\nWhether you’re a veteran survivor or new to the wasteland, NordArmy Mod redefines the adventure, offering surprises at every turn.\nReady to face the unknown? The world of 7 Days to Die will never be the same again!",
+    "status": "active",
+    "gameVersion": "V2.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://7daystodiemods.com/nordarmy-mod/",
+      "discord": "https://discord.gg/PVvRQdsVhc",
+      "community": [
+        {
+          "url": "https://streamelements.com/nordmann845/tip"
+        }
+      ],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "https://youtu.be/oUD2QHscIP4",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      },
+      {
+        "code": "German",
+        "name": "German",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "outback-roadies",
+    "title": "Outback Roadies",
+    "version": "Unknown",
+    "author": "Unknown",
+    "description": "Outback Roadies is an expansion for 7 Days to Die with an Australian theme.\nThe concept has a bit of a Mad Max type post-poco feel about it and includes a 7D2D version of 'The Compound' POI from Mad Max II.",
+    "status": "unknown",
+    "gameVersion": "Unknown",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://github.com/arramus/V1-OutbackRoadies",
+      "discord": "",
+      "community": [
+        {
+          "url": "https://community.7daystodie.com/topic/35191-v1-outback-roadies/"
+        }
+      ],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "",
+      "review": "https://youtu.be/p5u5pH1U8Xo"
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "preppocalypse",
+    "title": "Preppocalypse",
+    "version": "1.4.0.1",
+    "author": "arramus",
+    "description": "Preppocalypse is an expansion for 7 Days to Die, from the perspective of a Prepper. In the context of 7 Days to Die, a Prepper is a survivor who prepared in advance for adverse situations and made it through the initial ‘event’ stage and aftermath. Preppocalypse places the player in the subsequent afterwards.\nDue to vigilance from before the initial ‘event’, a Prepper already has some features in place. These include increased inventory capacity, enhanced skill potential and choice, and access to other benefits considered helpful for survival. Preppocalypse recognizes a Prepper has an increased chance to thrive. As a tradeoff, in addition to the grunt, feral, and radiated hostile classes, there are ‘others’ out there to provide a more challenging and hostile environment. They will mostly be seen as game stage progresses, but be prepared for some surprises during Horde Night or in the biomes. This expansion builds on the post-apocalyptic theme of 7 Days to Die through an additive approach. As such, the majority of features will be very familiar. Additions are intuitive, enhancing, immersive, in context, supportive, and appropriately more threatening. While there will be periods of extremes, considered choices can restore balance.",
+    "status": "active",
+    "gameVersion": "V1.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://www.nexusmods.com/7daystodie/mods/5295",
+      "discord": "",
+      "community": [
+        {
+          "url": "https://community.7daystodie.com/topic/31960-preppocalypse/"
+        }
+      ],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "ravenhearst",
+    "title": "Ravenhearst",
+    "version": "10.4.1b1",
+    "author": "JaxTeller718",
+    "description": "Welcome to Ravenhearst a place where your nightmares grow and fester and the world around you is trying to kill you at every turn. Ravenhearst is a full overhaul mod that uses the amazing 7 Days to Die and turns expectations in its head. Every aspect of the vanilla game has been tweaked or tuned to increase challenge and difficulty. Ravenhearst has often been called the mod that is not for everyone. It is best played by those that have a basic understanding of the vanilla 7 Days to Die experience, and for those looking to challenge themselves. Below you will learn just a little bit about what we have to offer. Keep in mind that Ravenhearst, just like the actual 7 Days to Die game, is nowhere a near finished experience and it's development is ongoing, and as such should be played with the open mind that there can be major updates that will cause save breaks and resets to your game. We pride ourselves on using our team of testers to thoroughly play and beg test so that we can provide you with the most solid gaming experience we can manage to put forth. But also keep in mind as with anything, things can happen.",
+    "status": "on_hold",
+    "gameVersion": "V1.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://www.nexusmods.com/7daystodie/mods/135",
+      "discord": "https://discord.gg/2ypkgwDEkp",
+      "community": [
+        {
+          "url": "https://www.mediafire.com/file/jhqolldzlofbo9t/Ravenhearst_10_4_1b1.zip/file"
+        },
+        {
+          "url": "https://community.7daystodie.com/topic/4508-ravenhearst-mod/"
+        }
+      ],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      },
+      {
+        "code": "Russian",
+        "name": "Russian",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/2741"
+      },
+      {
+        "code": "Portugese",
+        "name": "Portugese",
+        "type": "external",
+        "url": "https://7daystodiemods.com/translation-portuguese-brazil-mod-ravenhearst/"
+      },
+      {
+        "code": "Ukrainian",
+        "name": "Ukrainian",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/3470"
+      },
+      {
+        "code": "Chinese",
+        "name": "Chinese",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/4676"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "rebirth",
+    "title": "Rebirth",
+    "version": "2.0",
+    "author": "FuriousRamsay",
+    "description": "Rebirth is a comprehensive overhaul mod for 7 Days to Die, designed to enhance and expand the survival experience. Known for its challenging gameplay and extensive feature set, Rebirth introduces new mechanics, enemies, and a deep customization system that allows players to adjust nearly every aspect of the game. The mod rebalances core elements while adding fresh content, making it a favorite among players seeking a more intense and rewarding survival challenge.",
+    "status": "active",
+    "gameVersion": "V2.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://drive.google.com/file/d/18lQQtDXnMhbQ7CeojN4DrdtAfPzdY9dS/view?usp=sharing",
+      "discord": "https://discord.gg/zamjP9bD5x",
+      "community": [
+        {
+          "url": "https://discord.com/channels/853417090400911391/1433890409297477743/1433893394148495511"
+        },
+        {
+          "url": "https://www.youtube.com/channel/UCQ2R7sAShu2eaxQsrAFLAIw"
+        },
+        {
+          "url": "https://7d2d-rebirth-mod.fandom.com/wiki/7D2D_Rebirth_Mod_Wiki"
+        }
+      ],
+      "donations": [
+        {
+          "url": "https://www.patreon.com/furiousramsay"
+        },
+        {
+          "url": "https://www.paypal.com/donate/?hosted_button_id=3PRTM3QVRXUX2"
+        }
+      ]
+    },
+    "videos": {
+      "trailer": "https://youtu.be/KkruwZA5PhA",
+      "review": "https://youtu.be/v6CPf9YevDU"
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      },
+      {
+        "code": "Russian",
+        "name": "Russian",
+        "type": "builtin"
+      },
+      {
+        "code": "German",
+        "name": "German",
+        "type": "builtin"
+      },
+      {
+        "code": "Spanish",
+        "name": "Spanish",
+        "type": "builtin"
+      },
+      {
+        "code": "French",
+        "name": "French",
+        "type": "builtin"
+      },
+      {
+        "code": "Italian",
+        "name": "Italian",
+        "type": "builtin"
+      },
+      {
+        "code": "Japanese",
+        "name": "Japanese",
+        "type": "builtin"
+      },
+      {
+        "code": "Korean",
+        "name": "Korean",
+        "type": "builtin"
+      },
+      {
+        "code": "Polish",
+        "name": "Polish",
+        "type": "builtin"
+      },
+      {
+        "code": "Portugese",
+        "name": "Portugese",
+        "type": "builtin"
+      },
+      {
+        "code": "Turkish",
+        "name": "Turkish",
+        "type": "builtin"
+      },
+      {
+        "code": "Chinese",
+        "name": "Chinese",
+        "type": "builtin"
+      },
+      {
+        "code": "Spanish",
+        "name": "Spanish",
+        "type": "builtin"
+      },
+      {
+        "code": "Ukrainian",
+        "name": "Ukrainian",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/6463"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "scavengers-of-the-living-dead",
+    "title": "Scavengers of the Living Dead",
+    "version": "5.5.1",
+    "author": "JaxTeller718",
+    "description": "What Scavengers is is a tribute to traditional and classic zombie horror survival. If Ravenhearst is the Resident Evil of mods then Scavengers will be the Night of the Living Dead. Its focus is not on horde nights, or Demolishers, or even mutations but will be on primitive survival tactics, hordes of unrelenting WALKERS and respectful of established \"traditional\" zombie lore (no runners, headshots kill etc).\nThe challenge of this mod for me as we go forward is to make it as difficult as possible yet be something completely unexpected and different than what you would expect from 7 Days. We have Ravenhearst for the kitchen sink type of mod, this will be sleeker, meaner and rely more on natural challenges than things like bullet sponges. Building will not be the focus here, rather will be a luxury. Nomadic gameplay style and smart survival decisions will be key to your survival. Zombies will be enhanced with several new \"sniffing out\" techniques that could very quickly spell trouble for you in short order if you get overwhelmed. The gameplay will feel very similar in style to older Alphas, with less focus on points and perks and way more focus on crafting, resource gathering and scavenging of course.",
+    "status": "active",
+    "gameVersion": "A20.5b2",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://gitlab.com/jaxteller718/scavengersa20/-/archive/main/scavengersa20-main.zip",
+      "discord": "https://discord.gg/XWphRtm",
+      "community": [
+        {
+          "url": "https://forums.7daystodie.com/forum/-7-days-to-die-pc/game-modification/mods/164590-scavengers-of-the-living-dead"
+        },
+        {
+          "url": "https://account.venmo.com/u/JaxTeller718"
+        }
+      ],
+      "donations": [
+        {
+          "url": "https://www.paypal.me/FrankCirabisiJr"
+        }
+      ]
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "silent-hill",
+    "title": "Silent Hill",
+    "version": "1.0.0",
+    "author": "Killerbunny264",
+    "description": "A different style to play\nNo horde night or traders\nyou need to survive on your own\nbe aware of the wandering hordes!",
+    "status": "on_hold",
+    "gameVersion": "V1.2",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://www.nexusmods.com/7daystodie/mods/6382",
+      "discord": "",
+      "community": [
+        {
+          "url": "https://community.7daystodie.com/topic/42045-silent-hill-mod-random-wandering-horde/"
+        }
+      ],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "smrgsbord",
+    "title": "Smörgåsbord",
+    "version": "2.3.1",
+    "author": "FlufferNutterSandwitch",
+    "description": "/ ˈsmɔr gəsˌbɔrd, -ˌboʊrdor, often, ˈʃmɔr- /\n*noun*",
+    "status": "discontinued",
+    "gameVersion": "V2.3",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://github.com/Fluffernuttersandwich/Better7D2DbyFNS",
+      "discord": "https://discord.gg/VkQJy6sfqT",
+      "community": [
+        {
+          "url": "https://www.youtube.com/@FlufferNutterSandwich"
+        }
+      ],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "sorcery-mod",
+    "title": "Sorcery mod",
+    "version": "1.942",
+    "author": "Sorcery Team",
+    "description": "",
+    "status": "active",
+    "gameVersion": "A21.2",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://discord.gg/8JCVQydB5h",
+      "discord": "https://discord.gg/VH9E78xfhx",
+      "community": [],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "https://youtu.be/UYaPnOu65Mc",
+      "review": "https://youtu.be/RBnZ-LAtg-w"
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "tongo-mod",
+    "title": "Tongo mod",
+    "version": "3.5.4",
+    "author": "TEKJAGAMEPLAYS",
+    "description": "Couldn’t find a description. Look at the list of features",
+    "status": "active",
+    "gameVersion": "V2.3",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://7daystodiemods.com/tongomod/",
+      "discord": "https://discord.gg/9G3JeVnJS5",
+      "community": [
+        {
+          "url": "https://discord.com/channels/671100806539509760/1386068957945135196/1391781764355068087"
+        },
+        {
+          "url": "https://www.youtube.com/@TEKJAGAMEPLAYS"
+        }
+      ],
+      "donations": [
+        {
+          "url": "https://www.paypal.com/donate/?hosted_button_id=SLQXTL4TAEM42"
+        }
+      ]
+    },
+    "videos": {
+      "trailer": "https://youtu.be/8QPxTkX4L0Y",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      },
+      {
+        "code": "Spanish",
+        "name": "Spanish",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "true-survival",
+    "title": "True Survival",
+    "version": "1.29.15",
+    "author": "SpiderJZMOD",
+    "description": "This mod was designed to walk the line between realism and fun engaging gameplay. Where realism became grindy or not fun I tried to aim for engaging gameplay mechanics with a focus on risk and reward and a strong sense of consequences. Death in this mod is permanent with few exceptions. In this mod when death occurs your player data is wiped and you will respawn as a fresh new player.  Choosing Your Character - Upon starting, players will have Knowledge Points available to purchase up to 3 Traits, a Hobby and a Profession.  These choices will determine the players starting stats, items and recipes. Players are able to learn all Professions over time by collecting 20 Profession Pages and crafting another Professions Kit. An additional Hobby can be learned after 20 days survived. Traits do not stack and are optional. The following are the Players Starting Choices.",
+    "status": "active",
+    "gameVersion": "V2.3",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://discord.gg/nEVTcMMf5x",
+      "discord": "https://discord.gg/nEVTcMMf5x",
+      "community": [],
+      "donations": [
+        {
+          "url": "https://www.paypal.com/paypalme/JohnZidar"
+        }
+      ]
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "undead-country",
+    "title": "Undead Country",
+    "version": "1.3",
+    "author": "DoubleBlundy",
+    "description": "Undead Country was made with the intention of changing the mostly dead world with only a few zombies outside, to a zombie infested country. Cities are huge and and in every biome. Guns are easier to get and looting POIs is more rewarding than quests. There are new tiers of zombies and quests to kill boss zombies.",
+    "status": "active",
+    "gameVersion": "V2.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://www.nexusmods.com/7daystodie/mods/8037",
+      "discord": "http://discord.gg/77E7XwvDnZ",
+      "community": [
+        {
+          "url": "https://7daystodiemods.com/undead-country/"
+        }
+      ],
+      "donations": [
+        {
+          "url": "https://www.patreon.com/DoubleBlundy/membership"
+        }
+      ]
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "undead-legacy",
+    "title": "Undead Legacy",
+    "version": "2.6.17",
+    "author": "Subquake",
+    "description": "Undead Legacy is an overhaul mod for 7 Days to Die with main focus on improving quality of life features, immersion and expanding content in a meaningful way with additional complexity layer with lots of new items, blocks, recipes, prefab changes and more!\nIt's developed by 1 person - [Subquake](https://ul.subquake.com/subquake) with a little help of other community members in smaller things. You can read in more detail about this under [Credits](https://ul.subquake.com/credits).\nMods development started during Alpha 11 of 7 Days to Die and first stable release came out in November 4th, 2017 Main inspiration comes from games like: Fallout 4, Fallen Earth, Sheltered, Project Zomboid, XCOM, Conan Exiles and others.",
+    "status": "active",
+    "gameVersion": "A20",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://ul.subquake.com/download",
+      "discord": "https://discord.gg/bGd5QTreUf",
+      "community": [
+        {
+          "url": "http://ul.subquake.com/"
+        },
+        {
+          "url": "https://community.7daystodie.com/topic/4085-subquakes-undead-legacy/"
+        },
+        {
+          "url": "https://www.reddit.com/r/UndeadLegacy/"
+        },
+        {
+          "url": "https://twitter.com/SubquakeLV"
+        },
+        {
+          "url": "https://twitch.tv/subquake"
+        },
+        {
+          "url": "https://youtube.com/subquake"
+        },
+        {
+          "url": "https://steamcommunity.com/id/SubquakeLV"
+        }
+      ],
+      "donations": [
+        {
+          "url": "https://patreon.com/subquake"
+        },
+        {
+          "url": "https://paypal.me/subquake"
+        }
+      ]
+    },
+    "videos": {
+      "trailer": "",
+      "review": "https://youtu.be/OLczDFd406k"
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      },
+      {
+        "code": "Russian",
+        "name": "Russian",
+        "type": "builtin"
+      },
+      {
+        "code": "Chinese",
+        "name": "Chinese",
+        "type": "builtin"
+      },
+      {
+        "code": "Brazilian",
+        "name": "Brazilian",
+        "type": "builtin"
+      },
+      {
+        "code": "German",
+        "name": "German",
+        "type": "builtin"
+      },
+      {
+        "code": "Korean",
+        "name": "Korean",
+        "type": "builtin"
+      },
+      {
+        "code": "Polish",
+        "name": "Polish",
+        "type": "builtin"
+      },
+      {
+        "code": "Spanish",
+        "name": "Spanish",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "undead-water-two",
+    "title": "Undead Water Two",
+    "version": "2.9.9.999",
+    "author": "DirkillerGaming",
+    "description": "Here comes Undead Water Two, the Successor of Undead Water (1.x).\nThis Overhaul-Mod comes with an exclusive Water-Map “Atlantica Undead UW Two” and a lot of new Content.",
+    "status": "active",
+    "gameVersion": "V2.1",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://7daystodiemods.com/undead-water-two/",
+      "discord": "",
+      "community": [
+        {
+          "url": "https://www.buymeacoffee.com/dirkillergaming"
+        },
+        {
+          "url": "https://www.youtube.com/@DirkillerGaming"
+        }
+      ],
+      "donations": [
+        {
+          "url": "https://www.paypal.com/paypalme/dirkidon"
+        }
+      ]
+    },
+    "videos": {
+      "trailer": "https://youtu.be/rD4bwPSC2Sw?si=_yThbQjQgBEIivr4",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "vikings-mod-to-be-released",
+    "title": "Vikings Mod (To be released)",
+    "version": "N/A",
+    "author": "NORDMANN",
+    "description": "May it find thee in fine spirits, warriors all! We raise our horns in gratitude, for thou art gathered here on the VIKINGS MOD Discord.\nTeaser Two be upon the horizon, as sails unfurl, and soon shalt thou behold more wonders of the VIKINGS MOD.\nThe north clan wishes thee a week most prosperous. Guard thyself well - Skål!",
+    "status": "upcoming",
+    "gameVersion": "V1.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "",
+      "discord": "https://discord.gg/jkY7P4U39M",
+      "community": [
+        {
+          "url": "https://community.7daystodie.com/topic/42528-vikings-mod-7d2d-leaks-teaser/"
+        },
+        {
+          "url": "https://www.youtube.com/@NordicYT?sub_confirmation=1"
+        },
+        {
+          "url": "https://www.twitch.tv/nordmann845"
+        }
+      ],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "https://youtu.be/eQHyKp6sXh0",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      },
+      {
+        "code": "German",
+        "name": "German",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "war-of-the-walkers",
+    "title": "War of the Walkers",
+    "version": "1.4.2.3",
+    "author": "Dwallorde",
+    "description": "N/A",
+    "status": "active",
+    "gameVersion": "V1.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://7daystodiemods.com/war-of-the-walkers-mod/",
+      "discord": "https://discord.gg/bQdP6cH",
+      "community": [
+        {
+          "url": "https://github.com/dwallorde/war-of-the-walkers-exp/"
+        }
+      ],
+      "donations": [
+        {
+          "url": "https://www.paypal.me/dwallorde"
+        }
+      ]
+    },
+    "videos": {
+      "trailer": "",
+      "review": "https://youtu.be/jNNefJDFAjU"
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      },
+      {
+        "code": "Ukrainian",
+        "name": "Ukrainian",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/4847"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "war3zuk-aio-overhaul",
+    "title": "War3zuk AIO Overhaul",
+    "version": "v1.5",
+    "author": "War3zuk",
+    "description": "This Mod changes around 90% of the Total game Mechanics in the sense of Code, It adds many weapons All of which have been bought from various stores to try to get the best looking and playing Mod he can manage, Its constantly being worked on and improved and should always be kept upto date with the latest version of the main core game, The AIO also adds many Blocks and Different items that require abit more learning in order to understand how it all works, A good example of this is the main weapons are no longer repaired using the default repair kits but instead use 4 Custom made varients that are crafted on the player to do with each type of gun. Some of His Original Modlets that were used to create this AIO are as follows. Around 20 or so more have been added directly to the AIO that cant be made into Modlets due to them needing certain bits of code from the AIO so would cause Conflicts",
+    "status": "active",
+    "gameVersion": "V2.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://7daystodiemods.com/war3zuk-aio-overhaul/",
+      "discord": "https://discord.gg/FcDrGvMHeT",
+      "community": [
+        {
+          "url": "https://dev.azure.com/war3zuk/War3zuk-AIO-Mod-Launcher-v2/_git/War3zuk-AIO-Mod-Launcher-v2"
+        }
+      ],
+      "donations": [
+        {
+          "url": "https://www.paypal.com/donate/?cmd=_s-xclick&hosted_button_id=S9RGW4NRARBUL&source=url"
+        }
+      ]
+    },
+    "videos": {
+      "trailer": "",
+      "review": "https://youtu.be/t1Y21UwW-lU"
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      },
+      {
+        "code": "Chinese",
+        "name": "Chinese",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/7042"
+      },
+      {
+        "code": "Ukrainian",
+        "name": "Ukrainian",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/6795"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "war3zuk-farmlife",
+    "title": "War3zuk FarmLife",
+    "version": "4.0",
+    "author": "War3zuk",
+    "description": "War3zuk Farmlife 2025 Vanilla Install V1.4 B8 (This is a standalone installer version and is NOT to be used along side my main War3zuk Overhaul)\nThis Mod is a complete overhaul and update of the original Farmlife from alpha 17 that was discontinued when it became so out of date it was un-usable.. This overhaul has a complete array of custom trees, Plants And its own models all paid for by myself so that the mod is as nice looking as possible.. You have a full selection of Seeds, Fruits, Berries and so on so you can make lots of different types of foods to compliment the main game.You can craft and build an entire farm along with custom animals, Benches and so on. Learning curve is a little steep but well worth it if your into Farming",
+    "status": "active",
+    "gameVersion": "V1.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://dev.azure.com/war3zuk/_git/War3zuk-FarmLife-Vanilla-Install-Latest-Stable",
+      "discord": "",
+      "community": [],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "https://youtu.be/Xk6LS1jD3zE",
+      "review": "https://youtu.be/B7QrihbQezs"
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "the-wasteland",
+    "title": "The Wasteland",
+    "version": "2.4.2.2",
+    "author": "bdubyah",
+    "description": "Welcome to **The Wasteland**! This overhaul mod adds in several new items, enemies, POIs and more! Based on the Fallout series",
+    "status": "active",
+    "gameVersion": "V2.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://www.nexusmods.com/7daystodie/mods/1043",
+      "discord": "https://discord.gg/kdzkCuPZxC",
+      "community": [
+        {
+          "url": "https://dev.azure.com/bdubyah/_git/The_Wasteland"
+        },
+        {
+          "url": "https://community.7daystodie.com/topic/38222-11the-wasteland/"
+        }
+      ],
+      "donations": [
+        {
+          "url": "https://ko-fi.com/bdubyah"
+        },
+        {
+          "url": "https://www.paypal.com/paypalme/bdubyah"
+        }
+      ]
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      },
+      {
+        "code": "Russian",
+        "name": "Russian",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/3816"
+      },
+      {
+        "code": "Chinese",
+        "name": "Chinese",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/7040"
+      },
+      {
+        "code": "Ukrainian",
+        "name": "Ukrainian",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/6776"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "wild-west",
+    "title": "Wild West",
+    "version": "298f8e0",
+    "author": "Tallman Brad, arramus",
+    "description": "The Wild West Mod rolls back time to around the Mid 19th Century Wild West America (+/- 20 years). It attempts to remove features which are not time appropriate, and introduce additional features to expand and complement the overall experience. There are over 100 custom POIs with split into those being placed within the Old West type tileset for Towns, and hand placed POIs out of Town and in the Wilderness.",
+    "status": "active",
+    "gameVersion": "V2.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://www.nexusmods.com/7daystodie/mods/8007",
+      "discord": "https://discord.gg/BxDP7Tam8H",
+      "community": [
+        {
+          "url": "https://github.com/OAKRAVEN1/V2-WildWestMod"
+        },
+        {
+          "url": "https://community.7daystodie.com/topic/38173-v1-wild-west-mod/"
+        }
+      ],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "https://youtu.be/2CQfQVVHqEg",
+      "review": "https://youtu.be/krOZZXTqzzU"
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      },
+      {
+        "code": "Russian",
+        "name": "Russian",
+        "type": "external",
+        "url": "https://www.nexusmods.com/7daystodie/mods/8624"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "winterween",
+    "title": "Winterween",
+    "version": "21.2.18.951",
+    "author": "SphereII",
+    "description": "Welcome to the Winterween Project by sphereii and xyth, the unholy combination of Winter Project and the ancient Valoween!\nSteel your nerves. Steady your hands. Keep your wits about you, and you just may survive Winterween...\nWe invite you to once more explore a special sphereii-mental release, and challenge yourself to unlock its secrets.",
+    "status": "active",
+    "gameVersion": "V1.3",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://github.com/SphereII/Winterween",
+      "discord": "https://discord.gg/RYDwtHstzX",
+      "community": [],
+      "donations": []
+    },
+    "videos": {
+      "trailer": "",
+      "review": "https://youtu.be/eFDt-DR3xDk"
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "your-end",
+    "title": "Your End",
+    "version": "2.4.0.2",
+    "author": "DJ Triple XMR",
+    "description": "It is a revision mod where the game is modified by 80% and created by DJ TRIPLE XMR, we are increasingly changing the style of play adding ease and difficulty at the same time, with each patch improving the appearance and differentiating the way of playing with the previous patch.",
+    "status": "active",
+    "gameVersion": "V1.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://7daystodiemods.com/your-end/",
+      "discord": "https://discord.gg/4npXj5fmAF",
+      "community": [],
+      "donations": [
+        {
+          "url": "https://paypal.me/Djtriplexmr"
+        }
+      ]
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      },
+      {
+        "code": "Spanish",
+        "name": "Spanish",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  },
+  {
+    "slug": "zombicide",
+    "title": "Zombicide",
+    "version": "1.1",
+    "author": "Killerbunny264",
+    "description": "A mod where you go clearing the poi's one after one around the map , some of mod features , no traders , no crafting , no challenges either , there's Custom vending machines in each trader , those vending machines has everything you need , like guns , armor , ammo etc , there's one quest line , kill Zombies , 1-200 , starts with 3 zombies , up to 600 , each quest you  complete, you get coins for it , also you can sell items",
+    "status": "active",
+    "gameVersion": "V2.4",
+    "bannerUrl": "",
+    "isSaveBreaking": false,
+    "features": [],
+    "links": {
+      "download": "https://www.nexusmods.com/7daystodie/mods/8775?tab=files",
+      "discord": "https://discord.gg/psuz4JwXa3",
+      "community": [
+        {
+          "url": "https://www.bluefangsolutions.com/?ref=359"
+        }
+      ],
+      "donations": [
+        {
+          "url": "https://www.paypal.me/Killerbunny264"
+        },
+        {
+          "url": "https://www.patreon.com/ApocalypseNowMod/"
+        }
+      ]
+    },
+    "videos": {
+      "trailer": "",
+      "review": ""
+    },
+    "localizations": [
+      {
+        "code": "English",
+        "name": "English",
+        "type": "builtin"
+      }
+    ],
+    "screenshots": [],
+    "rating": 0,
+    "ratingCount": 0,
+    "downloads": "0",
+    "views": "0",
+    "downloadsThisMonth": 0,
+    "changelog": [],
+    "installationSteps": []
+  }
+]

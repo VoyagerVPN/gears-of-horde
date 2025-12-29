@@ -47,7 +47,7 @@ export default function ModCard({
   const t = useTranslations('ModCard');
 
   // Get status config for icon and label
-  const statusConfig = STATUS_CONFIG[status];
+  const statusConfig = STATUS_CONFIG[status] || STATUS_CONFIG.unknown;
   const StatusIcon = statusConfig.icon;
 
   // State for popovers

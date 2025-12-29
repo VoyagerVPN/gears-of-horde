@@ -5,7 +5,8 @@ import { Link } from "@/i18n/routing";
 import {
   Plus, Edit, Eye,
   Trash2, Globe, Check, X, ExternalLink, RefreshCw,
-  ArrowUp, ArrowDown, ArrowUpDown, Package, User
+  ArrowUp, ArrowDown, ArrowUpDown, Package, User,
+  CheckCircle, PauseCircle, XCircle, Clock, HelpCircle
 } from "lucide-react";
 import SearchBar from "@/components/ui/SearchBar";
 import { fetchAllMods, fetchPendingSuggestions, approveTranslationSuggestion, rejectTranslationSuggestion, updateModAction, deleteModAction } from "@/app/actions/admin-actions";
@@ -381,8 +382,18 @@ export default function AdminModsPage() {
             <table className="w-full text-sm text-left table-fixed">
               <thead className="bg-white/5 text-textMuted uppercase text-xs font-bold tracking-wider">
                 <tr>
+                  <th className="px-4 py-4 w-[50px] text-center">#</th>
                   <th
-                    className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[20%]"
+                    className="px-3 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[50px]"
+                    onClick={() => handleSort('status')}
+                    title={t('status')}
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      <SortIcon column="status" currentSortColumn={sortColumn} sortDirection={sortDirection} />
+                    </div>
+                  </th>
+                  <th
+                    className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[18%]"
                     onClick={() => handleSort('title')}
                   >
                     <div className="flex items-center gap-2">
@@ -427,15 +438,6 @@ export default function AdminModsPage() {
                     </div>
                   </th>
                   <th
-                    className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[8%]"
-                    onClick={() => handleSort('status')}
-                  >
-                    <div className="flex items-center gap-2">
-                      {t('status')}
-                      <SortIcon column="status" currentSortColumn={sortColumn} sortDirection={sortDirection} />
-                    </div>
-                  </th>
-                  <th
                     className="px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors select-none w-[10%]"
                     onClick={() => handleSort('updatedAt')}
                   >
@@ -448,79 +450,98 @@ export default function AdminModsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {filteredAndSortedMods.map((mod) => (
-                  <tr key={mod.slug} className="hover:bg-white/[0.02] transition-colors group">
-                    <td className="px-6 py-4 font-bold text-white text-base truncate max-w-0" title={mod.title}>{mod.title}</td>
-                    <td className="px-6 py-4">
-                      <AuthorTag author={mod.author} href={`/mods?author=${encodeURIComponent(mod.author)}`} />
-                    </td>
-                    <td className="px-6 py-4">
-                      <VersionTag
-                        type="game"
-                        version={mod.gameVersion}
-                        color={mod.tags.find(t => t.category === 'gamever')?.color || undefined}
-                      />
-                    </td>
-                    <td className="px-6 py-4">
-                      <VersionTag type="mod" version={mod.version} />
-                    </td>
-                    <td className="px-6 py-4 overflow-hidden">
-                      <div className="flex flex-nowrap gap-1 overflow-hidden">
-                        {mod.tags.filter(tag => tag.category !== 'author' && tag.category !== 'gamever').slice(0, 3).map(tag => (
-                          <Tag key={tag.id || tag.displayName} color={tag.color || undefined} className="text-[10px] px-1.5 py-0.5 whitespace-nowrap">
-                            {tag.displayName}
-                          </Tag>
-                        ))}
-                        {mod.tags.filter(t => t.category !== 'author' && t.category !== 'gamever').length > 3 && (
-                          <span className="text-[10px] text-textMuted self-center whitespace-nowrap">+{mod.tags.filter(t => t.category !== 'author' && t.category !== 'gamever').length - 3}</span>
+                {filteredAndSortedMods.map((mod, index) => {
+                  // Status icon and color mapping
+                  const getStatusIcon = (status: string) => {
+                    switch (status) {
+                      case 'active':
+                        return <CheckCircle size={14} className="text-green-500" />;
+                      case 'on_hold':
+                        return <PauseCircle size={14} className="text-amber-500" />;
+                      case 'discontinued':
+                        return <XCircle size={14} className="text-red-500" />;
+                      case 'upcoming':
+                        return <Clock size={14} className="text-blue-500" />;
+                      default:
+                        return <HelpCircle size={14} className="text-gray-500" />;
+                    }
+                  };
+
+                  return (
+                    <tr key={mod.slug} className="hover:bg-white/[0.02] transition-colors group">
+                      <td className="px-4 py-4 text-center text-textMuted text-xs font-mono">{index + 1}</td>
+                      <td className="px-3 py-4">
+                        <div className="flex items-center justify-center" title={t_common(`statuses.${mod.status}`)}>
+                          {getStatusIcon(mod.status)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 font-bold text-white text-base truncate max-w-0" title={mod.title}>{mod.title}</td>
+                      <td className="px-6 py-4">
+                        <AuthorTag author={mod.author} href={`/mods?author=${encodeURIComponent(mod.author)}`} />
+                      </td>
+                      <td className="px-6 py-4">
+                        <VersionTag
+                          type="game"
+                          version={mod.gameVersion}
+                          color={mod.tags.find(t => t.category === 'gamever')?.color || undefined}
+                        />
+                      </td>
+                      <td className="px-6 py-4">
+                        <VersionTag type="mod" version={mod.version} />
+                      </td>
+                      <td className="px-6 py-4 overflow-hidden">
+                        <div className="flex flex-nowrap gap-1 overflow-hidden">
+                          {mod.tags.filter(tag => tag.category !== 'author' && tag.category !== 'gamever').slice(0, 3).map(tag => (
+                            <Tag key={tag.id || tag.displayName} color={tag.color || undefined} className="text-[10px] px-1.5 py-0.5 whitespace-nowrap">
+                              {tag.displayName}
+                            </Tag>
+                          ))}
+                          {mod.tags.filter(t => t.category !== 'author' && t.category !== 'gamever').length > 3 && (
+                            <span className="text-[10px] text-textMuted self-center whitespace-nowrap">+{mod.tags.filter(t => t.category !== 'author' && t.category !== 'gamever').length - 3}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-textMuted text-xs">
+                        {mod.updatedAt ? (
+                          <DateDisplay date={mod.updatedAt} locale="en" />
+                        ) : (
+                          t('recently')
                         )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Tag category="status" value={mod.status}>
-                        {t_common(`statuses.${mod.status}`)}
-                      </Tag>
-                    </td>
-                    <td className="px-6 py-4 text-textMuted text-xs">
-                      {mod.updatedAt ? (
-                        <DateDisplay date={mod.updatedAt} locale="en" />
-                      ) : (
-                        t('recently')
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
-                        <Link href={`/mods/${mod.slug}`} target="_blank">
-                          <button className="p-2 hover:bg-white/10 rounded text-textMuted hover:text-blue-400 transition-colors" title={t('viewLive')}>
-                            <Eye size={16} />
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                          <Link href={`/mods/${mod.slug}`} target="_blank">
+                            <button className="p-2 hover:bg-white/10 rounded text-textMuted hover:text-blue-400 transition-colors" title={t('viewLive')}>
+                              <Eye size={16} />
+                            </button>
+                          </Link>
+
+                          <button
+                            onClick={() => handleUpdateClick(mod)}
+                            className="p-2 hover:bg-white/10 rounded text-textMuted hover:text-green-400 transition-colors"
+                            title={t('quickUpdate')}
+                          >
+                            <RefreshCw size={16} />
                           </button>
-                        </Link>
 
-                        <button
-                          onClick={() => handleUpdateClick(mod)}
-                          className="p-2 hover:bg-white/10 rounded text-textMuted hover:text-green-400 transition-colors"
-                          title={t('quickUpdate')}
-                        >
-                          <RefreshCw size={16} />
-                        </button>
+                          <Link href={`/editor/${mod.slug}`}>
+                            <button className="p-2 hover:bg-white/10 rounded text-textMuted hover:text-white transition-colors" title={t('fullEdit')}>
+                              <Edit size={16} />
+                            </button>
+                          </Link>
 
-                        <Link href={`/editor/${mod.slug}`}>
-                          <button className="p-2 hover:bg-white/10 rounded text-textMuted hover:text-white transition-colors" title={t('fullEdit')}>
-                            <Edit size={16} />
+                          <button
+                            onClick={() => handleDelete(mod.slug)}
+                            className="p-2 hover:bg-red-500/10 rounded text-textMuted hover:text-red-400 transition-colors"
+                            title={t('delete')}
+                          >
+                            <Trash2 size={16} />
                           </button>
-                        </Link>
-
-                        <button
-                          onClick={() => handleDelete(mod.slug)}
-                          className="p-2 hover:bg-red-500/10 rounded text-textMuted hover:text-red-400 transition-colors"
-                          title={t('delete')}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

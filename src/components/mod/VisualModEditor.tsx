@@ -11,7 +11,7 @@ import UnifiedTopBar from "@/components/ui/UnifiedTopBar";
 import { createMod } from "@/app/actions/mod-actions";
 import { updateModAction } from "@/app/actions/admin-actions";
 import { fetchTagsByCategory } from "@/app/actions/tag-actions";
-import { slugify, getLatestGameVersion, gameVersionToTagValue, calculateGameVersionColor } from "@/lib/utils";
+import { slugify, getLatestGameVersion, gameVersionToTagValue, calculateGameVersionColor, getFixedLinkName } from "@/lib/utils";
 import { useAutosave, clearModDraft } from "@/hooks/useAutosave";
 import { useRecentMods } from "@/hooks/useRecentMods";
 import { useToast } from "@/components/ui/Toast";
@@ -160,8 +160,8 @@ export default function VisualModEditor({
     const handleRestoreDraft = useCallback((draftId?: string) => {
         const restored = restoreDraft(draftId);
         if (restored) {
-            // For existing mods, always preserve the original slug from initialData
-            const restoredData = !isNew && initialData?.slug ? { ...restored.data, slug: initialData.slug } : restored.data;
+            // For existing mods, allow restoring the slug from the draft as well
+            const restoredData = restored.data;
             setData(restoredData);
 
             // Restore temp game version tags if present, recalculating colors
@@ -243,8 +243,16 @@ export default function VisualModEditor({
     // Auto-unfurl links that have URL but no Name (Shared logic)
     const unfurlLinkList = async (list: ModLink[]) => {
         return await Promise.all(list.map(async (link) => {
-            // If URL exists but Name is empty (and looks like a URL)
-            if (link.url && !link.name && link.url.startsWith('http')) {
+            if (!link.url) return link;
+
+            // Check for fixed names first (always enforce these)
+            const fixedName = getFixedLinkName(link.url);
+            if (fixedName) {
+                return { ...link, name: fixedName };
+            }
+
+            // If URL exists but Name is empty (and looks like a URL), try to unfurl
+            if (!link.name && link.url.startsWith('http')) {
                 try {
                     const response = await fetch("/api/unfurl", {
                         method: "POST",
@@ -445,6 +453,11 @@ export default function VisualModEditor({
                 // Clear draft on successful save
                 clearModDraft(draftKey);
                 showToast(t("modUpdatedSuccess"), "success");
+
+                // If slug changed, redirect to the new slug's editor page
+                if (!isNew && initialData?.slug && data.slug !== initialData.slug) {
+                    router.push(`/admin/mods/${data.slug}`);
+                }
             }
         } catch (error) {
             console.error("Failed to save mod:", error);
