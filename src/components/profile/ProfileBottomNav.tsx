@@ -2,7 +2,7 @@
 
 import { Link } from "@/i18n/routing"
 import { usePathname } from "next/navigation"
-import { Heart, Download, History, FileEdit, User, Shield, Package, Tags } from "lucide-react"
+import { Heart, Download, History, FileEdit, User, Shield, Package, Tags, Users } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { ROUTES } from "@/lib/routes"
 
@@ -50,6 +50,7 @@ export default function ProfileBottomNav({ userRole }: ProfileBottomNavProps) {
         { href: ROUTES.admin, icon: Shield, label: tAdmin('dashboard') },
         { href: ROUTES.mods, icon: Package, label: tAdmin('mods') },
         { href: ROUTES.tags, icon: Tags, label: tAdmin('tags') },
+        { href: ROUTES.users, icon: Users, label: tAdmin('users') },
     ]
 
     const navItems = isAdmin && isInAdminSection ? adminNavItems : profileNavItems
