@@ -660,5 +660,15 @@
                 "content": "Mods are provided by the community. We are not responsible for the content of mods."
             }
         }
+    },
+    "NotFound": {
+        "title": "Page Not Found",
+        "description": "Sorry, the page you are looking for does not exist or has been moved.",
+        "returnHome": "Return Home"
+    },
+    "Error": {
+        "title": "Something went wrong!",
+        "description": "An unexpected error has occurred. Our team has been notified.",
+        "retry": "Try again"
     }
 }
