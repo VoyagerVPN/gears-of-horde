@@ -289,8 +289,9 @@ export async function createMod(rawData: unknown): Promise<Result<{ slug: string
                     description: `${data.title} was added to Gears of Horde`,
                     date: new Date(),
                     wipeRequired: false,
+                    newscatTagId: newTag.id,
                     tags: [
-                        { displayName: newTag.displayName, color: newTag.color, category: newTag.category }
+                        { id: newTag.id, displayName: newTag.displayName, color: newTag.color, category: newTag.category }
                     ]
                 }
             });

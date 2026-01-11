@@ -129,7 +129,7 @@ export default function DatePicker({ value, onChange, placeholder, className, lo
             <Popover.Trigger asChild>
                 <button
                     type="button"
-                    className={`flex items-center gap-2 text-sm font-medium text-white px-2 py-1 rounded-md transition-colors outline-none group/date ${className}`}
+                    className={`flex items-center gap-2 text-sm font-medium text-white px-2 py-1 rounded-md transition-colors outline-none group/date cursor-pointer ${className}`}
                 >
                     {value ? (
                         <span className="border-b border-dotted border-white/30 group-hover/date:border-white/60">
@@ -212,7 +212,7 @@ export default function DatePicker({ value, onChange, placeholder, className, lo
                                     onClick={() => handleDateSelect(calendarDay)}
                                     className={`w-full h-full flex items-center justify-center text-sm rounded-lg transition-all
                                         ${isSelectedDay(calendarDay)
-                                            ? 'bg-primary text-white font-bold shadow-lg shadow-primary/30'
+                                            ? 'bg-primary text-white font-bold shadow-lg'
                                             : isToday(calendarDay)
                                                 ? 'bg-white/10 text-white font-medium ring-1 ring-primary/50'
                                                 : calendarDay.month === 1

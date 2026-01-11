@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useTranslations } from 'next-intl';
-import { Plus, Merge, RefreshCw, FolderEdit, FolderX, Check, X, CircleUser, Gamepad2, Globe, Newspaper, Tag as TagIcon } from "lucide-react";
+import { Plus, Merge, RefreshCw, FolderEdit, FolderX, Check, X, CircleUser, Gamepad2, Globe, Book, CheckCircle2, Tag as TagIcon } from "lucide-react";
 import SearchBar from "@/components/ui/SearchBar";
 import { fetchAllTags, createTag, updateTag, deleteTag, mergeTags, renameCategory, deleteCategory, TagData } from "@/app/actions/tag-actions";
 import TagModal from "@/components/tags/TagModal";
@@ -209,7 +209,8 @@ export default function AdminTagsPage() {
             case 'author': return { Icon: CircleUser, color: 'text-blue-400' };
             case 'gamever': return { Icon: Gamepad2, color: 'text-green-500' };
             case 'lang': return { Icon: Globe, color: 'text-primary' };
-            case 'newscat': return { Icon: Newspaper, color: 'text-violet-400' };
+            case 'newscat': return { Icon: Book, color: 'text-violet-400' };
+            case 'status': return { Icon: CheckCircle2, color: 'text-green-500' };
             default: return { Icon: TagIcon, color: 'text-zinc-400' };
         }
     };
@@ -352,8 +353,9 @@ export default function AdminTagsPage() {
                                                     key={tag.id}
                                                     variant="default"
                                                     className={`transition-none ${isConfirming ? 'border-dashed !border-red-500/50' : ''}`}
-                                                    color={tag.category === 'lang' ? LANG_BUILTIN_COLOR : (tag.color || undefined)}
+                                                    color={tag.color || undefined}
                                                     category={tag.category ?? category}
+                                                    value={tag.value}
                                                     showIcon={true}
                                                     onContentClick={() => handleEditTag(tag)}
                                                     actions={tagActions}

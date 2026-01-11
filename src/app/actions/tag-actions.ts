@@ -214,10 +214,48 @@ export async function mergeTags(rawData: unknown): Promise<Result<{ merged: true
     const { sourceId, targetId } = (validated.data as any);
 
     try {
+        // 0. Fetch source and target tags to check categories/values
+        const sourceTag = await prisma.tag.findUnique({ where: { id: sourceId } });
+        const targetTag = await prisma.tag.findUnique({ where: { id: targetId } });
+
+        if (!sourceTag || !targetTag) {
+            return err("Source or target tag not found");
+        }
+
         // 1. Get all ModTags for source
         const sourceModTags = await prisma.modTag.findMany({
             where: { tagId: sourceId }
         });
+
+        // 1.5 Sync Mod String Fields (gameVersion, author, status)
+        // If the merged tag category corresponds to a specific Mod field, update that field
+        const modIds = sourceModTags.map(mt => mt.modId);
+
+        if (modIds.length > 0) {
+            if (sourceTag.category === 'gamever' && targetTag.category === 'gamever') {
+                // Update Mod.gameVersion to the NEW tag's displayName (e.g. "V1.0")
+                await prisma.mod.updateMany({
+                    where: {
+                        slug: { in: modIds },
+                        // Only update if it currently matches the old tag (avoid overwriting if it changed legitimately? 
+                        // Actually, if it has the tag, it SHOULD match. But let's just update all mods having this tag.)
+                    },
+                    data: { gameVersion: targetTag.displayName }
+                });
+            } else if (sourceTag.category === 'author' && targetTag.category === 'author') {
+                // Update Mod.author
+                await prisma.mod.updateMany({
+                    where: { slug: { in: modIds } },
+                    data: { author: targetTag.displayName }
+                });
+            } else if (sourceTag.category === 'status' && targetTag.category === 'status') {
+                // Update Mod.status (use value for status)
+                await prisma.mod.updateMany({
+                    where: { slug: { in: modIds } },
+                    data: { status: targetTag.value }
+                });
+            }
+        }
 
         // 2. For each source ModTag, check if target already exists
         for (const smt of sourceModTags) {

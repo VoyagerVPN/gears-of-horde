@@ -12,6 +12,7 @@ import {
     findOrCreateGenericTag,
     findOrCreateLangTag,
     findOrCreateNewscatTag,
+    findOrCreateStatusTag,
     removeModTagsByCategory,
     batchLinkTagsToMod,
     linkTagToModWithMetadata
@@ -438,8 +439,9 @@ export async function updateModAction(slug: string, updates: ModUpdatePayload) {
                 date: updates.date ? new Date(updates.date) : new Date(),
                 wipeRequired: updates.isSaveBreaking || false,
                 sourceUrl: updates.sourceUrl || null,
+                newscatTagId: tag.id,
                 tags: [
-                    { displayName: tag.displayName, color: tag.color, category: tag.category }
+                    { id: tag.id, displayName: tag.displayName, color: tag.color, category: tag.category }
                 ]
             }
         });
@@ -576,7 +578,15 @@ export async function updateModAction(slug: string, updates: ModUpdatePayload) {
         }
     }
 
-    // 4e. Create all tag links using batch operation
+    // 4e. Handle STATUS tag (auto from status field)
+    const currentStatus = updates.status || (await prisma.mod.findUnique({ where: { slug: targetSlug }, select: { status: true } }))?.status;
+    if (currentStatus) {
+        await removeModTagsByCategory(targetSlug, 'status');
+        const statusTag = await findOrCreateStatusTag(currentStatus);
+        tagIdsToLink.push(statusTag.id);
+    }
+
+    // 4f. Create all tag links using batch operation
     await batchLinkTagsToMod(targetSlug, tagIdsToLink);
 
     revalidatePath(ROUTES.mods);

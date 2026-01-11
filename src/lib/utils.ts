@@ -25,15 +25,28 @@ export function normalizeGameVersion(version: string): string {
     // N/A is special case - keep as-is
     if (trimmed.toUpperCase() === 'N/A') return 'N/A';
 
+    // Fix: VA21 -> A21 (strip V if followed by A)
+    let cleaned = trimmed;
+    if (cleaned.match(/^[vV][aA]\d+/)) {
+        cleaned = cleaned.substring(1);
+    }
+
     // Alpha versions (A20, a21, etc.)
-    if (trimmed.match(/^[aA]\d+/)) {
-        return trimmed.toUpperCase();
+    if (cleaned.match(/^[aA]\d+/)) {
+        return cleaned.toUpperCase();
     }
 
     // V versions (with or without build number)
-    // Remove any existing V/v prefix, then add uppercase V
-    const cleaned = trimmed.replace(/^[vV]/, '');
-    return `V${cleaned}`;
+    // Remove any existing V/v prefix
+    cleaned = cleaned.replace(/^[vV]/, '');
+
+    // Only add 'V' if it looks like a version number (starts with digit)
+    if (/^\d/.test(cleaned)) {
+        return `V${cleaned}`;
+    }
+
+    // Otherwise return as is (e.g. "Unknown", "Custom")
+    return cleaned;
 }
 
 /**

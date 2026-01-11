@@ -5,7 +5,15 @@ import { fetchAllNews } from "@/app/actions/news-actions";
 import NewsManagementClient from "./NewsManagementClient";
 import UnifiedTopBar from "@/components/ui/UnifiedTopBar";
 
-export default async function NewsManagementPage() {
+interface NewsManagementPageProps {
+    params: {
+        locale: string;
+    };
+}
+
+export default async function NewsManagementPage({ params }: NewsManagementPageProps) {
+    const { locale } = await params;
+
     // Auth protection - ADMIN only
     const session = await auth();
 
@@ -25,8 +33,9 @@ export default async function NewsManagementPage() {
             <UnifiedTopBar title={t("newsManagement")} />
 
             <div className="px-6 lg:px-8">
-                <NewsManagementClient initialNews={news} />
+                <NewsManagementClient initialNews={news} locale={locale as 'en' | 'ru'} />
             </div>
         </div>
     );
 }
+

@@ -64,15 +64,15 @@ export default async function RootLayout({
     <html lang={locale} suppressHydrationWarning>
       {/* Применяем переменную шрифта и подавляем ошибки гидратации от расширений */}
       <body className={`${exo2.className} antialiased bg-[#191919] text-[#ededed]`} suppressHydrationWarning={true}>
-        <Providers>
-          <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <Providers>
             <SkipLink />
             <Navbar />
             <main id="main-content" className="min-h-screen pb-20" tabIndex={-1}>
               {children}
             </main>
-          </NextIntlClientProvider>
-        </Providers>
+          </Providers>
+        </NextIntlClientProvider>
         <Analytics />
         <SpeedInsights />
       </body>

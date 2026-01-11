@@ -1,9 +1,10 @@
 import { getTranslations } from 'next-intl/server';
 import { fetchLatestNews, fetchNewsTags } from '@/app/actions/news-actions';
-import NewsItem from '@/components/NewsItem';
 import NewsFilter from '@/components/news/NewsFilter';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from '@/i18n/routing';
+import { auth } from '@/auth';
+import NewsPageClient from './NewsPageClient';
 
 interface NewsPageProps {
     searchParams: {
@@ -24,12 +25,14 @@ export default async function NewsPage({ searchParams, params }: NewsPageProps) 
     const limit = 12;
     const skip = (currentPage - 1) * limit;
 
-    const [news, tags] = await Promise.all([
+    const [news, tags, session] = await Promise.all([
         fetchLatestNews(limit, skip, tag),
-        fetchNewsTags()
+        fetchNewsTags(),
+        auth()
     ]);
 
     const hasMore = news.length === limit;
+    const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'MODERATOR';
 
     return (
         <div className="min-h-screen bg-background text-textMain pb-20">
@@ -51,30 +54,11 @@ export default async function NewsPage({ searchParams, params }: NewsPageProps) 
                     {/* News Grid */}
                     <div className="lg:col-span-9 xl:col-span-10">
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
-                            {news.length > 0 ? (
-                                news.map((item) => (
-                                    <NewsItem
-                                        key={item.id}
-                                        modName={item.modName}
-                                        modSlug={item.modSlug}
-                                        modVersion={item.modVersion}
-                                        gameVersion={item.gameVersion}
-                                        actionText={item.actionText}
-                                        description={item.description}
-                                        content={item.content}
-                                        date={item.date}
-                                        tags={item.tags}
-                                        wipeRequired={item.wipeRequired}
-                                        sourceUrl={item.sourceUrl}
-                                        locale={locale as 'en' | 'ru'}
-                                        variant="card"
-                                    />
-                                ))
-                            ) : (
-                                <div className="col-span-full text-center py-20 border border-dashed border-white/10 rounded-xl bg-white/[0.02]">
-                                    <p className="text-textMuted">{t('noNewsFound')}</p>
-                                </div>
-                            )}
+                            <NewsPageClient
+                                news={news}
+                                locale={locale as 'en' | 'ru'}
+                                isAdmin={isAdmin}
+                            />
                         </div>
 
                         {/* Pagination */}
@@ -103,3 +87,4 @@ export default async function NewsPage({ searchParams, params }: NewsPageProps) 
         </div>
     );
 }
+

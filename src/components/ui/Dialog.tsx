@@ -33,14 +33,17 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 // DIALOG CONTENT
 // ============================================================================
 
-type DialogContentSize = "sm" | "md" | "lg" | "xl" | "full";
+type DialogContentSize = "sm" | "md" | "lg" | "xl" | "2xl" | "6xl" | "full" | "max";
 
 const sizeClasses: Record<DialogContentSize, string> = {
     sm: "max-w-[384px]",
     md: "max-w-[448px]",
     lg: "max-w-[560px]",
     xl: "max-w-[672px]",
-    full: "max-w-[90vw]",
+    "2xl": "max-w-[800px]",
+    "6xl": "max-w-[1152px]",
+    full: "max-w-[95vw]",
+    max: "max-w-[1400px]",
 };
 
 interface DialogContentProps

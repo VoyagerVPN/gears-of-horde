@@ -14,7 +14,7 @@ import { fetchPendingModSubmissions, rejectModSubmission } from "@/app/actions/m
 import { fetchTagsByCategory } from "@/app/actions/tag-actions";
 import { ModData, TranslationSuggestion, ModSubmission, TagData } from "@/types/mod";
 import Image from "next/image";
-import UpdateModModal from "@/components/mod/UpdateModModal";
+import UnifiedUpdateModal from "@/components/mod/UnifiedUpdateModal";
 import Tag from "@/components/ui/Tag";
 import AuthorTag from "@/components/AuthorTag";
 import VersionTag from "@/components/VersionTag";
@@ -136,13 +136,23 @@ export default function AdminModsPage() {
 
   // SortIcon removed from here
 
+  // Helper to get tag by category
+  const getModTag = (mod: ModData, category: string) => {
+    return mod.tags?.find(t => t.category === category);
+  };
+
   // Filter and sort mods
   const filteredAndSortedMods = useMemo(() => {
     // First filter
-    const result = mods.filter(mod =>
-      mod.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      mod.author.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const result = mods.filter(mod => {
+      const authorTag = getModTag(mod, 'author');
+      const authorName = authorTag?.displayName || mod.author || '';
+
+      return (
+        mod.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        authorName.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    });
 
     // Then sort
     result.sort((a, b) => {
@@ -153,10 +163,18 @@ export default function AdminModsPage() {
           comparison = a.title.localeCompare(b.title);
           break;
         case 'author':
-          comparison = a.author.localeCompare(b.author);
+          {
+            const authorA = getModTag(a, 'author')?.displayName || a.author || '';
+            const authorB = getModTag(b, 'author')?.displayName || b.author || '';
+            comparison = authorA.localeCompare(authorB);
+          }
           break;
         case 'gameVersion':
-          comparison = a.gameVersion.localeCompare(b.gameVersion);
+          {
+            const gvA = getModTag(a, 'gamever')?.displayName || ''; // Don't fallback to mod.gameVersion to force tag truth
+            const gvB = getModTag(b, 'gamever')?.displayName || '';
+            comparison = gvA.localeCompare(gvB);
+          }
           break;
         case 'version':
           comparison = a.version.localeCompare(b.version);
@@ -165,7 +183,11 @@ export default function AdminModsPage() {
           comparison = (a.tags?.length || 0) - (b.tags?.length || 0);
           break;
         case 'status':
-          comparison = a.status.localeCompare(b.status);
+          {
+            const statusA = getModTag(a, 'status')?.value || a.status || '';
+            const statusB = getModTag(b, 'status')?.value || b.status || '';
+            comparison = statusA.localeCompare(statusB);
+          }
           break;
         case 'updatedAt':
           const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
@@ -451,6 +473,17 @@ export default function AdminModsPage() {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {filteredAndSortedMods.map((mod, index) => {
+                  // Get tags for display
+                  const gameVerTag = getModTag(mod, 'gamever');
+                  const authorTag = getModTag(mod, 'author');
+                  const statusTag = getModTag(mod, 'status');
+
+                  // Use tag value/displayName if available, otherwise fallback to mod field (for safety)
+                  const displayGameVersion = gameVerTag?.displayName || (mod.gameVersion !== 'Unknown' ? mod.gameVersion : <span className="text-red-500 font-bold">MISSING</span>);
+                  const displayAuthor = authorTag?.displayName || mod.author;
+                  // For status, we use the value for logic, but might want displayName for tooltip
+                  const displayStatus = statusTag?.value || mod.status;
+
                   // Status icon and color mapping
                   const getStatusIcon = (status: string) => {
                     switch (status) {
@@ -471,33 +504,35 @@ export default function AdminModsPage() {
                     <tr key={mod.slug} className="hover:bg-white/[0.02] transition-colors group">
                       <td className="px-4 py-4 text-center text-textMuted text-xs font-mono">{index + 1}</td>
                       <td className="px-3 py-4">
-                        <div className="flex items-center justify-center" title={t_common(`statuses.${mod.status}`)}>
-                          {getStatusIcon(mod.status)}
+                        <div className="flex items-center justify-center" title={t_common(`statuses.${displayStatus}`)}>
+                          {getStatusIcon(displayStatus)}
                         </div>
                       </td>
                       <td className="px-6 py-4 font-bold text-white text-base truncate max-w-0" title={mod.title}>{mod.title}</td>
                       <td className="px-6 py-4">
-                        <AuthorTag author={mod.author} href={`/mods?author=${encodeURIComponent(mod.author)}`} />
+                        <AuthorTag author={displayAuthor} href={`/mods?author=${encodeURIComponent(displayAuthor)}`} />
                       </td>
                       <td className="px-6 py-4">
                         <VersionTag
                           type="game"
-                          version={mod.gameVersion}
-                          color={mod.tags.find(t => t.category === 'gamever')?.color || undefined}
+                          version={typeof displayGameVersion === 'string' ? displayGameVersion : '???'}
+                          color={gameVerTag?.color || undefined}
                         />
+                        {/* If it's a component (error), render it next to it or instead */}
+                        {typeof displayGameVersion !== 'string' && displayGameVersion}
                       </td>
                       <td className="px-6 py-4">
                         <VersionTag type="mod" version={mod.version} />
                       </td>
                       <td className="px-6 py-4 overflow-hidden">
                         <div className="flex flex-nowrap gap-1 overflow-hidden">
-                          {mod.tags.filter(tag => tag.category !== 'author' && tag.category !== 'gamever').slice(0, 3).map(tag => (
+                          {mod.tags.filter(tag => tag.category !== 'author' && tag.category !== 'gamever' && tag.category !== 'status').slice(0, 3).map(tag => (
                             <Tag key={tag.id || tag.displayName} color={tag.color || undefined} className="text-[10px] px-1.5 py-0.5 whitespace-nowrap">
                               {tag.displayName}
                             </Tag>
                           ))}
-                          {mod.tags.filter(t => t.category !== 'author' && t.category !== 'gamever').length > 3 && (
-                            <span className="text-[10px] text-textMuted self-center whitespace-nowrap">+{mod.tags.filter(t => t.category !== 'author' && t.category !== 'gamever').length - 3}</span>
+                          {mod.tags.filter(t => t.category !== 'author' && t.category !== 'gamever' && t.category !== 'status').length > 3 && (
+                            <span className="text-[10px] text-textMuted self-center whitespace-nowrap">+{mod.tags.filter(t => t.category !== 'author' && t.category !== 'gamever' && t.category !== 'status').length - 3}</span>
                           )}
                         </div>
                       </td>
@@ -546,13 +581,12 @@ export default function AdminModsPage() {
             </table>
           </div>
 
-          <UpdateModModal
+          <UnifiedUpdateModal
             isOpen={isUpdateModalOpen}
             onClose={() => setIsUpdateModalOpen(false)}
-            mod={selectedMod}
+            mod={selectedMod || undefined}
             onSave={handleSaveUpdate}
             gameVersionTags={gameVersionTags}
-            onGameVersionTagsRefresh={() => fetchTagsByCategory('gamever').then(setGameVersionTags)}
           />
         </div>
       </div>

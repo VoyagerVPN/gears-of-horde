@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ChevronDown, Plus, Gamepad2, Loader2, Check } from "lucide-react";
+import { ChevronDown, Plus, Gamepad2, Loader2, Search, X } from "lucide-react";
 import * as Select from "@radix-ui/react-select";
 import { TagData } from "@/types/mod";
 import { getTagColor } from "@/lib/tag-colors";
@@ -41,12 +41,23 @@ export default function GameVersionSelector({
     const t = useTranslations('Common');
 
     const [newVersionInput, setNewVersionInput] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
     const [isCreatingVersion, setIsCreatingVersion] = useState(false);
     const [versionInputError, setVersionInputError] = useState<string | null>(null);
 
     // Get selected game version tag info
     const selectedGameVersionTag = gameVersionTags.find(tag => tag.displayName === value);
     const selectedGameVersionColor = selectedGameVersionTag?.color || getTagColor('gamever', value);
+
+    // Filter and sort tags
+    const filteredTags = useMemo(() => {
+        let tags = gameVersionTags;
+        if (searchQuery.trim()) {
+            tags = tags.filter(t => t.displayName.toLowerCase().includes(searchQuery.toLowerCase()));
+        }
+        // Always sort descending by version
+        return [...tags].sort((a, b) => compareGameVersions(b.displayName, a.displayName));
+    }, [gameVersionTags, searchQuery]);
 
     // Calculate suggested next version (latest + 0.1)
     const suggestedNextVersion = useMemo(() => {
@@ -120,25 +131,28 @@ export default function GameVersionSelector({
             <Select.Trigger
                 onFocus={() => onClear?.()}
                 className={cn(
-                    "flex items-center justify-between text-white outline-none group bg-surface border transition-all duration-200",
-                    invalid ? INVALID_INPUT_STYLE : "border-white/10 hover:border-white/20 hover:bg-white/5 focus:border-white/30",
+                    "flex items-center justify-between text-white outline-none group bg-black/20 border transition-colors duration-200 cursor-pointer",
+                    invalid ? INVALID_INPUT_STYLE : "border-white/10 hover:border-white/20 focus:border-white/30",
                     compact
                         ? 'min-w-[90px] h-[32px] px-2.5 rounded-md text-xs'
-                        : 'w-full h-[46px] px-4 rounded-md text-sm shadow-sm'
+                        : 'w-full h-[42px] p-2.5 rounded-md text-sm'
                 )}
             >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2 truncate">
                     {value ? (
-                        <Gamepad2 size={compact ? 14 : 18} style={{ color: selectedGameVersionColor }} className="drop-shadow-md" />
+                        <Gamepad2 size={compact ? 14 : 16} style={{ color: selectedGameVersionColor }} className="drop-shadow-md shrink-0" />
                     ) : (
-                        <Gamepad2 size={compact ? 14 : 18} className="text-textMuted" />
+                        <Gamepad2 size={compact ? 14 : 16} className="text-textMuted shrink-0" />
                     )}
-                    <span className={`font-bold tracking-wide ${!value ? "text-textMuted" : ""}`}>
+                    <span className={cn(
+                        "truncate font-medium",
+                        !value ? "text-textMuted/60" : ""
+                    )}>
                         <Select.Value placeholder={t('selectVersion')} />
                     </span>
                 </div>
                 <Select.Icon>
-                    <ChevronDown size={compact ? 14 : 16} className="text-textMuted group-hover:text-white transition-colors opacity-70" />
+                    <ChevronDown size={compact ? 14 : 16} className="text-textMuted group-hover:text-white transition-colors opacity-50" />
                 </Select.Icon>
             </Select.Trigger>
 
@@ -147,7 +161,7 @@ export default function GameVersionSelector({
                     position="popper"
                     sideOffset={6}
                     className="
-                        bg-[#18181b] border border-white/10 rounded-xl shadow-2xl z-[150]
+                        bg-surface border border-white/10 rounded-md shadow-xl z-[150]
                         min-w-[240px] overflow-hidden
                         data-[state=open]:animate-in data-[state=closed]:animate-out
                         data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0
@@ -155,79 +169,96 @@ export default function GameVersionSelector({
                         data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2
                     "
                 >
-                    <Select.Viewport className="p-1.5 max-h-[300px]">
-                        <div className="px-2 py-1.5 mb-1 text-[10px] font-bold text-textMuted uppercase tracking-wider font-exo2 opacity-50 flex justify-between items-center">
-                            <span>{t('availableVersions')}</span>
-                            {value && (
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        onChange("");
-                                        onClear?.();
-                                    }}
-                                    className="text-primary hover:text-white transition-colors lowercase font-normal"
-                                >
-                                    {t('clear')}
-                                </button>
+                    <Select.Viewport className="p-1 max-h-[300px] flex flex-col">
+                        <div className="px-1 py-1 shrink-0 flex items-center gap-1" onPointerDown={(e) => e.stopPropagation()}>
+                            <div className="flex-1 flex items-center gap-2 bg-black/20 rounded-md p-1 border border-white/5 focus-within:border-primary/50 transition-colors mx-1 h-8">
+                                <Search size={12} className="text-textMuted ml-1" />
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onClick={(e) => e.stopPropagation()}
+                                    onFocus={(e) => e.stopPropagation()}
+                                    placeholder={t('search')}
+                                    className="flex-1 bg-transparent border-none text-xs text-white px-1 py-1 outline-none placeholder:text-textMuted/30 h-full cursor-text"
+                                />
+                                {value && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            onChange("");
+                                            onClear?.();
+                                        }}
+                                        className="p-1 hover:bg-white/10 text-primary hover:text-white rounded-md transition-colors mr-1"
+                                        title={t('clear')}
+                                    >
+                                        <X size={12} />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="overflow-y-auto max-h-[200px]">
+                            {filteredTags.length > 0 ? (
+                                filteredTags.map((tag) => {
+                                    const tagColor = tag.color || getTagColor('gamever', tag.value);
+                                    const isCurrent = currentVersion === tag.displayName;
+                                    return (
+                                        <Select.Item
+                                            key={tag.id}
+                                            value={tag.displayName}
+                                            onPointerDown={(e) => {
+                                                if (value === tag.displayName) {
+                                                    onChange("");
+                                                    onClear?.();
+                                                }
+                                            }}
+                                            className="
+                                                flex items-center justify-between w-full px-2 py-2 rounded-md text-sm
+                                                text-textMuted cursor-pointer outline-none relative select-none
+                                                transition-colors duration-150
+                                                hover:text-white hover:bg-white/10
+                                                focus:text-white focus:bg-white/5
+                                                data-[state=checked]:text-white data-[state=checked]:bg-white/5
+                                                group
+                                            "
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <Gamepad2
+                                                    size={16}
+                                                    style={{ color: tagColor }}
+                                                    className="shrink-0"
+                                                />
+                                                <Select.ItemText>
+                                                    <span className="font-medium tracking-wide">{tag.displayName}</span>
+                                                </Select.ItemText>
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                {isCurrent && (
+                                                    <span className="text-[9px] font-bold bg-white/10 text-white/50 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                                                        {t('current')}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </Select.Item>
+                                    );
+                                })
+                            ) : (
+                                <div className="p-4 text-center text-textMuted text-xs italic">
+                                    {t('noResults')}
+                                </div>
                             )}
                         </div>
 
-                        {gameVersionTags.map((tag) => {
-                            const tagColor = tag.color || getTagColor('gamever', tag.value);
-                            const isCurrent = currentVersion === tag.displayName;
-                            return (
-                                <Select.Item
-                                    key={tag.id}
-                                    value={tag.displayName}
-                                    onPointerDown={(e) => {
-                                        if (value === tag.displayName) {
-                                            onChange("");
-                                            onClear?.();
-                                        }
-                                    }}
-                                    className="
-                                        flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm
-                                        text-textMuted cursor-pointer outline-none relative select-none
-                                        transition-colors duration-150
-                                        focus:text-white focus:bg-white/5
-                                        data-[state=checked]:text-white data-[state=checked]:bg-white/10
-                                    "
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <Gamepad2
-                                            size={16}
-                                            style={{ color: tagColor }}
-                                            className="shrink-0 transition-transform group-hover:scale-110"
-                                        />
-                                        <Select.ItemText>
-                                            <span className="font-bold tracking-wide">{tag.displayName}</span>
-                                        </Select.ItemText>
-                                    </div>
-
-                                    <div className="flex items-center gap-2">
-                                        {isCurrent && (
-                                            <span className="text-[10px] font-bold bg-white/10 text-white/50 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                                                {t('current')}
-                                            </span>
-                                        )}
-                                        <Select.ItemIndicator className="text-primary">
-                                            <Check size={14} />
-                                        </Select.ItemIndicator>
-                                    </div>
-                                </Select.Item>
-                            );
-                        })}
-
-
-                        {/* Create new version section - only show if onCreateVersion callback is provided */}
                         {onCreateVersion && (
-                            <div className="border-t border-white/10 mt-2 mx-1" onPointerDown={(e) => e.stopPropagation()}>
-                                <div className="px-1 py-2">
+                            <div className="border-t border-white/10 mt-2 pt-2 mx-1 shrink-0" onPointerDown={(e) => e.stopPropagation()}>
+                                <div className="px-1 py-1">
                                     <label className="text-[10px] font-bold text-textMuted uppercase tracking-wider font-exo2 pl-1 mb-1 block">
                                         {t('addVersion')}
                                     </label>
-                                    <div className="flex items-center gap-2 bg-black/30 rounded-lg p-1 border border-white/5 focus-within:border-primary/50 transition-colors">
+                                    <div className="flex items-center gap-2 bg-black/20 rounded-md p-1 border border-white/5 focus-within:border-primary/50 transition-colors">
                                         <input
                                             type="text"
                                             value={newVersionInput}
@@ -245,7 +276,7 @@ export default function GameVersionSelector({
                                             onFocus={(e) => e.stopPropagation()}
                                             onClick={(e) => e.stopPropagation()}
                                             placeholder={suggestedNextVersion}
-                                            className="flex-1 bg-transparent border-none text-sm text-white px-2 py-1 outline-none placeholder:text-textMuted/30"
+                                            className="flex-1 bg-transparent border-none text-xs text-white px-2 py-1 outline-none placeholder:text-textMuted/30"
                                             disabled={isCreatingVersion}
                                         />
                                         <button
@@ -255,15 +286,14 @@ export default function GameVersionSelector({
                                                 handleCreateVersion();
                                             }}
                                             disabled={isCreatingVersion || !newVersionInput.trim() || !!versionInputError}
-                                            className={`
-                                                p-1.5 rounded-md transition-all duration-200
-                                                ${newVersionInput.trim() && !versionInputError
+                                            className={cn(
+                                                "p-1 rounded-md transition-all duration-200",
+                                                newVersionInput.trim() && !versionInputError
                                                     ? 'bg-primary text-white hover:bg-red-600 shadow-lg shadow-red-900/20'
                                                     : 'bg-white/5 text-white/20 cursor-not-allowed'
-                                                }
-                                            `}
+                                            )}
                                         >
-                                            {isCreatingVersion ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                                            {isCreatingVersion ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
                                         </button>
                                     </div>
                                     {versionInputError && (

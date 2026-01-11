@@ -5,6 +5,52 @@ import { ModData } from "@/types/mod";
 import { Prisma } from "@/generated/prisma";
 import { PrismaModWithTags, mapPrismaModToModData } from "@/types/database";
 
+// ============ MOD SELECTOR SEARCH ============
+
+export interface ModSelectorItem {
+    id: string;
+    title: string;
+    slug: string;
+    version: string;
+    gameVersion: string;
+    status: string;
+}
+
+/**
+ * Lightweight mod search for selector dropdowns
+ * Returns only title and slug for efficiency
+ */
+export async function searchModsForSelector(query: string, limit: number = 20): Promise<ModSelectorItem[]> {
+    const mods = await prisma.mod.findMany({
+        where: query.trim() ? {
+            OR: [
+                { title: { contains: query, mode: 'insensitive' } },
+                { slug: { contains: query, mode: 'insensitive' } }
+            ]
+        } : {},
+        orderBy: { title: 'asc' },
+        take: limit,
+        select: {
+            title: true,
+            slug: true,
+            version: true,
+            gameVersion: true,
+            status: true
+        }
+    });
+
+    return mods.map(m => ({
+        id: m.slug,
+        title: m.title,
+        slug: m.slug,
+        version: m.version,
+        gameVersion: m.gameVersion,
+        status: m.status
+    }));
+}
+
+// ============ BASIC SEARCH ============
+
 interface SearchFilters {
     tag?: string;
     lang?: string;
@@ -298,13 +344,15 @@ export async function fetchGameVersions() {
 
 /**
  * Fetch all unique statuses for filter
+ * (Fetches from Tag table to be consistent with tag-based logic)
  */
 export async function fetchStatuses(): Promise<string[]> {
-    const statuses = await prisma.mod.findMany({
-        select: { status: true },
-        distinct: ['status']
+    const tags = await prisma.tag.findMany({
+        where: { category: 'status' },
+        select: { value: true },
+        orderBy: { value: 'asc' }
     });
-    return statuses.map(s => s.status).filter(Boolean);
+    return tags.map(t => t.value);
 }
 
 /**

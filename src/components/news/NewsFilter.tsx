@@ -1,55 +1,53 @@
 'use client';
 
-import { TagData } from "@/types/mod";
+import { FrozenTag } from "@/schemas/news.schema";
 import { Link } from "@/i18n/routing";
 import Tag from "@/components/ui/Tag";
 import SearchBar from "@/components/ui/SearchBar";
 import { useState } from "react";
 import { Filter, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface NewsFilterProps {
-    tags: TagData[];
+    tags: FrozenTag[];
     currentTag?: string;
 }
 
 export default function NewsFilter({ tags, currentTag }: NewsFilterProps) {
     const [search, setSearch] = useState("");
+    const t = useTranslations('NewsFilter');
 
-    // Group tags
+    // Group tags by category
     const categories = tags.reduce((acc, tag) => {
         const cat = tag.category || 'other';
         if (!acc[cat]) acc[cat] = [];
         acc[cat].push(tag);
         return acc;
-    }, {} as Record<string, TagData[]>);
+    }, {} as Record<string, FrozenTag[]>);
 
     // Sort categories order
     const categoryOrder = ['newscat', 'gamever', 'tag', 'other'];
     const sortedCategories = Object.keys(categories).sort((a, b) => {
         const indexA = categoryOrder.indexOf(a);
         const indexB = categoryOrder.indexOf(b);
-        // If both are in the list, sort by index
         if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-        // If only A is in the list, A comes first
         if (indexA !== -1) return -1;
-        // If only B is in the list, B comes first
         if (indexB !== -1) return 1;
-        // Otherwise sort alphabetically
         return a.localeCompare(b);
     });
 
-    const filteredTags = (tagList: TagData[]) => {
+    const filteredTags = (tagList: FrozenTag[]) => {
         if (!search) return tagList;
         return tagList.filter(t => t.displayName.toLowerCase().includes(search.toLowerCase()));
     };
 
     const getCategoryLabel = (cat: string) => {
         switch (cat) {
-            case 'newscat': return 'Categories';
-            case 'gamever': return 'Game Versions';
-            case 'tag': return 'Tags';
-            default: return 'Other';
+            case 'newscat': return t('categories.newscat');
+            case 'gamever': return t('categories.gamever');
+            case 'tag': return t('categories.tag');
+            default: return t('categories.other');
         }
     };
 
@@ -58,11 +56,11 @@ export default function NewsFilter({ tags, currentTag }: NewsFilterProps) {
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2 text-white font-bold uppercase tracking-wide text-sm">
                     <Filter size={16} className="text-primary" />
-                    <span>Filters</span>
+                    <span>{t('filters')}</span>
                 </div>
                 {currentTag && (
                     <Link href="/news" className="text-[10px] font-bold text-red-400 hover:text-red-300 flex items-center gap-1 uppercase tracking-wider bg-red-500/10 px-2 py-1 rounded border border-red-500/20 hover:bg-red-500/20 transition-colors">
-                        <X size={10} /> Clear
+                        <X size={10} />{t('clear')}
                     </Link>
                 )}
             </div>
@@ -70,7 +68,7 @@ export default function NewsFilter({ tags, currentTag }: NewsFilterProps) {
             <SearchBar
                 value={search}
                 onChange={setSearch}
-                placeholder="Search tags..."
+                placeholder={t('searchTags')}
                 variant="compact"
                 className="mb-6"
             />
@@ -87,19 +85,18 @@ export default function NewsFilter({ tags, currentTag }: NewsFilterProps) {
                                 <span className="h-px flex-1 bg-white/5"></span>
                             </h4>
                             <div className="flex flex-wrap gap-2">
-                                {catTags.map(tag => {
+                                {catTags.map((tag, idx) => {
                                     const isActive = currentTag === tag.displayName;
                                     return (
                                         <Tag
-                                            key={tag.id}
+                                            key={tag.id || `${tag.displayName}-${idx}`}
                                             href={isActive ? '/news' : `/news?tag=${tag.displayName}`}
                                             color={tag.color || undefined}
                                             className={cn(
-                                                isActive && "bg-primary text-white border-primary shadow-lg shadow-primary/20"
+                                                isActive && "bg-primary text-white border-primary shadow-lg"
                                             )}
                                         >
                                             {tag.displayName}
-                                            {(tag.usageCount || 0) > 0 && <span className="opacity-40 text-[9px] ml-1">({tag.usageCount})</span>}
                                         </Tag>
                                     );
                                 })}

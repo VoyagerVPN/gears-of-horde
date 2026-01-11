@@ -10,7 +10,7 @@ import { useTranslations } from 'next-intl';
 
 interface TagSelectorProps {
     /** Currently selected tags */
-    selectedTags: Array<{ displayName: string; category?: string; id?: string; color?: string | null }>;
+    selectedTags: Array<{ displayName: string; category?: string; id?: string; color?: string | null; value?: string }>;
     /** Callback when tags change */
     onTagsChange: (tags: Array<{ displayName: string; category: string }>) => void;
     /** Category to search/create tags in (default: 'tag') */
@@ -255,7 +255,7 @@ export default function TagSelector({
                                                 >
                                                     <Tag
                                                         category={tag.category || category}
-                                                        value={tag.category === 'author' ? 'author' : undefined}
+                                                        value={tag.value}
                                                         color={tag.color || undefined}
                                                         showIcon={true}
                                                         className={selected ? "!border-primary" : ""}
@@ -334,7 +334,7 @@ export default function TagSelector({
                             <Tag
                                 key={tag.displayName}
                                 category={tag.category || category}
-                                value={tag.category === 'author' ? 'author' : undefined}
+                                value={tag.value}
                                 color={tag.color || undefined}
                                 showIcon={true}
                                 onRemove={() => removeTag(tag.displayName)}

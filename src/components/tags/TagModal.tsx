@@ -15,6 +15,7 @@ import {
     dialogInputClass,
 } from "@/components/ui/Dialog";
 import RichSelector, { RichSelectorOption } from "@/components/ui/RichSelector";
+import { getTagColor, TAG_CATEGORY_COLORS, AUTHOR_TAG_COLOR, PRIMARY_COLOR, FALLBACK_TAG_COLOR } from "@/lib/tag-colors";
 
 interface TagModalProps {
     isOpen: boolean;
@@ -26,12 +27,13 @@ interface TagModalProps {
 }
 
 // Configuration for fixed categories with specific styling
+// Colors now use hex values from centralized tag-colors.ts
 const CATEGORY_CONFIG: Record<string, { icon: LucideIcon; color: string; labelKey: string }> = {
-    author: { icon: CircleUser, color: "text-blue-400", labelKey: "author" },
-    gamever: { icon: Gamepad2, color: "text-green-500", labelKey: "gameVersion" },
-    lang: { icon: Globe, color: "text-primary", labelKey: "language" },
-    newscat: { icon: Newspaper, color: "text-violet-400", labelKey: "news" },
-    tag: { icon: TagIcon, color: "text-zinc-400", labelKey: "tags" },
+    author: { icon: CircleUser, color: AUTHOR_TAG_COLOR, labelKey: "author" },
+    gamever: { icon: Gamepad2, color: TAG_CATEGORY_COLORS['gamever'], labelKey: "gameVersion" },
+    lang: { icon: Globe, color: PRIMARY_COLOR, labelKey: "language" },
+    newscat: { icon: Newspaper, color: getTagColor('newscat', 'new'), labelKey: "news" },
+    tag: { icon: TagIcon, color: FALLBACK_TAG_COLOR, labelKey: "tags" },
 };
 
 export default function TagModal({ isOpen, onClose, tag, onSave, initialCategory, existingCategories }: TagModalProps) {
@@ -87,7 +89,7 @@ export default function TagModal({ isOpen, onClose, tag, onSave, initialCategory
                 value: cat,
                 label: cat, // Use raw category name
                 icon: TagIcon, // Default icon
-                iconColor: "text-zinc-400", // Neutral color
+                iconColor: FALLBACK_TAG_COLOR, // Neutral color from tag-colors.ts
                 isCurrent: tag?.category === cat,
             }));
 

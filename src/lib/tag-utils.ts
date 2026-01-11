@@ -79,11 +79,45 @@ export async function findOrCreateAuthorTag(
 export async function findOrCreateGameVerTag(
     version: string
 ): Promise<{ id: string; category: string; value: string; displayName: string; color: string | null }> {
-    // Convert "V2.4" to "2_4" for storage
-    const value = version.replace(/^[vV]/, '').replace(/\./g, '_');
+    // Strategies:
+    // 1. "V1.0", "v1.3" -> "1_0", "1_3" (Standard)
+    // 2. "A21", "Alpha 21" -> "a21" (Legacy/Alpha)
+    // 3. "N/A" -> "na"
+
+    let value = version.trim();
+
+    // Handle N/A
+    if (value.toUpperCase() === 'N/A') {
+        return findOrCreateTag('gamever', 'na', 'N/A', undefined);
+    }
+
+    // Fix: VA21 -> A21 (strip V if followed by A)
+    if (/^[vV][aA]\d+/.test(value)) {
+        value = value.substring(1);
+    }
+
+    // V versions (with or without build number)
+    // Remove any existing V/v prefix
+    if (/^v/i.test(value)) {
+        value = value.substring(1);
+    }
+
+    const storageValue = value.toLowerCase().replace(/\./g, '_').replace(/\s+/g, '_');
+
+    // Normalize display name
+    let display = value;
+    if (/^[aA]\d+/.test(display)) {
+        display = display.toUpperCase(); // A21
+    } else {
+        // Only add 'V' if it looks like a version number (starts with digit)
+        if (/^\d/.test(display)) {
+            display = `V${display}`;
+        }
+        // Else keep as is (e.g. Unknown)
+    }
 
     // Gamever tags don't get a color initially - it's calculated by recalculateGameVersionColors
-    return findOrCreateTag('gamever', value, version, undefined);
+    return findOrCreateTag('gamever', storageValue, display, undefined);
 }
 
 /**
@@ -112,6 +146,22 @@ export async function findOrCreateLangTag(
     // Use lowercase name as value (e.g., "English" -> "english")
     const value = langName.toLowerCase().trim().replace(/\s+/g, '_');
     return findOrCreateTag('lang', value, langName);
+}
+
+/**
+ * Find or create a status tag
+ * 
+ * @param status - Status value (e.g., 'active', 'on_hold')
+ * @returns The found or created status tag
+ */
+export async function findOrCreateStatusTag(
+    status: string
+): Promise<{ id: string; category: string; value: string; displayName: string; color: string | null }> {
+    const value = status.toLowerCase();
+    // Use the value itself as displayName for status tags, UI will localize if needed
+    // or we could use the capitalized version.
+    const displayName = status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
+    return findOrCreateTag('status', value, displayName);
 }
 
 /**

@@ -11,7 +11,10 @@ import {
     PauseCircle,
     Ban,
     ArrowUpCircle,
-    HelpCircle
+    HelpCircle,
+    BookPlus,
+    BookUp,
+    BookUp2
 } from "lucide-react";
 
 interface TagAction {
@@ -120,15 +123,16 @@ export default function Tag({
 
     if (color) {
         // Direct color override (from DB)
-        dynamicStyle = colorToTagStyles(color);
+        dynamicStyle = colorToTagStyles(color, category);
     } else if (category) {
         // Category-based lookup
         const categoryColor = getTagColor(category, value);
-        dynamicStyle = colorToTagStyles(categoryColor);
+        dynamicStyle = colorToTagStyles(categoryColor, category);
     }
 
     // Add border color if dynamic style exists (defaults to ~20% opacity of key color)
-    if (dynamicStyle && dynamicStyle.color) {
+    // ONLY if not already defined (like for lang tags)
+    if (dynamicStyle && dynamicStyle.color && !dynamicStyle.borderColor) {
         dynamicStyle.borderColor = `${dynamicStyle.color}33`;
     }
 
@@ -146,6 +150,15 @@ export default function Tag({
                     case 'upcoming': return <ArrowUpCircle size={14} />;
                     case 'unknown': return <HelpCircle size={14} />;
                     default: return <HelpCircle size={14} />;
+                }
+            }
+            case 'newscat': {
+                switch (value) {
+                    case 'new': return <BookPlus size={14} />;
+                    case 'status': return <BookPlus size={14} />;
+                    case 'release': return <BookUp2 size={14} />;
+                    case 'update': return <BookUp size={14} />;
+                    default: return <BookPlus size={14} />;
                 }
             }
             default: return null;
@@ -184,7 +197,7 @@ export default function Tag({
         "inline-flex items-center justify-center",
         "transition-colors whitespace-nowrap",
         "text-[13px] font-bold rounded-md", // Rounded-md per user request roughly matching the screenshot (or change to rounded-full if needed)
-        "capitalize",
+        // "capitalize", // Removed to respect author name casing
         "cursor-default", // Default cursor, overridden for links
         // Apply variant styles ONLY if no dynamic color
         !dynamicStyle && variantStyles[variant],

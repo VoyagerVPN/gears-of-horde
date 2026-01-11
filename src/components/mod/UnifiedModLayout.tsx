@@ -650,7 +650,7 @@ export default function UnifiedModLayout({
                             <div className="flex items-center justify-between border-b border-white/5 pb-2">
                                 <span className="text-textMuted uppercase tracking-wider font-bold font-exo2">{t('modVersion')}:</span>
                                 {isEditing ? (
-                                    <input id="mod-version-input" name="version" type="text" value={mod.version} onChange={e => updateField('version', e.target.value)} className={cn(STANDARD_INPUT_STYLE, "w-24 text-right py-1")} spellCheck={false} />
+                                    <input id="mod-version-input" name="version" type="text" value={mod.version} onChange={e => updateField('version', e.target.value)} className={cn(STANDARD_INPUT_STYLE, "w-24 text-right py-1")} spellCheck={false} placeholder="1.0.0.0" />
                                 ) : (
                                     <VersionTag type="mod" version={mod.version} />
                                 )}

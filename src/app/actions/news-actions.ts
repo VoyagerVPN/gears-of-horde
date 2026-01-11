@@ -39,29 +39,18 @@ export async function fetchLatestNews(limit: number = 10, skip: number = 0, tag?
 }
 
 export async function fetchNewsTags(): Promise<FrozenTag[]> {
-    // Since tags are now stored as JSON, we need to aggregate unique tags from all news items
-    const news = await prisma.news.findMany({
-        select: {
-            tags: true
-        }
+    // Query newscat tags from the Tag table as the single source of truth
+    const tags = await prisma.tag.findMany({
+        where: { category: 'newscat' },
+        orderBy: { displayName: 'asc' }
     });
 
-    const tagMap = new Map<string, FrozenTag>();
-
-    for (const item of news) {
-        const tags = item.tags as FrozenTag[];
-        if (Array.isArray(tags)) {
-            for (const tag of tags) {
-                if (tag.displayName && !tagMap.has(tag.displayName)) {
-                    tagMap.set(tag.displayName, tag);
-                }
-            }
-        }
-    }
-
-    return Array.from(tagMap.values()).sort((a, b) =>
-        a.displayName.localeCompare(b.displayName)
-    );
+    return tags.map(tag => ({
+        id: tag.id,
+        displayName: tag.displayName,
+        color: tag.color || undefined,
+        category: tag.category
+    }));
 }
 
 // ============================================================================

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { useTranslations } from "next-intl"
 import { FileEdit, Plus, Trash2, Eye, Edit } from "lucide-react"
 import { Link } from "@/i18n/routing"
-import UpdateModModal from "@/components/mod/UpdateModModal"
+import UnifiedUpdateModal from "@/components/mod/UnifiedUpdateModal"
 import { getUserMods, deleteUserMod } from "@/app/actions/profile-actions"
 import { fetchTagsByCategory } from "@/app/actions/tag-actions"
 import { ModData, ModStatusType, TagData } from "@/types/mod"
@@ -172,21 +172,22 @@ export default function ProfileMyModsPage() {
                 )}
 
                 {/* Update Modal */}
-                <UpdateModModal
+                <UnifiedUpdateModal
                     key={selectedMod?.slug}
                     isOpen={showUpdateModal}
                     onClose={() => {
                         setShowUpdateModal(false)
                         setSelectedMod(null)
                     }}
-                    mod={selectedMod}
-                    onSave={async () => {
+                    mod={selectedMod || undefined}
+                    onSave={async (data) => {
+                        // For now keep the logic of just refreshing, 
+                        // though we should probably call an action here if the modal doesn't do it.
                         setShowUpdateModal(false)
                         setSelectedMod(null)
                         await refreshMods()
                     }}
                     gameVersionTags={gameVersionTags}
-                    onGameVersionTagsRefresh={() => fetchTagsByCategory('gamever').then(setGameVersionTags)}
                 />
             </div>
         </div>

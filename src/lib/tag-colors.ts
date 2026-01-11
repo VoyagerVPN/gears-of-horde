@@ -64,7 +64,7 @@ export const TAG_CATEGORY_COLORS: Record<string, string> = {
     'newscat:new': '#a855f7',     // purple-500
     'newscat:update': '#22c55e',  // green-500
     'newscat:release': '#22d3ee', // cyan-400
-    'newscat:status': '#a1a1a1',  // gray
+    'newscat:status': '#d4d4d8',   // silver (as unknown)
 
     // === LANGUAGE (special handling) ===
     // - builtin: uses zinc color with primary text
@@ -124,13 +124,21 @@ export function getTagColor(
  * Convert hex color to inline style object for dynamic tag coloring
  * 
  * @param hex - Hex color string (e.g., '#22c55e')
+ * @param category - Optional category for specific design patterns (e.g., 'lang')
  * @returns Style object with backgroundColor, color, and borderColor
- * 
- * @example
- * colorToTagStyles('#22c55e')
- * // { color: '#22c55e', backgroundColor: '#22c55e1a', borderColor: '#22c55e33' }
  */
-export function colorToTagStyles(hex: string): React.CSSProperties {
+export function colorToTagStyles(hex: string, category?: string): React.CSSProperties {
+    // Special styling for Language tags: 
+    // Match regular tags' background and border perfectly, but use Primary font color
+    if (category === 'lang') {
+        const themeColor = TAG_CATEGORY_COLORS['tag']; // Use #a1a1aa (zinc-400)
+        return {
+            color: PRIMARY_COLOR,
+            backgroundColor: `${themeColor}1a`, // ~10% opacity
+            borderColor: `${themeColor}33`,     // ~20% opacity
+        };
+    }
+
     return {
         color: hex,
         backgroundColor: `${hex}1a`, // ~10% opacity

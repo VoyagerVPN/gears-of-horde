@@ -1,4 +1,4 @@
-import NewsItem from "@/components/NewsItem";
+import NewsCard from "@/components/NewsCard";
 import HeroSection from "@/components/HeroSection";
 import ModSection from "@/components/ModSection";
 import { fetchLatestNews } from "@/app/actions/news-actions";
@@ -76,7 +76,7 @@ export default async function Home({ params }: Props) {
             <div className="flex flex-col gap-1">
               {news.length > 0 ? (
                 news.map((item) => (
-                  <NewsItem
+                  <NewsCard
                     key={item.id}
                     modName={item.modName}
                     modSlug={item.modSlug}

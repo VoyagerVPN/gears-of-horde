@@ -169,6 +169,10 @@ model News {
   // Tags stored as JSON array: [{displayName, color, category}]
   tags          Json     @default("[]")
   
+  // Tag references for live data lookup (colors, etc.)
+  newscatTagId     String?
+  gameVersionTagId String?
+  
   // Relation to mod (for navigation only, not for syncing data)
   mod           Mod?     @relation(fields: [modSlug], references: [slug])
   

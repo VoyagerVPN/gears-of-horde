@@ -67,6 +67,17 @@
         "prevPage": "Предыдущая",
         "nextPage": "Следующая"
     },
+    "NewsFilter": {
+        "filters": "Фильтры",
+        "clear": "Сбросить",
+        "searchTags": "Поиск тегов...",
+        "categories": {
+            "newscat": "Категории",
+            "gamever": "Версии игры",
+            "tag": "Теги",
+            "other": "Другое"
+        }
+    },
     "SearchPage": {
         "title": "Поиск модов",
         "searchPlaceholder": "Поиск по названию, описанию...",
@@ -257,7 +268,9 @@
         "builtIn": "Встроенный",
         "languageTooltip": "Английский всегда встроенный. Другие языки становятся внешними, когда вы добавляете ссылку для скачивания.",
         "selectVersion": "Выберите версию",
-        "clear": "Сбросить"
+        "clear": "Сбросить",
+        "search": "Поиск",
+        "noResults": "Нет результатов"
     },
     "Admin": {
         "pendingTranslations": "Ожидающие переводы",
@@ -461,33 +474,50 @@
         "sending": "Отправка...",
         "submit": "Отправить"
     },
-    "UpdateModModal": {
-        "title": "Обновить мод",
+    "UnifiedUpdateModal": {
+        "title": "Обновить мод и новость",
+        "modName": "Название мода",
+        "searchMod": "Поиск мода...",
+        "selectCategory": "Выберите категорию",
+        "summary": "Сводка",
+        "content": "Содержимое / Изменения",
+        "contentPlaceholder": "Напишите, что изменилось в этой версии... (поддерживается HTML)",
+        "contentRequiredForGameVersionChange": "Опишите, что изменилось с обновлением версии игры...",
+        "contentRequiredHint": "Комментарий обязателен при изменении только версии игры",
+        "livePreview": "Предпросмотр",
+        "newsCategory": "Категория новости",
+        "source": "Источник",
         "deployingChangesFor": "Внесение изменений для",
         "newVersion": "Новая версия",
         "gameVersion": "Версия игры",
-        "selectVersion": "Выберите версию",
         "status": "Статус",
         "releaseDate": "Дата выпуска",
         "wipeRequired": "Требуется вайп",
-        "updateDescription": "Описание обновления (Лента новостей)",
+        "updateDescription": "Сводка",
         "leaveEmptyForAutoGeneration": "Оставьте пустым для автогенерации",
         "sourceUrl": "URL источника",
         "changelogDetails": "Подробности изменений",
-        "changelogPlaceholder": "- Исправлен критический баг\n- Добавлено новое оружие\n- Улучшена производительность",
-        "cancel": "Отмена",
+        "changelogPlaceholder": "Введите изменения (по одному на строку)...",
+        "auto": "авто",
+        "newscatOptions": {
+            "new": "Новый мод",
+            "update": "Обновление",
+            "release": "Релиз",
+            "status": "Изменение статуса"
+        },
         "publishUpdate": "Опубликовать обновление",
         "publishStatusChange": "Опубликовать изменение статуса",
-        "autoDescReleased": "{version} вышла.",
-        "autoDescDevelopment": "Разработка {title} {action}.",
+        "simpleMode": "Простой",
+        "advancedMode": "Расширенный",
+        "autoDescReleased": "{version} вышла",
+        "autoDescDevelopment": "Разработка {title} {action}",
         "statusActionResumed": "возобновлена",
         "statusActionPaused": "приостановлена",
         "statusActionDiscontinued": "прекращена",
         "statusActionAnnounced": "анонсирована",
         "statusActionUpdated": "обновлена"
     },
-    "NewsItem": {
-        "saveWipeRequired": "Требуется вайп сохранений",
+    "NewsCard": {
         "wipe": "ВАЙП",
         "source": "Источник"
     },

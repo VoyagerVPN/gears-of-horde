@@ -67,6 +67,17 @@
         "prevPage": "Previous Page",
         "nextPage": "Next Page"
     },
+    "NewsFilter": {
+        "filters": "Filters",
+        "clear": "Clear",
+        "searchTags": "Search tags...",
+        "categories": {
+            "newscat": "Categories",
+            "gamever": "Game Versions",
+            "tag": "Tags",
+            "other": "Other"
+        }
+    },
     "SearchPage": {
         "title": "Mod Search",
         "searchPlaceholder": "Search mods by title, description...",
@@ -257,7 +268,9 @@
         "builtIn": "Built-in",
         "languageTooltip": "English is always built-in. Other languages become external when you add a download URL.",
         "selectVersion": "Select version",
-        "clear": "Clear"
+        "clear": "Clear",
+        "search": "Search",
+        "noResults": "No results"
     },
     "Admin": {
         "pendingTranslations": "Pending Translations",
@@ -461,33 +474,50 @@
         "sending": "Sending...",
         "submit": "Submit"
     },
-    "UpdateModModal": {
-        "title": "Update Mod",
+    "UnifiedUpdateModal": {
+        "title": "Update Mod & News",
+        "modName": "Mod Name",
+        "searchMod": "Search for a mod...",
+        "selectCategory": "Select category",
+        "summary": "Summary",
+        "content": "Content / Changelog",
+        "contentPlaceholder": "Write what changed in this version... (HTML supported)",
+        "contentRequiredForGameVersionChange": "Explain what changed with the game version update...",
+        "contentRequiredHint": "Comment is required when only game version changes",
+        "livePreview": "Live Preview",
+        "newsCategory": "News Category",
+        "source": "Source",
         "deployingChangesFor": "Deploying changes for",
         "newVersion": "New Version",
         "gameVersion": "Game Version",
-        "selectVersion": "Select version",
         "status": "Status",
         "releaseDate": "Release Date",
         "wipeRequired": "Wipe Required",
-        "updateDescription": "Update Description (News Feed)",
+        "updateDescription": "Summary",
         "leaveEmptyForAutoGeneration": "Leave empty for auto-generation",
         "sourceUrl": "Source URL",
         "changelogDetails": "Changelog Details",
-        "changelogPlaceholder": "- Fixed critical bug\n- Added new weapon\n- Improved performance",
-        "cancel": "Cancel",
+        "changelogPlaceholder": "Enter changes (one per line)...",
+        "auto": "auto",
+        "newscatOptions": {
+            "new": "New Mod",
+            "update": "Update",
+            "release": "Release",
+            "status": "Status Change"
+        },
         "publishUpdate": "Publish Update",
         "publishStatusChange": "Publish Status Change",
-        "autoDescReleased": "{version} released.",
-        "autoDescDevelopment": "Development of {title} {action}.",
+        "simpleMode": "Simple",
+        "advancedMode": "Advanced",
+        "autoDescReleased": "{version} released",
+        "autoDescDevelopment": "{title} development {action}",
         "statusActionResumed": "resumed",
         "statusActionPaused": "paused",
         "statusActionDiscontinued": "discontinued",
         "statusActionAnnounced": "announced",
         "statusActionUpdated": "updated"
     },
-    "NewsItem": {
-        "saveWipeRequired": "Save Wipe Required",
+    "NewsCard": {
         "wipe": "WIPE",
         "source": "Source"
     },

@@ -191,14 +191,20 @@ export default function ModCard({
             </div>
 
             {/* Status Tag */}
-            <Tag
-              category="status"
-              value={status}
-              href={`/mods?status=${status}`}
-              showIcon={true}
-            >
-              {tCommon(`statuses.${status}`)}
-            </Tag>
+            {(() => {
+              const dbStatusTag = tags.find(t => t.category === 'status');
+              return (
+                <Tag
+                  category="status"
+                  value={status}
+                  color={dbStatusTag?.color || undefined}
+                  href={`/mods?status=${status}`}
+                  showIcon={true}
+                >
+                  {tCommon(`statuses.${status}`)}
+                </Tag>
+              );
+            })()}
           </div>
 
           {/* Divider between meta row and tags */}
@@ -283,19 +289,19 @@ export default function ModCard({
         <div className="bg-black/20 px-3 py-1.5 border-t border-white/5 flex items-center justify-between text-[10px] text-textMuted mt-auto">
           <div className="flex gap-3">
             <span className="flex items-center gap-1.5 text-white font-bold">
-              <Star size={12} className="text-yellow-500 fill-yellow-500" />
+              <Star size={14} className="text-yellow-500 fill-yellow-500" />
               {stats.rating.toFixed(1)}
             </span>
             <span className="flex items-center gap-1.5 hover:text-white transition-colors">
-              <Download size={12} /> {stats.downloads}
+              <Download size={14} /> {stats.downloads}
             </span>
             <span className="flex items-center gap-1.5 hover:text-white transition-colors">
-              <Eye size={12} /> {stats.views}
+              <Eye size={14} /> {stats.views}
             </span>
           </div>
 
           <div className="flex items-center gap-1.5">
-            <Calendar size={12} />
+            <Calendar size={14} />
             <DateDisplay date={updatedAt} locale={locale} />
           </div>
         </div>

@@ -183,7 +183,7 @@ export default function EditableLanguageTags({ items, onChange }: EditableLangua
                                     }
                                 ] : undefined}
                             >
-                                <span className="text-primary">{item.displayName}</span>
+                                {item.displayName}
                             </Tag>
                         );
                     })}
