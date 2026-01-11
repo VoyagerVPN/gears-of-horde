@@ -57,6 +57,8 @@
         "mods": "Mods",
         "news": "News",
         "about": "About",
+        "privacy": "Privacy",
+        "terms": "Terms",
         "searchPlaceholder": "Search mods or tags...",
         "language": "EN / RU"
     },
@@ -620,5 +622,53 @@
         "closeMenu": "Close menu",
         "searchSuggestions": "Search suggestions",
         "removeTag": "Remove {tag}"
+    },
+    "PrivacyPolicy": {
+        "title": "Privacy Policy",
+        "lastUpdated": "Last updated: {date}",
+        "intro": "At Gears of Horde, we take your privacy seriously. This policy describes how we handle your data.",
+        "sections": {
+            "collection": {
+                "title": "Data Collection",
+                "content": "We collect minimal information necessary for the operation of the site, such as Discord user IDs when you log in."
+            },
+            "usage": {
+                "title": "Data Usage",
+                "content": "Your data is used to maintain your profile, track your mod subscriptions, and provide personalized features."
+            },
+            "sharing": {
+                "title": "Data Sharing",
+                "content": "We do not share your personal data with third parties."
+            }
+        }
+    },
+    "TermsOfService": {
+        "title": "Terms of Service",
+        "lastUpdated": "Last updated: {date}",
+        "intro": "By accessing Gears of Horde, you agree to these terms.",
+        "sections": {
+            "acceptance": {
+                "title": "Acceptance of Terms",
+                "content": "By using our website, you agree to be bound by these Terms of Service."
+            },
+            "usage": {
+                "title": "Acceptable Use",
+                "content": "You agree not to misuse the website or content provided."
+            },
+            "mods": {
+                "title": "Mod Content",
+                "content": "Mods are provided by the community. We are not responsible for the content of mods."
+            }
+        }
+    },
+    "NotFound": {
+        "title": "Page Not Found",
+        "description": "Sorry, the page you are looking for does not exist or has been moved.",
+        "returnHome": "Return Home"
+    },
+    "Error": {
+        "title": "Something went wrong!",
+        "description": "An unexpected error has occurred. Our team has been notified.",
+        "retry": "Try again"
     }
 }
