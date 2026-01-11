@@ -54,6 +54,7 @@ export default function UnifiedUpdateModal({
     isOpen,
     onClose,
     onSaved,
+    onSave,
     news,
     mod,
     gameVersionTags = [],
@@ -83,7 +84,7 @@ export default function UnifiedUpdateModal({
     };
 
     const [formData, setFormData] = useState({
-        modId: mod?.id || "",
+        modId: mod?.slug || "",
         modTitle: mod?.title || news?.modName || "",
         modSlug: mod?.slug || news?.modSlug || "",
         version: mod?.version || news?.modVersion || "",
@@ -146,7 +147,7 @@ export default function UnifiedUpdateModal({
 
             setFormData(prev => ({
                 ...prev,
-                modId: mod?.id || "",
+                modId: mod?.slug || "",
                 modTitle: mod?.title || news?.modName || "",
                 modSlug: mod?.slug || news?.modSlug || "",
                 version: mod?.version || news?.modVersion || "",
@@ -207,7 +208,7 @@ export default function UnifiedUpdateModal({
             if (onSave) {
                 // Determine logic slug from the selected tag logic
                 const selectedTag = newscatTags.find(t => t.id === formData.newscatTagId);
-                const logicSlug = selectedTag ? selectedTag.displayName.toLowerCase() : "update";
+                const logicSlug = selectedTag?.displayName ? selectedTag.displayName.toLowerCase() : "update";
 
                 // If onSave is provided, we delegate saving to the parent
                 await onSave({

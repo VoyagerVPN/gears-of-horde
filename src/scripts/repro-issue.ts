@@ -2,9 +2,6 @@
 import { loadEnvConfig } from '@next/env';
 loadEnvConfig(process.cwd());
 
-import { loadEnvConfig } from '@next/env';
-loadEnvConfig(process.cwd());
-
 async function run() {
     const { db } = await import("@/lib/db");
     const { mergeTags } = await import("@/app/actions/tag-actions");
