@@ -101,9 +101,9 @@ export function compareGameVersions(v1: string, v2: string): number {
     // Extract version parts and build number
     const parseVersion = (v: string): { parts: number[], build: number } => {
         const clean = v.replace(/^[AVav]/, '');
-        const buildMatch = clean.match(/b(\d+)$/);
+        const buildMatch = clean.match(/b(\d+)$/i);
         const build = buildMatch ? parseInt(buildMatch[1]) : 0;
-        const versionStr = clean.replace(/b\d+$/, '');
+        const versionStr = clean.replace(/b\d+$/i, '');
         const parts = versionStr.split('.').map(n => parseInt(n) || 0);
         return { parts, build };
     };
