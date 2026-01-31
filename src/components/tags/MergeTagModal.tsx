@@ -24,7 +24,7 @@ interface MergeTagModalProps {
     onClose: () => void;
     sourceTag: TagData | null;
     allTags: TagData[];
-    onMerge: (sourceId: string, targetId: string) => Promise<void>;
+    onMerge: (sourceId: string, targetId: string) => Promise<boolean>;
 }
 
 /** Get the appropriate icon for a tag category */
@@ -204,12 +204,15 @@ function SearchableTagSelect({
     );
 }
 
+import ConfirmModal from "@/components/ui/ConfirmModal";
+
 export default function MergeTagModal({ isOpen, onClose, sourceTag, allTags, onMerge }: MergeTagModalProps) {
     const t = useTranslations('Common');
     const t_admin = useTranslations('Admin');
     const [sourceId, setSourceId] = useState("");
     const [targetId, setTargetId] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const { showToast } = useToast();
 
     // Sync sourceId when modal opens with a new tag
@@ -237,16 +240,20 @@ export default function MergeTagModal({ isOpen, onClose, sourceTag, allTags, onM
 
     if (!sourceTag) return null;
 
-    const handleSubmit = async () => {
+    const handleMergeClick = () => {
         if (!sourceId || !targetId) return;
-        const source = allTags.find(t => t.id === sourceId);
-        if (!source) return;
-        if (!confirm(`Are you sure you want to merge "${source.displayName}" into the selected tag? This cannot be undone.`)) return;
+        setIsConfirmOpen(true);
+    };
 
+    const handleConfirmMerge = async () => {
+        if (!sourceId || !targetId) return;
+        
         setIsSubmitting(true);
         try {
-            await onMerge(sourceId, targetId);
-            onClose();
+            const success = await onMerge(sourceId, targetId);
+            if (success) {
+                onClose();
+            }
         } catch (error) {
             console.error("Failed to merge tags:", error);
             showToast("Failed to merge tags", "error");
@@ -256,72 +263,89 @@ export default function MergeTagModal({ isOpen, onClose, sourceTag, allTags, onM
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent size="md">
-                <DialogHeader className="bg-white/5 border-b border-white/10">
-                    <DialogTitle>{t_admin('mergeTags')}</DialogTitle>
-                </DialogHeader>
+        <>
+            <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+                <DialogContent size="md">
+                    <DialogHeader className="bg-white/5 border-b border-white/10">
+                        <DialogTitle>{t_admin('mergeTags')}</DialogTitle>
+                    </DialogHeader>
 
-                <DialogBody className="space-y-6">
-                    {/* Warning */}
-                    <DialogAlert variant="warning" icon={<AlertTriangle size={20} />}>
-                        <p className="font-bold text-yellow-400 mb-1">{t_admin('warning')}</p>
-                        <p>
-                            {t_admin('mergeTagWarning', { tag: selectedSource?.displayName || '...' })}
-                        </p>
-                    </DialogAlert>
+                    <DialogBody className="space-y-6">
+                        {/* Warning */}
+                        <DialogAlert variant="warning" icon={<AlertTriangle size={20} />}>
+                            <p className="font-bold text-yellow-400 mb-1">{t_admin('warning')}</p>
+                            <p>
+                                {t_admin('mergeTagWarning', { tag: selectedSource?.displayName || '...' })}
+                            </p>
+                        </DialogAlert>
 
-                    {/* Source -> Target */}
-                    <div className="flex items-center justify-between gap-4">
-                        {/* Source Tag Selector */}
-                        <div className="flex-1 flex flex-col">
-                            <div className="text-[10px] text-textMuted uppercase font-bold mb-2 text-center">{t_admin('sourceTag')}</div>
-                            <SearchableTagSelect
-                                value={sourceId}
-                                onChange={setSourceId}
-                                options={availableSources}
-                                placeholder={t_admin('selectTag')}
-                                searchPlaceholder={t_admin('searchTags')}
-                                availableLabel={t_admin('availableTags')}
-                                noResultsLabel={t_admin('noTagsFound')}
-                            />
+                        {/* Source -> Target */}
+                        <div className="flex items-center justify-between gap-4">
+                            {/* Source Tag Selector */}
+                            <div className="flex-1 flex flex-col">
+                                <div className="text-[10px] text-textMuted uppercase font-bold mb-2 text-center">{t_admin('sourceTag')}</div>
+                                <SearchableTagSelect
+                                    value={sourceId}
+                                    onChange={setSourceId}
+                                    options={availableSources}
+                                    placeholder={t_admin('selectTag')}
+                                    searchPlaceholder={t_admin('searchTags')}
+                                    availableLabel={t_admin('availableTags')}
+                                    noResultsLabel={t_admin('noTagsFound')}
+                                />
+                            </div>
+
+                            <div className="flex items-center pt-5">
+                                <ArrowRight className="text-textMuted shrink-0" size={20} />
+                            </div>
+
+                            {/* Target Tag Selector */}
+                            <div className="flex-1 flex flex-col">
+                                <div className="text-[10px] text-textMuted uppercase font-bold mb-2 text-center">{t_admin('targetTag')}</div>
+                                <SearchableTagSelect
+                                    value={targetId}
+                                    onChange={setTargetId}
+                                    options={availableTargets}
+                                    placeholder={t_admin('selectTag')}
+                                    searchPlaceholder={t_admin('searchTags')}
+                                    availableLabel={t_admin('availableTags')}
+                                    noResultsLabel={t_admin('noTagsFound')}
+                                />
+                            </div>
                         </div>
+                    </DialogBody>
 
-                        <div className="flex items-center pt-5">
-                            <ArrowRight className="text-textMuted shrink-0" size={20} />
-                        </div>
+                    <DialogFooter>
+                        <DialogButton type="button" variant="ghost" onClick={onClose}>
+                            {t('cancel')}
+                        </DialogButton>
+                        <DialogButton
+                            type="button"
+                            variant="primary"
+                            disabled={!sourceId || !targetId}
+                            loading={isSubmitting}
+                            onClick={handleMergeClick}
+                        >
+                            {isSubmitting ? t_admin('merging') : t_admin('mergeTags')}
+                        </DialogButton>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
-                        {/* Target Tag Selector */}
-                        <div className="flex-1 flex flex-col">
-                            <div className="text-[10px] text-textMuted uppercase font-bold mb-2 text-center">{t_admin('targetTag')}</div>
-                            <SearchableTagSelect
-                                value={targetId}
-                                onChange={setTargetId}
-                                options={availableTargets}
-                                placeholder={t_admin('selectTag')}
-                                searchPlaceholder={t_admin('searchTags')}
-                                availableLabel={t_admin('availableTags')}
-                                noResultsLabel={t_admin('noTagsFound')}
-                            />
-                        </div>
-                    </div>
-                </DialogBody>
-
-                <DialogFooter>
-                    <DialogButton type="button" variant="ghost" onClick={onClose}>
-                        {t('cancel')}
-                    </DialogButton>
-                    <DialogButton
-                        type="button"
-                        variant="primary"
-                        disabled={!sourceId || !targetId}
-                        loading={isSubmitting}
-                        onClick={handleSubmit}
-                    >
-                        {isSubmitting ? t_admin('merging') : t_admin('mergeTags')}
-                    </DialogButton>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+            <ConfirmModal
+                isOpen={isConfirmOpen}
+                onClose={() => setIsConfirmOpen(false)}
+                onConfirm={handleConfirmMerge}
+                title={t_admin('mergeTags')}
+                message={t_admin('mergeTagConfirmMessage', {
+                    source: selectedSource?.displayName || '...', 
+                    target: selectedTarget?.displayName || '...' 
+                })}
+                confirmText={t_admin('merge')}
+                cancelText={t('cancel')}
+                variant="warning"
+                nested={true}
+            />
+        </>
     );
 }

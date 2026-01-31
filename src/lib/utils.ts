@@ -60,14 +60,19 @@ export function normalizeGameVersion(version: string): string {
 export function gameVersionToTagValue(version: string): string {
     if (!version) return version;
 
-    const trimmed = version.trim();
+    let trimmed = version.trim();
 
     // N/A special case
     if (trimmed.toUpperCase() === 'N/A') return 'na';
 
-    // Alpha versions keep the 'a' prefix in lowercase
+    // Fix: VA21 -> A21 (strip V if followed by A)
+    if (trimmed.match(/^[vV][aA]\d+/)) {
+        trimmed = trimmed.substring(1);
+    }
+
+    // Alpha versions keep the 'a' prefix in lowercase BUT apply underscores for dots
     if (trimmed.match(/^[aA]\d+/)) {
-        return trimmed.toLowerCase();
+        return trimmed.toLowerCase().replace(/\./g, '_');
     }
 
     // V versions: remove V prefix, replace dots with underscores
@@ -234,19 +239,6 @@ export function getFixedLinkName(url: string): string | null {
         // invalid URL
     }
     return null;
-}
-
-// Number formatting (e.g., 1500 -> 1.5K)
-export function formatNumber(num: number): string {
-    if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
-    if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
-    return num.toString();
-}
-
-// Truncate text with ellipsis
-export function truncate(text: string, maxLength: number): string {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength - 3) + '...';
 }
 
 // Slugify string with Russian transliteration

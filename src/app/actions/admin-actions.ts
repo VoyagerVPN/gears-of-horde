@@ -1,5 +1,7 @@
 'use server';
 
+import { ok, err, Result } from "@/lib/result";
+
 import { db as prisma } from "@/lib/db";
 import { ModData, TranslationSuggestion, ModStatusType } from "@/types/mod";
 import { PrismaModWithTags, mapPrismaModToModData, ModChangelogJson, ModLocalizationJson } from "@/types/database";
@@ -339,7 +341,7 @@ export async function rejectTranslationSuggestion(id: string) {
     }
 }
 
-export async function updateModAction(slug: string, updates: ModUpdatePayload) {
+export async function updateModAction(slug: string, updates: ModUpdatePayload): Promise<Result<void>> {
     console.log(`Updating mod: ${slug}`, {
         payloadSlug: updates.slug,
         hasInitialData: !!updates.title
@@ -519,7 +521,7 @@ export async function updateModAction(slug: string, updates: ModUpdatePayload) {
         }
 
         // Remove old gamever tags
-        await removeModTagsByCategory(slug, 'gamever');
+        await removeModTagsByCategory(targetSlug, 'gamever');
 
         // Find or create gamever tag
         let gameVerTag = await findOrCreateGameVerTag(gameVersion);
@@ -591,6 +593,8 @@ export async function updateModAction(slug: string, updates: ModUpdatePayload) {
 
     revalidatePath(ROUTES.mods);
     revalidatePath(`/${targetSlug}`);
+    
+    return ok(undefined);
 }
 
 export async function deleteModAction(slug: string) {

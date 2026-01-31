@@ -8,6 +8,7 @@ import { deleteNews } from "@/app/actions/news-actions";
 import UnifiedUpdateModal from "@/components/mod/UnifiedUpdateModal";
 import NewsCard from "@/components/NewsCard";
 import { useRouter } from "next/navigation";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 interface NewsManagementClientProps {
     initialNews: NewsItem[];
@@ -21,20 +22,26 @@ export default function NewsManagementClient({ initialNews, locale = 'en' }: New
     const [news, setNews] = useState<NewsItem[]>(initialNews);
     const [editingNews, setEditingNews] = useState<NewsItem | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-    const handleDelete = async (e: React.MouseEvent, id: string) => {
+    const handleDeleteClick = (e: React.MouseEvent, id: string) => {
         e.preventDefault();
         e.stopPropagation();
-        if (!confirm(t("deleteNewsConfirm"))) return;
+        setConfirmDeleteId(id);
+    };
 
-        setDeletingId(id);
+    const handleConfirmDelete = async () => {
+        if (!confirmDeleteId) return;
+
+        setDeletingId(confirmDeleteId);
         try {
-            const result = await deleteNews(id);
+            const result = await deleteNews(confirmDeleteId);
             if (result.success) {
-                setNews((prev) => prev.filter((item) => item.id !== id));
+                setNews((prev) => prev.filter((item) => item.id !== confirmDeleteId));
             }
         } finally {
             setDeletingId(null);
+            setConfirmDeleteId(null);
         }
     };
 
@@ -72,7 +79,7 @@ export default function NewsManagementClient({ initialNews, locale = 'en' }: New
                         />
                         {/* Delete button overlay */}
                         <button
-                            onClick={(e) => handleDelete(e, item.id)}
+                            onClick={(e) => handleDeleteClick(e, item.id)}
                             disabled={deletingId === item.id}
                             className="absolute top-2 right-12 z-20 p-1.5 bg-black/50 hover:bg-red-500/80 text-white/70 hover:text-white rounded transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
                             title={t("delete")}
@@ -89,6 +96,17 @@ export default function NewsManagementClient({ initialNews, locale = 'en' }: New
                 isOpen={!!editingNews}
                 onClose={() => setEditingNews(null)}
                 onSaved={handleSaved}
+            />
+
+            <ConfirmModal
+                isOpen={!!confirmDeleteId}
+                onClose={() => setConfirmDeleteId(null)}
+                onConfirm={handleConfirmDelete}
+                title={t('deleteNews')}
+                message={t('deleteNewsConfirm')}
+                confirmText={t('delete')}
+                cancelText={t('cancel')}
+                variant="danger"
             />
         </>
     );

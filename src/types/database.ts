@@ -18,8 +18,6 @@ import {
 export type { ModLinks, ModVideos, ModChangelog, ModLocalization } from '@/schemas';
 
 // Legacy aliases (deprecated - use schema types directly)
-export type ModLinksJson = ModLinks;
-export type ModVideosJson = ModVideos;
 export type ModChangelogJson = ModChangelog;
 export type ModLocalizationJson = ModLocalization;
 
@@ -89,7 +87,7 @@ export interface PrismaTagWithCount {
 /**
  * News item with frozen snapshot data
  */
-export interface PrismaNewsWithFrozenData {
+interface PrismaNewsWithFrozenData {
     id: string;
     modSlug: string | null;
     modName: string | null;
@@ -217,4 +215,4 @@ export function mapPrismaTagWithCountToTagData(tag: PrismaTagWithCount): TagData
  * Type for JSON fields in Prisma models
  * Use this instead of 'as any' for JSON field casting
  */
-export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };

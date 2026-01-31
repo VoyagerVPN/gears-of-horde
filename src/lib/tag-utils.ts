@@ -7,9 +7,10 @@
 
 import { db as prisma } from './db';
 import { TAG_CATEGORY_COLORS, AUTHOR_TAG_COLOR, FALLBACK_TAG_COLOR } from './tag-colors';
+import { normalizeGameVersion, gameVersionToTagValue } from './utils';
 
 // Re-export color constants for convenience
-export { AUTHOR_TAG_COLOR, FALLBACK_TAG_COLOR as DEFAULT_TAG_COLOR } from './tag-colors';
+const MOD_STABLE_COLOR = '#3b82f6'; // blue-500
 
 // ============================================================================
 // TAG CREATION UTILITIES
@@ -24,7 +25,7 @@ export { AUTHOR_TAG_COLOR, FALLBACK_TAG_COLOR as DEFAULT_TAG_COLOR } from './tag
  * @param color - Optional color override
  * @returns The found or created tag
  */
-export async function findOrCreateTag(
+async function findOrCreateTag(
     category: string,
     value: string,
     displayName: string,
@@ -41,15 +42,12 @@ export async function findOrCreateTag(
     });
 
     if (!tag) {
-        // Determine default color based on category
-        const defaultColor = color ?? getDefaultColorForCategory(category, value);
-
         tag = await prisma.tag.create({
             data: {
                 category,
                 value,
                 displayName,
-                color: defaultColor
+                color: color ?? FALLBACK_TAG_COLOR // Use provided color or fallback
             }
         });
     }
@@ -84,37 +82,8 @@ export async function findOrCreateGameVerTag(
     // 2. "A21", "Alpha 21" -> "a21" (Legacy/Alpha)
     // 3. "N/A" -> "na"
 
-    let value = version.trim();
-
-    // Handle N/A
-    if (value.toUpperCase() === 'N/A') {
-        return findOrCreateTag('gamever', 'na', 'N/A', undefined);
-    }
-
-    // Fix: VA21 -> A21 (strip V if followed by A)
-    if (/^[vV][aA]\d+/.test(value)) {
-        value = value.substring(1);
-    }
-
-    // V versions (with or without build number)
-    // Remove any existing V/v prefix
-    if (/^v/i.test(value)) {
-        value = value.substring(1);
-    }
-
-    const storageValue = value.toLowerCase().replace(/\./g, '_').replace(/\s+/g, '_');
-
-    // Normalize display name
-    let display = value;
-    if (/^[aA]\d+/.test(display)) {
-        display = display.toUpperCase(); // A21
-    } else {
-        // Only add 'V' if it looks like a version number (starts with digit)
-        if (/^\d/.test(display)) {
-            display = `V${display}`;
-        }
-        // Else keep as is (e.g. Unknown)
-    }
+    const display = normalizeGameVersion(version);
+    const storageValue = gameVersionToTagValue(version);
 
     // Gamever tags don't get a color initially - it's calculated by recalculateGameVersionColors
     return findOrCreateTag('gamever', storageValue, display, undefined);
@@ -200,27 +169,6 @@ export async function findOrCreateGenericTag(
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
-
-/**
- * Get default color for a tag category
- */
-function getDefaultColorForCategory(category: string, value?: string): string | undefined {
-    // Try category:value combo first
-    if (value) {
-        const comboKey = `${category.toLowerCase()}:${value.toLowerCase()}`;
-        if (TAG_CATEGORY_COLORS[comboKey]) {
-            return TAG_CATEGORY_COLORS[comboKey];
-        }
-    }
-
-    // Try category alone
-    const categoryKey = category.toLowerCase();
-    if (TAG_CATEGORY_COLORS[categoryKey]) {
-        return TAG_CATEGORY_COLORS[categoryKey];
-    }
-
-    return FALLBACK_TAG_COLOR;
-}
 
 export async function linkTagToMod(modSlug: string, tagId: string): Promise<void> {
     await linkTagToModWithMetadata(modSlug, tagId);

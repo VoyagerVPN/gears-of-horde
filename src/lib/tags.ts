@@ -9,7 +9,7 @@ import { GAME_VERSION_COLORS } from './tag-colors'
  * Parse version string to extract numeric parts and build number
  * Examples: "1_4" -> [1, 4, 0], "a20" -> [20, 0], "1_1b14" -> [1, 1, 14]
  */
-export function parseVersion(version: string): { parts: number[], build: number, isAlpha: boolean } {
+function parseVersion(version: string): { parts: number[], build: number, isAlpha: boolean } {
     const normalizedVersion = version.toLowerCase()
 
     // Check for Alpha version

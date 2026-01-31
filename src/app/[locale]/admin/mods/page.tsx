@@ -21,6 +21,7 @@ import VersionTag from "@/components/VersionTag";
 import DateDisplay from "@/components/DateDisplay";
 import { useToast } from "@/components/ui/Toast";
 import UnifiedTopBar from "@/components/ui/UnifiedTopBar";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 import { useTranslations } from 'next-intl';
 
@@ -51,6 +52,7 @@ export default function AdminModsPage() {
   const [rejectingSubmissionId, setRejectingSubmissionId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [gameVersionTags, setGameVersionTags] = useState<TagData[]>([]);
+  const [confirmDeleteSlug, setConfirmDeleteSlug] = useState<string | null>(null);
 
   // Sorting state
   const [sortColumn, setSortColumn] = useState<SortColumn>('title');
@@ -91,16 +93,20 @@ export default function AdminModsPage() {
     }
   };
 
-  const handleDelete = async (slug: string) => {
-    if (confirm(t('deleteModConfirm'))) {
-      try {
-        await deleteModAction(slug);
-        setRefreshTrigger(prev => prev + 1);
-        showToast(t('deleteModSuccess'), 'success');
-      } catch (error) {
-        console.error("Failed to delete mod:", error);
-        showToast(t('deleteModError'), 'error');
-      }
+  const handleDeleteClick = (slug: string) => {
+    setConfirmDeleteSlug(slug);
+  };
+
+  const executeDeleteMod = async () => {
+    if (!confirmDeleteSlug) return;
+    try {
+      await deleteModAction(confirmDeleteSlug);
+      setRefreshTrigger(prev => prev + 1);
+      showToast(t('deleteModSuccess'), 'success');
+      setConfirmDeleteSlug(null);
+    } catch (error) {
+      console.error("Failed to delete mod:", error);
+      showToast(t('deleteModError'), 'error');
     }
   };
 
@@ -203,7 +209,7 @@ export default function AdminModsPage() {
   }, [mods, searchQuery, sortColumn, sortDirection]);
 
   return (
-    <div className="min-h-screen bg-zinc-950 pb-20">
+    <div className="min-h-screen pb-20">
       <div className="max-w-[1600px] w-full mx-auto pb-8">
 
         {/* === PENDING TRANSLATIONS DASHBOARD === */}
@@ -566,7 +572,7 @@ export default function AdminModsPage() {
                           </Link>
 
                           <button
-                            onClick={() => handleDelete(mod.slug)}
+                            onClick={() => handleDeleteClick(mod.slug)}
                             className="p-2 hover:bg-red-500/10 rounded text-textMuted hover:text-red-400 transition-colors"
                             title={t('delete')}
                           >
@@ -587,6 +593,17 @@ export default function AdminModsPage() {
             mod={selectedMod || undefined}
             onSave={handleSaveUpdate}
             gameVersionTags={gameVersionTags}
+          />
+
+          <ConfirmModal
+            isOpen={!!confirmDeleteSlug}
+            onClose={() => setConfirmDeleteSlug(null)}
+            onConfirm={executeDeleteMod}
+            title={t('deleteMod')}
+            message={t('deleteModConfirm')}
+            confirmText={t('delete')}
+            cancelText={t('cancel')}
+            variant="danger"
           />
         </div>
       </div>

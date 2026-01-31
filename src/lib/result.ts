@@ -58,45 +58,10 @@ export function validate<T>(
 }
 
 /**
- * Parse data with a Zod schema, throwing on error
- * Use this when you want to fail fast
- */
-export function parseOrThrow<T>(schema: z.ZodSchema<T>, data: unknown): T {
-    return schema.parse(data);
-}
-
-/**
  * Safely parse data with a Zod schema
  * Returns the data or null on failure
  */
 export function parseOrNull<T>(schema: z.ZodSchema<T>, data: unknown): T | null {
     const result = schema.safeParse(data);
     return result.success ? result.data : null;
-}
-
-// ============================================================================
-// ERROR UTILITIES
-// ============================================================================
-
-/**
- * Format Zod errors into user-friendly messages
- */
-export function formatZodError(error: z.ZodError): string {
-    return error.issues
-        .map((issue) => {
-            const path = issue.path.length > 0 ? `${issue.path.join('.')}: ` : '';
-            return `${path}${issue.message}`;
-        })
-        .join('; ');
-}
-
-/**
- * Extract field-specific errors from a Result
- */
-export function getFieldError(
-    result: Result<unknown>,
-    field: string
-): string | undefined {
-    if (result.success) return undefined;
-    return result.fieldErrors?.[field]?.[0];
 }

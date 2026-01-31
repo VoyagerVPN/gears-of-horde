@@ -17,7 +17,7 @@ export const FrozenTagSchema = z.object({
 /**
  * Schema for news item data (frozen snapshot)
  */
-export const NewsItemSchema = z.object({
+const NewsItemSchema = z.object({
     id: z.string().min(1),
     modSlug: z.string().optional(),
     modName: z.string().min(1),
@@ -38,7 +38,7 @@ export const NewsItemSchema = z.object({
 /**
  * Schema for creating news items
  */
-export const NewsCreateSchema = z.object({
+const NewsCreateSchema = z.object({
     modSlug: z.string().optional(),
     modName: z.string().min(1, "Mod name is required"),
     modVersion: z.string().optional(),
@@ -62,6 +62,4 @@ export const NewsUpdateSchema = NewsCreateSchema.partial();
 // ============================================================================
 
 export type FrozenTag = z.infer<typeof FrozenTagSchema>;
-export type NewsItem = z.infer<typeof NewsItemSchema>;
-export type NewsCreate = z.infer<typeof NewsCreateSchema>;
 export type NewsUpdate = z.infer<typeof NewsUpdateSchema>;

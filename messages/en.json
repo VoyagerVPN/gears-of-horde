@@ -297,6 +297,7 @@
         "admin": "Admin",
         "settings": "Settings",
         "logout": "Logout",
+        "deleteMod": "Delete Mod",
         "deleteModConfirm": "Are you sure you want to delete this mod? This action cannot be undone.",
         "deleteModSuccess": "Mod deleted successfully",
         "deleteModError": "Failed to delete mod",
@@ -406,6 +407,7 @@
         "confirm": "Confirm",
         "newsManagement": "News",
         "editNews": "Edit News",
+        "deleteNews": "Delete News",
         "deleteNewsConfirm": "Are you sure you want to delete this news item?",
         "noNewsFound": "No news items found",
         "modCreatedSuccess": "Mod created successfully!",
@@ -417,6 +419,7 @@
         "updateTagError": "Failed to update tag",
         "createTagError": "Failed to create tag",
         "mergeTagsError": "Failed to merge tags",
+        "mergeTagConfirmMessage": "Are you sure you want to merge tag {source} into {target}? This will move all mods and delete the source tag {source}. This action cannot be undone.",
         "mergeTagWarning": "Merging will reassign all mods and news from {tag} to the target tag, and then permanently delete the source tag.",
         "selectTag": "Select tag...",
         "availableTags": "Available Tags",
@@ -664,7 +667,11 @@
     "NotFound": {
         "title": "Page Not Found",
         "description": "Sorry, the page you are looking for does not exist or has been moved.",
-        "returnHome": "Return Home"
+        "returnHome": "Return Home",
+        "search": "Search",
+        "browseMods": "Browse Mods",
+        "readNews": "Read News",
+        "suggestions": "Try these pages"
     },
     "Error": {
         "title": "Something went wrong!",

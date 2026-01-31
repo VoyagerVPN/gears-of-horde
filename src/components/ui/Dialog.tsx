@@ -4,6 +4,8 @@ import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 
+import { cn } from "@/lib/utils";
+
 // ============================================================================
 // DIALOG ROOT COMPONENTS (Re-exports from Radix)
 // ============================================================================
@@ -23,7 +25,10 @@ const DialogOverlay = React.forwardRef<
 >(({ className = "", ...props }, ref) => (
     <DialogPrimitive.Overlay
         ref={ref}
-        className={`fixed inset-0 z-50 bg-black/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 ${className}`}
+        className={cn(
+            "fixed inset-0 z-50 bg-black/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+            className
+        )}
         {...props}
     />
 ));
@@ -51,14 +56,16 @@ interface DialogContentProps
     size?: DialogContentSize;
     /** Hide the default close button */
     hideCloseButton?: boolean;
+    /** Custom class for the overlay/backdrop */
+    overlayClassName?: string;
 }
 
 const DialogContent = React.forwardRef<
     React.ComponentRef<typeof DialogPrimitive.Content>,
     DialogContentProps
->(({ className = "", size = "md", hideCloseButton = false, children, ...props }, ref) => (
+>(({ className = "", size = "md", hideCloseButton = false, overlayClassName = "", children, ...props }, ref) => (
     <DialogPortal>
-        <DialogOverlay />
+        <DialogOverlay className={overlayClassName} />
         <DialogPrimitive.Content
             ref={ref}
             className={`fixed left-1/2 top-1/2 z-50 w-full -translate-x-1/2 -translate-y-1/2 ${sizeClasses[size]} bg-surface border border-white/10 rounded-xl shadow-2xl flex flex-col max-h-[90vh] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 ${className}`}
@@ -283,8 +290,6 @@ export {
     Dialog,
     DialogTrigger,
     DialogClose,
-    DialogPortal,
-    DialogOverlay,
     DialogContent,
     DialogHeader,
     DialogTitle,

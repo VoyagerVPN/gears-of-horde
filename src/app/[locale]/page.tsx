@@ -1,5 +1,4 @@
 import NewsCard from "@/components/NewsCard";
-import HeroSection from "@/components/HeroSection";
 import ModSection from "@/components/ModSection";
 import { fetchLatestNews } from "@/app/actions/news-actions";
 import { fetchModsByCategory } from "@/app/actions/admin-actions";
@@ -25,9 +24,6 @@ export default async function Home({ params }: Props) {
 
   return (
     <div className="w-[95%] max-w-[1800px] mx-auto py-8">
-
-      {/* Hero Section - Full width */}
-      <HeroSection />
 
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">

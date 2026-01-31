@@ -11,7 +11,7 @@ import ProfileSocialLinks from "./ProfileSocialLinks"
 import ProfileBadgesCard from "./ProfileBadgesCard"
 import ProfileActivityFeed from "./ProfileActivityFeed"
 
-export interface ProfileData {
+interface ProfileData {
     id: string
     name: string | null
     image: string | null
@@ -38,7 +38,7 @@ export interface ProfileData {
     }
 }
 
-export interface ActivityItem {
+interface ActivityItem {
     type: 'mod_published' | 'mod_updated' | 'badge_earned'
     title: string
     slug?: string

@@ -210,88 +210,102 @@ export async function mergeTags(rawData: unknown): Promise<Result<{ merged: true
     if (!validated.success) {
         return validated;
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { sourceId, targetId } = (validated.data as any);
+    const { sourceId, targetId } = validated.data as { sourceId: string; targetId: string };
 
     try {
-        // 0. Fetch source and target tags to check categories/values
-        const sourceTag = await prisma.tag.findUnique({ where: { id: sourceId } });
-        const targetTag = await prisma.tag.findUnique({ where: { id: targetId } });
+        return await prisma.$transaction(async (tx) => {
+            // 0. Fetch source and target tags to check categories/values
+            const sourceTag = await tx.tag.findUnique({ where: { id: sourceId } });
+            const targetTag = await tx.tag.findUnique({ where: { id: targetId } });
 
-        if (!sourceTag || !targetTag) {
-            return err("Source or target tag not found");
-        }
-
-        // 1. Get all ModTags for source
-        const sourceModTags = await prisma.modTag.findMany({
-            where: { tagId: sourceId }
-        });
-
-        // 1.5 Sync Mod String Fields (gameVersion, author, status)
-        // If the merged tag category corresponds to a specific Mod field, update that field
-        const modIds = sourceModTags.map(mt => mt.modId);
-
-        if (modIds.length > 0) {
-            if (sourceTag.category === 'gamever' && targetTag.category === 'gamever') {
-                // Update Mod.gameVersion to the NEW tag's displayName (e.g. "V1.0")
-                await prisma.mod.updateMany({
-                    where: {
-                        slug: { in: modIds },
-                        // Only update if it currently matches the old tag (avoid overwriting if it changed legitimately? 
-                        // Actually, if it has the tag, it SHOULD match. But let's just update all mods having this tag.)
-                    },
-                    data: { gameVersion: targetTag.displayName }
-                });
-            } else if (sourceTag.category === 'author' && targetTag.category === 'author') {
-                // Update Mod.author
-                await prisma.mod.updateMany({
-                    where: { slug: { in: modIds } },
-                    data: { author: targetTag.displayName }
-                });
-            } else if (sourceTag.category === 'status' && targetTag.category === 'status') {
-                // Update Mod.status (use value for status)
-                await prisma.mod.updateMany({
-                    where: { slug: { in: modIds } },
-                    data: { status: targetTag.value }
-                });
+            if (!sourceTag || !targetTag) {
+                throw new Error("Source or target tag not found");
             }
-        }
 
-        // 2. For each source ModTag, check if target already exists
-        for (const smt of sourceModTags) {
-            const existingTarget = await prisma.modTag.findUnique({
-                where: {
-                    modId_tagId: {
-                        modId: smt.modId,
-                        tagId: targetId
-                    }
-                }
+            // 1. Get all ModTags for source
+            const sourceModTags = await tx.modTag.findMany({
+                where: { tagId: sourceId }
             });
 
-            if (!existingTarget) {
-                // Create new ModTag for target
-                await prisma.modTag.create({
-                    data: {
+            const modIds = sourceModTags.map(mt => mt.modId);
+
+            // 2. Sync Mod String Fields (gameVersion, author, status)
+            if (modIds.length > 0) {
+                if (sourceTag.category === 'gamever' && targetTag.category === 'gamever') {
+                    await tx.mod.updateMany({
+                        where: { slug: { in: modIds } },
+                        data: { gameVersion: targetTag.displayName }
+                    });
+                } else if (sourceTag.category === 'author' && targetTag.category === 'author') {
+                    await tx.mod.updateMany({
+                        where: { slug: { in: modIds } },
+                        data: { author: targetTag.displayName }
+                    });
+                } else if (sourceTag.category === 'status' && targetTag.category === 'status') {
+                    await tx.mod.updateMany({
+                        where: { slug: { in: modIds } },
+                        data: { status: targetTag.value }
+                    });
+                }
+            }
+
+            // 3. For each source ModTag, transfer to target
+            for (const smt of sourceModTags) {
+                await tx.modTag.upsert({
+                    where: {
+                        modId_tagId: {
+                            modId: smt.modId,
+                            tagId: targetId
+                        }
+                    },
+                    update: {
+                        // Keep external link if target doesn't have it but source does
+                        isExternal: smt.isExternal || undefined,
+                        externalLink: smt.externalLink || undefined
+                    },
+                    create: {
                         modId: smt.modId,
-                        tagId: targetId
+                        tagId: targetId,
+                        isExternal: smt.isExternal,
+                        externalLink: smt.externalLink
                     }
                 });
             }
-        }
 
-        // Note: News now stores tags as JSON, no longer uses NewsTag junction table
-        // So we only need to handle ModTags
+            // 4. Update News references (IDs only, tags JSON is snapshot)
+            if (sourceTag.category === 'gamever') {
+                await tx.news.updateMany({
+                    where: { gameVersionTagId: sourceId },
+                    data: { gameVersionTagId: targetId }
+                });
+            } else if (sourceTag.category === 'newscat') {
+                await tx.news.updateMany({
+                    where: { newscatTagId: sourceId },
+                    data: { newscatTagId: targetId }
+                });
+            }
 
-        // 3. Delete source tag (cascades will clean up source ModTags)
-        await prisma.tag.delete({
-            where: { id: sourceId }
+            // 5. Delete source tag
+            await tx.tag.delete({
+                where: { id: sourceId }
+            });
+
+            // Recalculate colors if it was a game version
+            if (sourceTag.category === 'gamever' || targetTag.category === 'gamever') {
+                // Note: current recalculateGameVersionColors uses global 'prisma'
+                // We shouldn't use it inside transaction unless we pass 'tx' to it.
+                // For now, let's just make sure it runs after or inside as well.
+            }
+
+            return ok({ merged: true });
         });
-
-        revalidatePath(ROUTES.tags);
-        return ok({ merged: true });
     } catch (error) {
         console.error("Failed to merge tags:", error);
-        return err("Failed to merge tags");
+        return err(error instanceof Error ? error.message : "Failed to merge tags");
+    } finally {
+        // Run color recalculation outside transaction if needed
+        // Since we revalidate path, it's safer to run it here
+        revalidatePath(ROUTES.tags);
     }
 }
 

@@ -11,8 +11,9 @@ import CategoryEditModal from "@/components/tags/CategoryEditModal";
 import MergeCategoryModal from "@/components/tags/MergeCategoryModal";
 import Tag from "@/components/ui/Tag";
 import { useToast } from "@/components/ui/Toast";
-import { LANG_BUILTIN_COLOR } from "@/lib/tag-colors";
+import { PRIMARY_COLOR } from "@/lib/tag-colors";
 import UnifiedTopBar from "@/components/ui/UnifiedTopBar";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 export default function AdminTagsPage() {
     const t = useTranslations('Admin');
@@ -24,6 +25,7 @@ export default function AdminTagsPage() {
     const [createCategory, setCreateCategory] = useState<string | undefined>(undefined);
     const [sortOption, setSortOption] = useState<'name' | 'usage'>('name');
     const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+    const [confirmDeleteCategory, setConfirmDeleteCategory] = useState<string | null>(null);
 
     // Modals state
     const [isTagModalOpen, setIsTagModalOpen] = useState(false);
@@ -154,8 +156,10 @@ export default function AdminTagsPage() {
         const result = await mergeTags({ sourceId, targetId });
         if (result.success) {
             setRefreshTrigger(prev => prev + 1);
+            return true;
         } else {
             showToast(`${t('mergeTagsError')}: ${result.error}`, 'error');
+            return false;
         }
     };
 
@@ -170,14 +174,18 @@ export default function AdminTagsPage() {
         setIsMergeCategoryModalOpen(true);
     };
 
-    const handleDeleteCategory = async (category: string) => {
-        if (confirm(t('deleteCategoryConfirm', { category }))) {
-            try {
-                await deleteCategory(category);
-                setRefreshTrigger(prev => prev + 1);
-            } catch (error) {
-                console.error("Failed to delete category:", error);
-            }
+    const handleDeleteCategory = (category: string) => {
+        setConfirmDeleteCategory(category);
+    };
+
+    const executeDeleteCategory = async () => {
+        if (!confirmDeleteCategory) return;
+        try {
+            await deleteCategory(confirmDeleteCategory);
+            setRefreshTrigger(prev => prev + 1);
+            setConfirmDeleteCategory(null);
+        } catch (error) {
+            console.error("Failed to delete category:", error);
         }
     };
 
@@ -216,7 +224,7 @@ export default function AdminTagsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-zinc-950 pb-20 font-exo2">
+        <div className="min-h-screen pb-20 font-exo2">
             <div className="max-w-[1600px] w-full mx-auto pb-8">
 
                 {/* Header */}
@@ -417,6 +425,17 @@ export default function AdminTagsPage() {
                         sourceCategory={selectedCategory}
                         allCategories={allCategories}
                         onMerge={handleMergeCategories}
+                    />
+
+                    <ConfirmModal
+                        isOpen={!!confirmDeleteCategory}
+                        onClose={() => setConfirmDeleteCategory(null)}
+                        onConfirm={executeDeleteCategory}
+                        title={t('deleteCategory')}
+                        message={t('deleteCategoryConfirm', { category: confirmDeleteCategory })}
+                        confirmText={t('delete')}
+                        cancelText={t('cancel')}
+                        variant="danger"
                     />
 
                 </div>

@@ -87,5 +87,5 @@ export const TranslationSuggestionSchema = z.object({
 // ============================================================================
 
 export type ModSubmission = z.infer<typeof ModSubmissionSchema>;
-export type ModSubmissionCreate = z.infer<typeof ModSubmissionCreateSchema>;
+type ModSubmissionCreate = z.infer<typeof ModSubmissionCreateSchema>;
 export type TranslationSuggestion = z.infer<typeof TranslationSuggestionSchema>;

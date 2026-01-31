@@ -1,0 +1,13 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/app/**/*.{ts,tsx}",
+    "*.config.{ts,js,mjs}",
+    "src/hooks/**/*.{ts,tsx}",
+    "scripts/*.ts",
+    "e2e/**/*.ts"
+  ],
+  "project": ["src/**/*.{ts,tsx}", "scripts/*.ts", "e2e/**/*.ts"],
+  "ignore": ["src/generated/**", "**/*.test.ts", "**/*.spec.ts"],
+  "ignoreDependencies": ["tailwindcss", "@next/env"]
+}

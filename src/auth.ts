@@ -5,7 +5,7 @@ import { db } from "@/lib/db"
 import type { Adapter } from "next-auth/adapters"
 
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const { handlers, auth } = NextAuth({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     adapter: PrismaAdapter(db as any) as Adapter,
     providers: [

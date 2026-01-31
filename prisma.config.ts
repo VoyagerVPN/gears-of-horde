@@ -10,7 +10,5 @@ export default defineConfig({
   },
   datasource: {
     url: env("DATABASE_URL"),
-    // directUrl is a Neon-specific feature for connection pooling bypass
-    directUrl: env("DATABASE_URL_UNPOOLED"),
-  } as { url: string; directUrl?: string },
+  } as { url: string },
 });

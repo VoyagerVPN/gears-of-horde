@@ -121,8 +121,6 @@ function ToastItemComponent({
     );
 }
 
-let toastIdCounter = 0;
-
 export function ToastProvider({ children }: { children: React.ReactNode }) {
     const [toasts, setToasts] = useState<ToastItem[]>([]);
     const [mounted, setMounted] = useState(false);
@@ -133,7 +131,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const showToast = useCallback((message: string, variant: ToastVariant = "info") => {
-        const id = ++toastIdCounter;
+        const id = Date.now() + Math.random(); // Using timestamp + random for unique ID
         setToasts((prev) => [{ id, message, variant }, ...prev]);
     }, []);
 

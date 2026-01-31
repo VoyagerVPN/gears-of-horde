@@ -7,7 +7,7 @@ import { z } from 'zod';
 /**
  * Schema for external links (community, donations)
  */
-export const ModLinkSchema = z.object({
+const ModLinkSchema = z.object({
     name: z.string().optional().default(''),
     url: z.string().url("Invalid URL format")
 });
@@ -36,7 +36,8 @@ export const ModVideosSchema = z.object({
 export const ModChangelogSchema = z.object({
     version: z.string()
         .min(1, "Version is required")
-        .regex(/^(N\/A|A\d+|V?[\d.]+(?:b\d+)?)$/i, "Invalid version format. Use formats like: V1.0, A20, V1.1b14, or N/A"),
+        // UPDATED REGEX: N/A | A[digits+dots] | V?[digits+dots]
+        .regex(/^(N\/A|A[\d.]+(?:b\d+)?|V?[\d.]+(?:b\d+)?)$/i, "Invalid version format. Use formats like: V1.0, A20, A20.5, V1.1b14, or N/A"),
     date: z.string().min(1, "Date is required"),
     changes: z.array(z.string()),
     isSaveBreaking: z.boolean().optional()
@@ -55,7 +56,7 @@ export const ModLocalizationSchema = z.object({
 /**
  * Schema for mod stats
  */
-export const ModStatsSchema = z.object({
+const ModStatsSchema = z.object({
     rating: z.number().min(0).max(5).default(0),
     ratingCount: z.number().int().min(0).default(0),
     downloads: z.string().default("0"),
@@ -109,7 +110,8 @@ export const ModDataSchema = z.object({
     status: ModStatusSchema.default('active'),
     gameVersion: z.string()
         .min(1, "Game version is required")
-        .regex(/^(N\/A|A\d+|V?[\d.]+(?:b\d+)?)$/i, "Invalid game version format. Use formats like: V1.0, A20, V1.1b14, or N/A"),
+        // UPDATED REGEX: N/A | A[digits+dots] | V?[digits+dots]
+        .regex(/^(N\/A|A[\d.]+(?:b\d+)?|V?[\d.]+(?:b\d+)?)$/i, "Invalid game version format. Use formats like: V1.0, A20, A20.5, V1.1b14, or N/A"),
     bannerUrl: z.string().min(1, "Banner is required").url("Invalid banner URL"),
     isSaveBreaking: z.boolean().default(false),
     features: z.array(z.string()).default([]),
@@ -147,12 +149,12 @@ export const ModDataSchema = z.object({
 /**
  * Partial mod schema for updates (all fields optional)
  */
-export const ModUpdateSchema = ModDataSchema.partial();
+const ModUpdateSchema = ModDataSchema.partial();
 
 /**
  * Schema for mod creation (slug is auto-generated from title)
  */
-export const ModCreateSchema = ModDataSchema.omit({
+const ModCreateSchema = ModDataSchema.omit({
     createdAt: true,
     updatedAt: true,
     stats: true
@@ -165,13 +167,6 @@ export const ModCreateSchema = ModDataSchema.omit({
 // ============================================================================
 
 export type ModData = z.infer<typeof ModDataSchema>;
-export type ModUpdate = z.infer<typeof ModUpdateSchema>;
-export type ModCreate = z.infer<typeof ModCreateSchema>;
-export type ModLink = z.infer<typeof ModLinkSchema>;
-export type ModLinks = z.infer<typeof ModLinksSchema>;
-export type ModVideos = z.infer<typeof ModVideosSchema>;
-export type ModChangelog = z.infer<typeof ModChangelogSchema>;
-export type ModLocalization = z.infer<typeof ModLocalizationSchema>;
-export type ModStats = z.infer<typeof ModStatsSchema>;
+type ModStats = z.infer<typeof ModStatsSchema>;
 export type ModStatusType = z.infer<typeof ModStatusSchema>;
 export type TagData = z.infer<typeof TagDataSchema>;

@@ -22,9 +22,6 @@ export const AUTHOR_TAG_COLOR = '#22d3ee'; // cyan-400
 /** Color for primary/accent elements */
 export const PRIMARY_COLOR = '#ce4729';
 
-/** Color for built-in language tags (same as primary) */
-export const LANG_BUILTIN_COLOR = PRIMARY_COLOR;
-
 /** Game version gradient colors */
 export const GAME_VERSION_COLORS = {
     oldest: '#ef4444', // red-500 (RGB: 239, 68, 68)
@@ -145,14 +142,3 @@ export function colorToTagStyles(hex: string, category?: string): React.CSSPrope
     };
 }
 
-/**
- * Tag styling constants
- * These match the CSS variables in globals.css for consistency
- */
-export const TAG_STYLES = {
-    borderRadius: '6px',      // --tag-radius
-    fontSize: '12px',         // --tag-font-size
-    paddingX: '0.75rem',      // --tag-padding-x
-    paddingY: '0.25rem',      // --tag-padding-y
-    fontWeight: 600,          // --tag-font-weight
-} as const;

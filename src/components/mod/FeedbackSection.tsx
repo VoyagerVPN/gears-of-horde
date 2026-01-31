@@ -9,7 +9,7 @@ import DateDisplay from "@/components/DateDisplay";
 // --- TYPES ---
 type FeedbackType = 'comment' | 'review';
 // Единый тип для всех возможных вариантов сортировки
-export type SortOption = 'newest' | 'popular' | 'highestRating' | 'lowestRating';
+type SortOption = 'newest' | 'popular' | 'highestRating' | 'lowestRating';
 
 interface FeedbackItem {
   id: number;

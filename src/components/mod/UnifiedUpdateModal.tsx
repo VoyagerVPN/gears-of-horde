@@ -503,14 +503,19 @@ export default function UnifiedUpdateModal({
                                 {t("livePreview")}
                             </div>
                             <div className="space-y-6">
-                                <NewsCard
-                                    {...previewItem}
-                                    modName={formData.modTitle}
-                                    modSlug={formData.modSlug}
-                                    modVersion={formData.version}
-                                    gameVersion={formData.gameVersion}
-                                    tags={previewItem.newscatTag ? [previewItem.newscatTag as any] : []}
-                                />
+                            <NewsCard
+                                {...previewItem}
+                                modName={formData.modTitle}
+                                modSlug={formData.modSlug}
+                                modVersion={formData.version}
+                                gameVersion={formData.gameVersion}
+                                tags={previewItem.newscatTag ? [{
+                                    id: previewItem.newscatTag.id,
+                                    displayName: previewItem.newscatTag.displayName,
+                                    color: previewItem.newscatTag.color,
+                                    category: previewItem.newscatTag.category
+                                }] : []}
+                            />
                             </div>
                         </div>
                     </div>

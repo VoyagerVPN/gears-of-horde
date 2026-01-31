@@ -7,7 +7,7 @@ import { z } from 'zod';
 /**
  * Valid tag categories in the system
  */
-export const TagCategorySchema = z.enum([
+const TagCategorySchema = z.enum([
     'gamever',  // Game version tags
     'author',   // Author tags
     'lang',     // Language tags
@@ -58,7 +58,7 @@ export const TagMergeSchema = z.object({
 /**
  * Schema for category operations
  */
-export const CategoryRenameSchema = z.object({
+const CategoryRenameSchema = z.object({
     oldCategory: z.string().min(1, "Old category name required"),
     newCategory: z.string().min(1, "New category name required")
 }).refine(
@@ -70,8 +70,4 @@ export const CategoryRenameSchema = z.object({
 // INFERRED TYPES
 // ============================================================================
 
-export type TagCategory = z.infer<typeof TagCategorySchema>;
-export type TagCreate = z.infer<typeof TagCreateSchema>;
-export type TagUpdate = z.infer<typeof TagUpdateSchema>;
-export type TagMerge = z.infer<typeof TagMergeSchema>;
-export type CategoryRename = z.infer<typeof CategoryRenameSchema>;
+type TagMerge = z.infer<typeof TagMergeSchema>;

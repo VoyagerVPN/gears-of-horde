@@ -9,6 +9,7 @@ import { getUserMods, deleteUserMod } from "@/app/actions/profile-actions"
 import { fetchTagsByCategory } from "@/app/actions/tag-actions"
 import { ModData, ModStatusType, TagData } from "@/types/mod"
 import UnifiedTopBar from "@/components/ui/UnifiedTopBar"
+import ConfirmModal from "@/components/ui/ConfirmModal"
 
 export default function ProfileMyModsPage() {
     const t = useTranslations('Profile')
@@ -18,6 +19,7 @@ export default function ProfileMyModsPage() {
     const [selectedMod, setSelectedMod] = useState<ModData | null>(null)
     const [showUpdateModal, setShowUpdateModal] = useState(false)
     const [gameVersionTags, setGameVersionTags] = useState<TagData[]>([])
+    const [confirmDeleteSlug, setConfirmDeleteSlug] = useState<string | null>(null)
 
     const fetchMods = async () => {
         try {
@@ -41,11 +43,16 @@ export default function ProfileMyModsPage() {
         fetchTagsByCategory('gamever').then(setGameVersionTags)
     }, [])
 
-    const handleDelete = async (slug: string) => {
-        if (!confirm(t('deleteModConfirm'))) return
+    const handleDeleteClick = (slug: string) => {
+        setConfirmDeleteSlug(slug)
+    }
+
+    const executeDelete = async () => {
+        if (!confirmDeleteSlug) return
         try {
-            await deleteUserMod(slug)
+            await deleteUserMod(confirmDeleteSlug)
             await refreshMods()
+            setConfirmDeleteSlug(null)
         } catch (error) {
             console.error('Failed to delete mod:', error)
         }
@@ -158,7 +165,7 @@ export default function ProfileMyModsPage() {
                                             {t('quickUpdate')}
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(mod.slug)}
+                                            onClick={() => handleDeleteClick(mod.slug)}
                                             className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
                                             title={tCommon('delete')}
                                         >
@@ -188,6 +195,17 @@ export default function ProfileMyModsPage() {
                         await refreshMods()
                     }}
                     gameVersionTags={gameVersionTags}
+                />
+
+                <ConfirmModal
+                    isOpen={!!confirmDeleteSlug}
+                    onClose={() => setConfirmDeleteSlug(null)}
+                    onConfirm={executeDelete}
+                    title={tCommon('deleteMod')}
+                    message={t('deleteModConfirm')}
+                    confirmText={tCommon('delete')}
+                    cancelText={tCommon('cancel')}
+                    variant="danger"
                 />
             </div>
         </div>

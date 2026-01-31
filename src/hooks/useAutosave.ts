@@ -69,7 +69,7 @@ export function useAutosave<T = Record<string, unknown>>({
     onSaved,
 }: UseAutosaveOptions<T>): UseAutosaveReturn<T> {
     const storageKey = `${DRAFT_PREFIX}${draftKey}`;
-    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [draftHistory, setDraftHistory] = useState<DraftData<T>[]>([]);
     const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);

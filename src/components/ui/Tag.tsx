@@ -69,7 +69,7 @@ interface TagProps {
     middleContent?: React.ReactNode;
 }
 
-export function TagDivider() {
+function TagDivider() {
     return <div className="w-px self-stretch bg-current opacity-20 shrink-0" />;
 }
 

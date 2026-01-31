@@ -20,6 +20,8 @@ interface ConfirmModalProps {
     confirmText?: string;
     cancelText?: string;
     variant?: "warning" | "danger" | "default";
+    /** If true, removes the backdrop blur and dimming (useful for nested modals) */
+    nested?: boolean;
 }
 
 export default function ConfirmModal({
@@ -31,6 +33,7 @@ export default function ConfirmModal({
     confirmText = "Confirm",
     cancelText = "Cancel",
     variant = "warning",
+    nested = false,
 }: ConfirmModalProps) {
     const handleConfirm = () => {
         onConfirm();
@@ -42,7 +45,11 @@ export default function ConfirmModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent size="sm">
+            <DialogContent
+                size="sm"
+                overlayClassName={nested ? "!bg-transparent !backdrop-blur-none" : ""}
+                className={nested ? "shadow-2xl border-white/20" : ""}
+            >
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-3">
                         <AlertTriangle size={20} className={iconColor} />

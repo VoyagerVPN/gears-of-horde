@@ -37,7 +37,7 @@ export default function AdminSettingsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-zinc-950 pb-20">
+        <div className="min-h-screen pb-20">
             <div className="max-w-[1600px] w-full mx-auto pb-8">
                 <UnifiedTopBar title={t('settings')} />
 

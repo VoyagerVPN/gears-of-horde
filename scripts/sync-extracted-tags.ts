@@ -6,14 +6,14 @@ import path from 'path';
 
 async function main() {
     // Dynamic imports to ensure env is loaded first
-    const { db: prisma } = await import('../lib/db');
+    const { db: prisma } = await import('../src/lib/db');
     const {
         findOrCreateAuthorTag,
         findOrCreateGameVerTag,
         findOrCreateStatusTag,
         findOrCreateLangTag,
         linkTagToModWithMetadata
-    } = await import('../lib/tag-utils');
+    } = await import('../src/lib/tag-utils');
 
     try {
         console.log('Starting tag synchronization from extracted_mods.json...');

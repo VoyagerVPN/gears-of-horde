@@ -10,6 +10,7 @@ import VersionTag from "@/components/VersionTag";
 import Tag from "@/components/ui/Tag";
 import { TagData, ModStatusType } from "@/types/mod";
 import { STATUS_CONFIG } from "@/lib/mod-constants";
+import DOMPurify from 'isomorphic-dompurify';
 
 interface ModCardProps {
   title: string;
@@ -277,10 +278,10 @@ export default function ModCard({
             )}
           </div>
 
-          {/* Description - rendered with prose styling */}
+          {/* Description - rendered with prose styling and sanitized */}
           <div
             className="text-[11px] text-textMuted leading-relaxed line-clamp-2 prose prose-invert prose-sm max-w-none"
-            dangerouslySetInnerHTML={{ __html: description || t('noDescription') }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(description || t('noDescription')) }}
           />
 
         </div>

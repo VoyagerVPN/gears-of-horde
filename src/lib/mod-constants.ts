@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { ModStatusType } from "@/types/mod";
 
-export interface StatusConfigItem {
+interface StatusConfigItem {
     icon: LucideIcon;
     color: string;
     label: string;

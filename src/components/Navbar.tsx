@@ -57,7 +57,7 @@ export default function Navbar() {
             FAQ
           </Link>
           <div className="w-px h-8 bg-white/10" /> {/* Divider */}
-          <Link href="/about" className="hover:text-white transition-colors">
+          <Link href="/info" className="hover:text-white transition-colors">
             Info
           </Link>
         </div>

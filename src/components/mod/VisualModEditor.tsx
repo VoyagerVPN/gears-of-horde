@@ -447,16 +447,21 @@ export default function VisualModEditor({
                     showToast(formattedErrors.join('\n'), "error");
                 }
             } else {
-                await updateModAction(initialData?.slug || data.slug, {
+                const result = await updateModAction(initialData?.slug || data.slug, {
                     ...saveData
                 });
-                // Clear draft on successful save
-                clearModDraft(draftKey);
-                showToast(t("modUpdatedSuccess"), "success");
+                
+                if (result.success) {
+                    // Clear draft on successful save
+                    clearModDraft(draftKey);
+                    showToast(t("modUpdatedSuccess"), "success");
 
-                // If slug changed, redirect to the new slug's editor page
-                if (!isNew && initialData?.slug && data.slug !== initialData.slug) {
-                    router.push(`/admin/mods/${data.slug}`);
+                    // If slug changed, redirect to the new slug's editor page
+                    if (!isNew && initialData?.slug && data.slug !== initialData.slug) {
+                        router.push(`/admin/mods/${data.slug}`);
+                    }
+                } else {
+                    showToast(result.error, "error");
                 }
             }
         } catch (error) {
@@ -468,11 +473,11 @@ export default function VisualModEditor({
     };
 
     if (!mounted) {
-        return <div className="min-h-screen bg-zinc-950" />;
+        return <div className="min-h-screen" />;
     }
 
     return (
-        <div className="min-h-screen bg-zinc-950 pb-20">
+        <div className="min-h-screen pb-20">
 
 
 

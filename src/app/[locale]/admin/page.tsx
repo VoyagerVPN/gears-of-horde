@@ -48,7 +48,7 @@ export default async function AdminDashboardPage() {
     ]
 
     return (
-        <div className="min-h-screen bg-zinc-950 pb-10">
+        <div className="min-h-screen pb-10">
             <div className="max-w-[1600px] w-full mx-auto">
                 <UnifiedTopBar title={t('dashboard')} />
 
