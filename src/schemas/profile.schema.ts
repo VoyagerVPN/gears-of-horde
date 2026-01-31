@@ -17,4 +17,4 @@ export const UserBioUpdateSchema = z.object({
 // INFERRED TYPES
 // ============================================================================
 
-type UserBioUpdate = z.infer<typeof UserBioUpdateSchema>;
+export type UserBioUpdate = z.infer<typeof UserBioUpdateSchema>;

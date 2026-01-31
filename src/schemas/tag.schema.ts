@@ -70,4 +70,7 @@ const CategoryRenameSchema = z.object({
 // INFERRED TYPES
 // ============================================================================
 
-type TagMerge = z.infer<typeof TagMergeSchema>;
+export type TagCreate = z.infer<typeof TagCreateSchema>;
+export type TagUpdate = z.infer<typeof TagUpdateSchema>;
+export type TagMerge = z.infer<typeof TagMergeSchema>;
+export type CategoryRename = z.infer<typeof CategoryRenameSchema>;

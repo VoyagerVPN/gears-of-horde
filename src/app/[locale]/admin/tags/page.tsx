@@ -432,7 +432,7 @@ export default function AdminTagsPage() {
                         onClose={() => setConfirmDeleteCategory(null)}
                         onConfirm={executeDeleteCategory}
                         title={t('deleteCategory')}
-                        message={t('deleteCategoryConfirm', { category: confirmDeleteCategory })}
+                        message={confirmDeleteCategory ? t('deleteCategoryConfirm', { category: confirmDeleteCategory }) : ''}
                         confirmText={t('delete')}
                         cancelText={t('cancel')}
                         variant="danger"

@@ -167,6 +167,13 @@ const ModCreateSchema = ModDataSchema.omit({
 // ============================================================================
 
 export type ModData = z.infer<typeof ModDataSchema>;
-type ModStats = z.infer<typeof ModStatsSchema>;
+export type ModUpdate = z.infer<typeof ModUpdateSchema>;
+export type ModCreate = z.infer<typeof ModCreateSchema>;
+export type ModStats = z.infer<typeof ModStatsSchema>;
 export type ModStatusType = z.infer<typeof ModStatusSchema>;
 export type TagData = z.infer<typeof TagDataSchema>;
+export type ModChangelog = z.infer<typeof ModChangelogSchema>;
+export type ModLocalization = z.infer<typeof ModLocalizationSchema>;
+export type ModLinks = z.infer<typeof ModLinksSchema>;
+export type ModVideos = z.infer<typeof ModVideosSchema>;
+export type ModLink = z.infer<typeof ModLinkSchema>;
