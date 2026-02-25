@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 
@@ -8,14 +8,22 @@ export default async function ProfileLayout({
     children: React.ReactNode;
 }) {
     // Auth protection
-    const session = await auth();
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (!session) {
-        redirect("/api/auth/signin");
+    if (!user) {
+        redirect("/login");
     }
 
+    const { data: dbUser } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+    if (!dbUser) redirect("/login");
+
     return (
-        <DashboardLayout userRole={session.user.role}>
+        <DashboardLayout userRole={dbUser.role}>
             {children}
         </DashboardLayout>
     );

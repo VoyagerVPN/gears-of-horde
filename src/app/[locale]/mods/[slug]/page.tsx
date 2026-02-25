@@ -1,6 +1,5 @@
 import UnifiedModLayout from "@/components/mod/UnifiedModLayout";
 import { fetchModBySlug } from "@/app/actions/admin-actions";
-import { getTranslations } from 'next-intl/server';
 import { Metadata } from "next";
 import { notFound } from 'next/navigation';
 
@@ -43,7 +42,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function ModPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
     const modData = await fetchModBySlug(slug);
-    const t = await getTranslations('Common');
 
     if (!modData) {
         notFound();

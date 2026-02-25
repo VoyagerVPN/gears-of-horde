@@ -25,4 +25,3 @@ export const SITE_CONFIG = {
     },
 } as const;
 
-type SiteConfig = typeof SITE_CONFIG;

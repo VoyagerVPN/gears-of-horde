@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback } from "react"
 import { useTranslations } from "next-intl"
 import { FileEdit, Plus, Trash2, Eye, Edit } from "lucide-react"
 import { Link } from "@/i18n/routing"
-import UnifiedUpdateModal from "@/components/mod/UnifiedUpdateModal"
-import { getUserMods, deleteUserMod } from "@/app/actions/profile-actions"
+import UnifiedUpdateModal from "@/components/mod/editor/UnifiedUpdateModal"
+import { getUserMods, deleteUserMod } from "@/app/actions/author-actions"
 import { fetchTagsByCategory } from "@/app/actions/tag-actions"
 import { ModData, ModStatusType, TagData } from "@/types/mod"
 import UnifiedTopBar from "@/components/ui/UnifiedTopBar"
@@ -187,7 +187,7 @@ export default function ProfileMyModsPage() {
                         setSelectedMod(null)
                     }}
                     mod={selectedMod || undefined}
-                    onSave={async (data) => {
+                    onSave={async (_data) => {
                         // For now keep the logic of just refreshing, 
                         // though we should probably call an action here if the modal doesn't do it.
                         setShowUpdateModal(false)

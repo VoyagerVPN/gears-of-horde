@@ -1,9 +1,24 @@
 'use server';
 
-import { db as prisma } from "@/lib/db";
-import { ModData } from "@/types/mod";
-import { Prisma } from "@/generated/prisma";
-import { PrismaModWithTags, mapPrismaModToModData } from "@/types/database";
+
+import { ModData } from "@/schemas";
+import { DatabaseModWithTags, mapDatabaseModToModData } from "@/types/database";
+import { db } from "@/lib/db";
+
+const MOD_SELECT_WITH_TAGS = `
+    *,
+    tags:ModTag (
+        isExternal,
+        externalLink,
+        tag:Tag (
+            id,
+            category,
+            value,
+            displayName,
+            color
+        )
+    )
+`;
 
 // ============ MOD SELECTOR SEARCH ============
 
@@ -21,25 +36,17 @@ export interface ModSelectorItem {
  * Returns only title and slug for efficiency
  */
 export async function searchModsForSelector(query: string, limit: number = 20): Promise<ModSelectorItem[]> {
-    const mods = await prisma.mod.findMany({
-        where: query.trim() ? {
-            OR: [
-                { title: { contains: query, mode: 'insensitive' } },
-                { slug: { contains: query, mode: 'insensitive' } }
-            ]
-        } : {},
-        orderBy: { title: 'asc' },
-        take: limit,
-        select: {
-            title: true,
-            slug: true,
-            version: true,
-            gameVersion: true,
-            status: true
-        }
-    });
+    let q = db.from('Mod').select('title, slug, version, gameVersion, status');
 
-    return mods.map(m => ({
+    if (query.trim()) {
+        q = q.or(`title.ilike.%${query}%,slug.ilike.%${query}%`);
+    }
+
+    const { data: mods } = await q
+        .order('title', { ascending: true })
+        .limit(limit);
+
+    return (mods || []).map((m: { slug: string; title: string; version: string; gameVersion: string; status: string }) => ({
         id: m.slug,
         title: m.title,
         slug: m.slug,
@@ -61,78 +68,49 @@ interface SearchFilters {
 export async function searchMods(query: string, filters: SearchFilters = {}): Promise<ModData[]> {
     const { tag, lang, version, status } = filters;
 
-    const whereClause: Prisma.ModWhereInput = {
-        AND: []
-    };
-    // Ensure AND is initialized as array (typescript knows because of above, but runtime safety)
-    if (!whereClause.AND) whereClause.AND = [];
-    const andFilters = whereClause.AND as Prisma.ModWhereInput[];
+    let q = db.from('Mod').select(MOD_SELECT_WITH_TAGS);
 
-    // Text Search (Title or Description)
     if (query) {
-        andFilters.push({
-            OR: [
-                { title: { contains: query, mode: 'insensitive' } },
-                { description: { contains: query, mode: 'insensitive' } }
-            ]
-        });
+        q = q.or(`title.ilike.%${query}%,description.ilike.%${query}%`);
     }
 
-    // Tag Filter
     if (tag) {
-        andFilters.push({
-            tags: {
-                some: {
-                    tag: {
-                        displayName: { equals: tag, mode: 'insensitive' }
-                    }
-                }
-            }
-        });
-    }
-
-    // Language Filter
-    if (lang) {
-        andFilters.push({
-            tags: {
-                some: {
-                    tag: {
-                        category: 'lang',
-                        value: { equals: lang, mode: 'insensitive' }
-                    }
-                }
-            }
-        });
-    }
-
-    // Game Version Filter
-    if (version) {
-        andFilters.push({
-            gameVersion: version
-        });
-    }
-
-    // Status Filter
-    if (status) {
-        andFilters.push({
-            status: status
-        });
-    }
-
-    const mods = await prisma.mod.findMany({
-        where: whereClause,
-        orderBy: { updatedAt: 'desc' },
-        include: {
-            tags: {
-                include: {
-                    tag: true
-                }
-            }
+        // Tag filter in basic search is usually by displayName
+        const { data: tagMods } = await db
+            .from('ModTag')
+            .select('modId')
+            .ilike('tag.displayName', tag);
+        
+        if (tagMods) {
+            const ids = tagMods.map((t) => (t as { modId: string }).modId);
+            q = q.in('slug', ids);
         }
-    });
+    }
 
-    // Map to ModData
-    return mods.map((mod) => mapPrismaModToModData(mod as unknown as PrismaModWithTags));
+    if (lang) {
+        const { data: langMods } = await db
+            .from('ModTag')
+            .select('modId')
+            .eq('tag.category', 'lang')
+            .ilike('tag.value', lang);
+        
+        if (langMods) {
+            const ids = langMods.map((t) => (t as { modId: string }).modId);
+            q = q.in('slug', ids);
+        }
+    }
+
+    if (version) {
+        q = q.eq('gameVersion', version);
+    }
+
+    if (status) {
+        q = q.eq('status', status);
+    }
+
+    const { data: mods } = await q.order('updatedAt', { ascending: false });
+
+    return (mods || []).map((m) => mapDatabaseModToModData(m as unknown as DatabaseModWithTags));
 }
 
 // ============ ADVANCED SEARCH FOR /MODS PAGE ============
@@ -176,128 +154,124 @@ export async function searchModsAdvanced(filters: AdvancedSearchFilters = {}): P
         limit = 24
     } = filters;
 
-    const whereClause: Prisma.ModWhereInput = {
-        AND: []
-    };
-    const andFilters = whereClause.AND as Prisma.ModWhereInput[];
+    let q = db.from('Mod').select(MOD_SELECT_WITH_TAGS, { count: 'exact' });
 
-    // Text Search (Title, Description, or Author)
+    // Text Search
     if (query && query.trim()) {
-        andFilters.push({
-            OR: [
-                { title: { contains: query, mode: 'insensitive' } },
-                { description: { contains: query, mode: 'insensitive' } },
-                { author: { contains: query, mode: 'insensitive' } }
-            ]
-        });
+        q = q.or(`title.ilike.%${query}%,description.ilike.%${query}%,author.ilike.%${query}%`);
     }
 
     // Game Version Filter
     if (gameVersion) {
-        andFilters.push({
-            gameVersion: { equals: gameVersion, mode: 'insensitive' }
-        });
+        q = q.ilike('gameVersion', gameVersion);
     }
 
-    // Include Tags (AND logic - must have all)
+    // Include Tags (AND logic)
     if (includeTags.length > 0) {
-        for (const tagName of includeTags) {
-            andFilters.push({
-                tags: {
-                    some: {
-                        tag: {
-                            displayName: { equals: tagName, mode: 'insensitive' }
-                        }
-                    }
-                }
-            });
+        // Fetch mods that have ALL the specified tags
+        // Using a join-based approach to find mods containing all required tags
+        const { data: tagIds } = await db
+            .from('Tag')
+            .select('id')
+            .in('displayName', includeTags);
+
+        if (!tagIds || tagIds.length < includeTags.length) {
+            return { mods: [], totalCount: 0, hasMore: false, page };
+        }
+
+        const actualTagIds = tagIds.map(t => t.id);
+
+        // Subquery to find mods that have all the tags
+        const { data: matchedModIds } = await db
+            .from('ModTag')
+            .select('modId')
+            .in('tagId', actualTagIds);
+
+        if (!matchedModIds || matchedModIds.length === 0) {
+            return { mods: [], totalCount: 0, hasMore: false, page };
+        }
+
+        // Count occurrences per modId, if count === includeTags.length, the mod has all tags
+        const counts: Record<string, number> = {};
+        matchedModIds.forEach(m => {
+            counts[m.modId] = (counts[m.modId] || 0) + 1;
+        });
+
+        const intersectedIds = Object.keys(counts).filter(id => counts[id] === includeTags.length);
+
+        if (intersectedIds.length === 0) {
+            return { mods: [], totalCount: 0, hasMore: false, page };
+        }
+
+        q = q.in('slug', intersectedIds);
+    }
+
+    // Exclude Tags
+    if (excludeTags.length > 0) {
+        const { data: excludedModIds } = await db
+            .from('ModTag')
+            .select('modId')
+            .in('tag.displayName', excludeTags);
+        
+        if (excludedModIds && excludedModIds.length > 0) {
+            const ids = Array.from(new Set(excludedModIds.map((d) => (d as { modId: string }).modId)));
+            q = q.not('slug', 'in', `(${ids.join(',')})`);
         }
     }
 
-    // Exclude Tags (must not have any of these)
-    if (excludeTags.length > 0) {
-        andFilters.push({
-            NOT: {
-                tags: {
-                    some: {
-                        tag: {
-                            displayName: { in: excludeTags, mode: 'insensitive' }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    // Include Statuses (OR logic - any of these)
+    // Include Statuses
     if (includeStatuses.length > 0) {
-        andFilters.push({
-            status: { in: includeStatuses, mode: 'insensitive' }
-        });
+        q = q.in('status', includeStatuses);
     }
 
-    // Exclude Statuses (must not be any of these)
+    // Exclude Statuses
     if (excludeStatuses.length > 0) {
-        andFilters.push({
-            status: { notIn: excludeStatuses, mode: 'insensitive' }
-        });
+        // PostgREST doesn't have a direct 'not in' for arrays, use .not('col', 'in', '(...)')
+        q = q.not('status', 'in', `(${excludeStatuses.join(',')})`);
     }
 
-    // Get total count for pagination
-    const totalCount = await prisma.mod.count({
-        where: whereClause
-    });
-
-    // Calculate offset
-    const skip = (page - 1) * limit;
-
-    // Build sort order
-    let orderBy: Prisma.ModOrderByWithRelationInput[] = [];
+    // Sorting
+    const isAsc = sortDir === 'asc';
     switch (sortBy) {
         case 'rating':
-            orderBy = [{ rating: sortDir }, { ratingCount: sortDir }];
+            q = q.order('rating', { ascending: isAsc }).order('ratingCount', { ascending: isAsc });
             break;
         case 'downloads':
-            orderBy = [{ downloads: sortDir }];
+            q = q.order('downloads', { ascending: isAsc });
             break;
         case 'views':
-            orderBy = [{ views: sortDir }];
+            q = q.order('views', { ascending: isAsc });
             break;
         case 'newest':
-            orderBy = [{ createdAt: sortDir }];
+            q = q.order('createdAt', { ascending: isAsc });
             break;
         case 'updated':
         default:
-            orderBy = [{ updatedAt: sortDir }];
+            q = q.order('updatedAt', { ascending: isAsc });
             break;
     }
 
-    // Fetch mods
-    const mods = await prisma.mod.findMany({
-        where: whereClause,
-        orderBy,
-        skip,
-        take: limit,
-        include: {
-            tags: {
-                include: {
-                    tag: true
-                }
-            }
-        }
-    });
+    // Pagination
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+    
+    const { data: mods, count: totalCount, error } = await q.range(from, to);
 
-    // Map to ModData and sort by changelog date for "updated" sort
-    let mappedMods = mods.map((mod) => mapPrismaModToModData(mod as unknown as PrismaModWithTags));
+    if (error) {
+        console.error("Advanced search failed:", error);
+        return { mods: [], totalCount: 0, hasMore: false, page };
+    }
+
+    let mappedMods = (mods || []).map((mod) => mapDatabaseModToModData(mod as unknown as DatabaseModWithTags));
 
     // For "updated" sort, re-sort by changelog date (more accurate than updatedAt)
     if (sortBy === 'updated') {
-        mappedMods.sort((a, b) => {
+        mappedMods.sort((a: ModData, b: ModData) => {
             const getLatestDate = (m: ModData) => {
                 if (m.changelog && m.changelog.length > 0) {
                     const dates = m.changelog
-                        .map(c => new Date(c.date).getTime())
-                        .filter(t => !isNaN(t));
+                        .map((c: any) => new Date(c.date).getTime())
+                        .filter((t: number) => !isNaN(t));
                     if (dates.length > 0) {
                         return Math.max(...dates);
                     }
@@ -309,50 +283,54 @@ export async function searchModsAdvanced(filters: AdvancedSearchFilters = {}): P
         });
     }
 
+    const currentTotal = totalCount || 0;
+
     return {
         mods: mappedMods,
-        totalCount,
-        hasMore: skip + mods.length < totalCount,
+        totalCount: currentTotal,
+        hasMore: from + mappedMods.length < currentTotal,
         page
     };
 }
 
 /**
  * Fetch all game version tags for filter dropdown
- * (Fetches from Tag table to exclude deleted tags)
  */
 export async function fetchGameVersions() {
-    const tags = await prisma.tag.findMany({
-        where: { category: 'gamever' },
-        include: {
-            _count: {
-                select: { modTags: true }
-            }
-        },
-        orderBy: { displayName: 'desc' }
-    });
+    const { data: tags } = await db
+        .from('Tag')
+        .select(`
+            id,
+            category,
+            value,
+            displayName,
+            color,
+            modTags:ModTag(count)
+        `)
+        .eq('category', 'gamever')
+        .order('displayName', { ascending: false });
 
-    return tags.map(tag => ({
-        id: tag.id,
-        category: tag.category,
-        value: tag.value,
-        displayName: tag.displayName,
-        color: tag.color || undefined,
-        usageCount: tag._count.modTags
+    return (tags || []).map((tag) => ({
+        id: tag.id as string,
+        category: tag.category as string,
+        value: tag.value as string,
+        displayName: tag.displayName as string,
+        color: (tag.color as string | null) || undefined,
+        usageCount: (tag.modTags as unknown as [{ count: number }])[0]?.count || 0
     }));
 }
 
 /**
  * Fetch all unique statuses for filter
- * (Fetches from Tag table to be consistent with tag-based logic)
  */
 export async function fetchStatuses(): Promise<string[]> {
-    const tags = await prisma.tag.findMany({
-        where: { category: 'status' },
-        select: { value: true },
-        orderBy: { value: 'asc' }
-    });
-    return tags.map(t => t.value);
+    const { data: tags } = await db
+        .from('Tag')
+        .select('value')
+        .eq('category', 'status')
+        .order('value', { ascending: true });
+    
+    return (tags || []).map((t) => (t as { value: string }).value);
 }
 
 /**
@@ -360,20 +338,22 @@ export async function fetchStatuses(): Promise<string[]> {
  */
 export async function fetchPopularTagsForFilters(limit: number = 1000): Promise<{ displayName: string; color?: string; count: number }[]> {
     try {
-        const results = await prisma.$queryRaw<Array<{ displayName: string, color: string | null, count: bigint }>>`
-            SELECT t."displayName", t.color, COUNT(mt."tagId") as count
-            FROM "Tag" t
-            JOIN "ModTag" mt ON t.id = mt."tagId"
-            WHERE t.category = 'tag'
-            GROUP BY t.id, t."displayName", t.color
-            ORDER BY t."displayName" ASC
-            LIMIT ${limit};
-        `;
+        // Tag popular query: category='tag' order by displayName
+        const { data: tags } = await db
+            .from('Tag')
+            .select(`
+                displayName,
+                color,
+                modTags:ModTag(count)
+            `)
+            .eq('category', 'tag')
+            .order('displayName', { ascending: true })
+            .limit(limit);
 
-        return results.map(r => ({
-            displayName: r.displayName,
-            color: r.color || undefined,
-            count: Number(r.count)
+        return (tags || []).map((t) => ({
+            displayName: t.displayName as string,
+            color: (t.color as string | null) || undefined,
+            count: (t.modTags as unknown as [{ count: number }])[0]?.count || 0
         }));
     } catch (error) {
         console.error('Error fetching popular tags:', error);

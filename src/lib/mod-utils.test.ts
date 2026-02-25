@@ -6,6 +6,11 @@ describe('Mod Utilities', () => {
     describe('convertSubmissionToModData', () => {
         it('should correctly map all fields from submission', () => {
             const submission: ModSubmission = {
+                id: 'sub-1',
+                submitterId: 'user-1',
+                submitterName: 'Test Submitter',
+                submittedAt: new Date().toISOString(),
+                status: 'pending',
                 title: 'Test Mod',
                 slug: 'test-mod',
                 version: '1.0.0',
@@ -17,8 +22,13 @@ describe('Mod Utilities', () => {
                 features: ['Feature 1', 'Feature 2'],
                 tags: [{ id: '1', category: 'tag', value: 'survival', displayName: 'Survival' }],
                 installationSteps: ['Step 1'],
-                links: { download: 'https://dl.com' },
-                videos: {},
+                links: { 
+                    download: 'https://dl.com',
+                    discord: '',
+                    community: [],
+                    donations: []
+                },
+                videos: { trailer: '', review: '' },
                 screenshots: ['https://ex.com/s1.png'],
                 changelog: [],
                 localizations: []

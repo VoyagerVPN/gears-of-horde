@@ -28,8 +28,14 @@ export default function AdminCharts({ data }: AdminChartsProps) {
     const locale = useLocale()
     const dateLocale = locale === 'ru' ? ru : enUS
 
-    const formatDate = (dateStr: string) => {
-        return format(parseISO(dateStr), "MMM dd", { locale: dateLocale })
+    const formatDate = (dateValue: unknown): string => {
+        if (!dateValue) return "";
+        const dateStr = String(dateValue);
+        try {
+            return format(parseISO(dateStr), "MMM dd", { locale: dateLocale })
+        } catch {
+            return dateStr;
+        }
     }
 
     return (

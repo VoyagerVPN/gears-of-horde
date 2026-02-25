@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import NewsCard from "@/components/NewsCard";
-import UnifiedUpdateModal from "@/components/mod/UnifiedUpdateModal";
+import UnifiedUpdateModal from "@/components/mod/editor/UnifiedUpdateModal";
 import { NewsItem } from "@/schemas/news.schema";
 
 interface NewsPageClientProps {

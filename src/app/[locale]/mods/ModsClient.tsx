@@ -64,8 +64,6 @@ export default function ModsClient({
     const [showFilters, setShowFilters] = useState(false);
     const loadMoreRef = useRef<HTMLDivElement>(null);
 
-    const todayISO = new Date().toISOString();
-
     // Build tag/status filter states
     const getTagState = (tag: string): FilterState => {
         if (includeTags.includes(tag)) return 'include';
@@ -152,36 +150,13 @@ export default function ModsClient({
         router.push(pathname, { scroll: false });
     };
 
-    // Fetch mods when filters change
+    // Synchronize local state with server-side props when initial data changes (via URL update)
     useEffect(() => {
-        const fetchMods = async () => {
-            setIsLoading(true);
-            try {
-                const result = await searchModsAdvanced({
-                    query,
-                    gameVersion: version,
-                    includeTags,
-                    excludeTags,
-                    includeStatuses,
-                    excludeStatuses,
-                    sortBy,
-                    page: 1,
-                    limit: 24
-                });
-                setMods(result.mods);
-                setTotalCount(result.totalCount);
-                setHasMore(result.hasMore);
-                setPage(1);
-            } catch (error) {
-                console.error('Failed to fetch mods:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchMods();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [query, version, sortBy, JSON.stringify(includeTags), JSON.stringify(excludeTags), JSON.stringify(includeStatuses), JSON.stringify(excludeStatuses)]);
+        setMods(initialMods);
+        setTotalCount(initialTotalCount);
+        setHasMore(initialHasMore);
+        setPage(1);
+    }, [initialMods, initialTotalCount, initialHasMore]);
 
     // Load more (infinite scroll)
     const loadMore = useCallback(async () => {
@@ -386,21 +361,8 @@ export default function ModsClient({
                                 {mods.map((mod) => (
                                     <ModCard
                                         key={mod.slug}
-                                        title={mod.title}
-                                        slug={mod.slug}
-                                        version={mod.version}
-                                        author={mod.author}
-                                        description={mod.description || ''}
-                                        tags={mod.tags}
-                                        updatedAt={mod.changelog?.[0]?.date || todayISO}
-                                        bannerUrl={mod.bannerUrl}
-                                        stats={{
-                                            rating: mod.stats.rating,
-                                            downloads: mod.stats.downloads,
-                                            views: mod.stats.views || '0'
-                                        }}
+                                        mod={mod}
                                         locale={locale}
-                                        status={mod.status}
                                     />
                                 ))}
                             </div>

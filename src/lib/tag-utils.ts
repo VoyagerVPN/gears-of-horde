@@ -5,12 +5,11 @@
  * duplicate code across action files.
  */
 
-import { db as prisma } from './db';
-import { TAG_CATEGORY_COLORS, AUTHOR_TAG_COLOR, FALLBACK_TAG_COLOR } from './tag-colors';
-import { normalizeGameVersion, gameVersionToTagValue } from './utils';
+import { db } from './db';
+import { AUTHOR_TAG_COLOR, FALLBACK_TAG_COLOR } from './tag-colors';
 
 // Re-export color constants for convenience
-const MOD_STABLE_COLOR = '#3b82f6'; // blue-500
+// const MOD_STABLE_COLOR = '#3b82f6'; // blue-500
 
 // ============================================================================
 // TAG CREATION UTILITIES
@@ -23,36 +22,56 @@ const MOD_STABLE_COLOR = '#3b82f6'; // blue-500
  * @param value - Tag value (normalized, e.g., 'survival_mode')
  * @param displayName - Display name (e.g., 'Survival Mode')
  * @param color - Optional color override
+ * @param weight - Optional sorting weight (for game versions)
  * @returns The found or created tag
  */
 async function findOrCreateTag(
     category: string,
     value: string,
     displayName: string,
-    color?: string
-): Promise<{ id: string; category: string; value: string; displayName: string; color: string | null }> {
+    color?: string,
+    weight?: number
+): Promise<{ id: string; category: string; value: string; displayName: string; color: string | null; weight: number | null }> {
     // Try to find existing tag
-    let tag = await prisma.tag.findUnique({
-        where: {
-            category_value: {
-                category,
-                value
-            }
-        }
-    });
+    const { data: tag, error: findError } = await db
+        .from('Tag')
+        .select('*')
+        .eq('category', category)
+        .eq('value', value)
+        .single();
 
-    if (!tag) {
-        tag = await prisma.tag.create({
-            data: {
-                category,
-                value,
-                displayName,
-                color: color ?? FALLBACK_TAG_COLOR // Use provided color or fallback
-            }
-        });
+    if (tag) {
+        // Update weight if it's missing but provided now
+        if (weight !== undefined && tag.weight === null) {
+            await db.from('Tag').update({ weight }).eq('id', tag.id);
+            tag.weight = weight;
+        }
+        return tag;
     }
 
-    return tag;
+    // Handle potential error or non-existence
+    if (findError && findError.code !== 'PGRST116') { // PGRST116 is code for "no rows found"
+        throw new Error(`Failed to lookup tag: ${findError.message}`);
+    }
+
+    // Create if not found
+    const { data: newTag, error: createError } = await db
+        .from('Tag')
+        .insert({
+            category,
+            value,
+            displayName,
+            color: color ?? FALLBACK_TAG_COLOR,
+            weight: weight ?? null
+        })
+        .select()
+        .single();
+
+    if (createError || !newTag) {
+        throw new Error(`Failed to create tag: ${createError?.message}`);
+    }
+
+    return newTag;
 }
 
 /**
@@ -63,7 +82,7 @@ async function findOrCreateTag(
  */
 export async function findOrCreateAuthorTag(
     authorName: string
-): Promise<{ id: string; category: string; value: string; displayName: string; color: string | null }> {
+): Promise<{ id: string; category: string; value: string; displayName: string; color: string | null; weight: number | null }> {
     const value = authorName.toLowerCase().replace(/\s+/g, '_');
     return findOrCreateTag('author', value, authorName, AUTHOR_TAG_COLOR);
 }
@@ -71,23 +90,23 @@ export async function findOrCreateAuthorTag(
 /**
  * Find or create a game version tag
  * 
- * @param version - Normalized version string (e.g., 'V2.2')
+ * @param version - Raw or normalized version string
  * @returns The found or created gamever tag
  */
 export async function findOrCreateGameVerTag(
     version: string
-): Promise<{ id: string; category: string; value: string; displayName: string; color: string | null }> {
-    // Strategies:
-    // 1. "V1.0", "v1.3" -> "1_0", "1_3" (Standard)
-    // 2. "A21", "Alpha 21" -> "a21" (Legacy/Alpha)
-    // 3. "N/A" -> "na"
+): Promise<{ id: string; category: string; value: string; displayName: string; color: string | null; weight: number | null }> {
+    const { parseGameVersion, formatGameVersion, calculateGameVersionWeight } = await import('./utils');
+    
+    const parsed = parseGameVersion(version);
+    const display = formatGameVersion(parsed, 'display');
+    const storageValue = formatGameVersion(parsed, 'value');
+    const weight = calculateGameVersionWeight(parsed);
 
-    const display = normalizeGameVersion(version);
-    const storageValue = gameVersionToTagValue(version);
-
-    // Gamever tags don't get a color initially - it's calculated by recalculateGameVersionColors
-    return findOrCreateTag('gamever', storageValue, display, undefined);
+    // Gamever tags don't get a color initially
+    return findOrCreateTag('gamever', storageValue, display, undefined, weight);
 }
+
 
 /**
  * Find or create a newscat tag
@@ -112,7 +131,6 @@ export async function findOrCreateNewscatTag(
 export async function findOrCreateLangTag(
     langName: string
 ): Promise<{ id: string; category: string; value: string; displayName: string; color: string | null }> {
-    // Use lowercase name as value (e.g., "English" -> "english")
     const value = langName.toLowerCase().trim().replace(/\s+/g, '_');
     return findOrCreateTag('lang', value, langName);
 }
@@ -127,8 +145,6 @@ export async function findOrCreateStatusTag(
     status: string
 ): Promise<{ id: string; category: string; value: string; displayName: string; color: string | null }> {
     const value = status.toLowerCase();
-    // Use the value itself as displayName for status tags, UI will localize if needed
-    // or we could use the capitalized version.
     const displayName = status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
     return findOrCreateTag('status', value, displayName);
 }
@@ -145,25 +161,39 @@ export async function findOrCreateGenericTag(
     const value = tagName.toLowerCase().replace(/\s+/g, '-');
 
     // First try to find by displayName (case-insensitive)
-    let tag = await prisma.tag.findFirst({
-        where: {
-            category: 'tag',
-            displayName: { equals: tagName, mode: 'insensitive' }
-        }
-    });
+    const { data: tag, error: findError } = await db
+        .from('Tag')
+        .select('*')
+        .eq('category', 'tag')
+        .ilike('displayName', tagName)
+        .limit(1)
+        .maybeSingle();
 
-    if (!tag) {
-        tag = await prisma.tag.create({
-            data: {
-                category: 'tag',
-                value,
-                displayName: tagName,
-                color: FALLBACK_TAG_COLOR
-            }
-        });
+    if (tag) {
+        return tag;
     }
 
-    return tag;
+    if (findError) {
+        throw new Error(`Failed to lookup generic tag: ${findError.message}`);
+    }
+
+    // Create if not found
+    const { data: newTag, error: createError } = await db
+        .from('Tag')
+        .insert({
+            category: 'tag',
+            value,
+            displayName: tagName,
+            color: FALLBACK_TAG_COLOR
+        })
+        .select()
+        .single();
+
+    if (createError || !newTag) {
+        throw new Error(`Failed to create generic tag: ${createError?.message}`);
+    }
+
+    return newTag;
 }
 
 // ============================================================================
@@ -186,30 +216,39 @@ export async function linkTagToModWithMetadata(
     tagId: string,
     metadata?: { isExternal?: boolean; externalLink?: string }
 ): Promise<void> {
-    const exists = await prisma.modTag.findUnique({
-        where: { modId_tagId: { modId: modSlug, tagId } }
-    });
+    const { data: exists, error: findError } = await db
+        .from('ModTag')
+        .select('*')
+        .eq('modId', modSlug)
+        .eq('tagId', tagId)
+        .maybeSingle();
+
+    if (findError) throw new Error(`Query error: ${findError.message}`);
 
     if (exists) {
-        // Update if metadata provided
         if (metadata) {
-            await prisma.modTag.update({
-                where: { modId_tagId: { modId: modSlug, tagId } },
-                data: {
+            const { error: updateError } = await db
+                .from('ModTag')
+                .update({
                     isExternal: metadata.isExternal ?? exists.isExternal,
                     externalLink: metadata.externalLink ?? exists.externalLink
-                }
-            });
+                })
+                .eq('modId', modSlug)
+                .eq('tagId', tagId);
+            
+            if (updateError) throw new Error(`Update error: ${updateError.message}`);
         }
     } else {
-        await prisma.modTag.create({
-            data: {
+        const { error: createError } = await db
+            .from('ModTag')
+            .insert({
                 modId: modSlug,
                 tagId,
                 isExternal: metadata?.isExternal ?? false,
                 externalLink: metadata?.externalLink || null
-            }
-        });
+            });
+        
+        if (createError) throw new Error(`Create error: ${createError.message}`);
     }
 }
 
@@ -220,23 +259,26 @@ export async function linkTagToModWithMetadata(
  * @param tagIds - Array of tag IDs
  */
 export async function batchLinkTagsToMod(modSlug: string, tagIds: string[]): Promise<void> {
-    // Get existing links
-    const existingLinks = await prisma.modTag.findMany({
-        where: {
-            modId: modSlug,
-            tagId: { in: tagIds }
-        },
-        select: { tagId: true }
-    });
+    if (tagIds.length === 0) return;
 
-    const existingTagIds = new Set(existingLinks.map(l => l.tagId));
+    // Get existing links
+    const { data: existingLinks, error: findError } = await db
+        .from('ModTag')
+        .select('tagId')
+        .eq('modId', modSlug)
+        .in('tagId', tagIds);
+
+    if (findError) throw new Error(`Fetch error: ${findError.message}`);
+
+    const existingTagIds = new Set(existingLinks?.map(l => l.tagId) || []);
     const newTagIds = tagIds.filter(id => !existingTagIds.has(id));
 
     if (newTagIds.length > 0) {
-        await prisma.modTag.createMany({
-            data: newTagIds.map(tagId => ({ modId: modSlug, tagId })),
-            skipDuplicates: true
-        });
+        const { error: createError } = await db
+            .from('ModTag')
+            .insert(newTagIds.map(tagId => ({ modId: modSlug, tagId })));
+        
+        if (createError) throw new Error(`Batch insert error: ${createError.message}`);
     }
 }
 
@@ -247,10 +289,25 @@ export async function batchLinkTagsToMod(modSlug: string, tagIds: string[]): Pro
  * @param category - Tag category to remove
  */
 export async function removeModTagsByCategory(modSlug: string, category: string): Promise<void> {
-    await prisma.modTag.deleteMany({
-        where: {
-            modId: modSlug,
-            tag: { category }
-        }
-    });
+    // We need to join or subquery to filter by category in Supabase delete
+    // OR we can fetch IDs first. Fetching IDs is safer for complex joins.
+    const { data: tagsToRemove, error: fetchError } = await db
+        .from('ModTag')
+        .select('tagId, Tag!inner(category)')
+        .eq('modId', modSlug)
+        .eq('Tag.category', category);
+
+    if (fetchError) throw new Error(`Fetch error: ${fetchError.message}`);
+
+    if (tagsToRemove && tagsToRemove.length > 0) {
+        const tagIds = tagsToRemove.map(t => t.tagId);
+        const { error: deleteError } = await db
+            .from('ModTag')
+            .delete()
+            .eq('modId', modSlug)
+            .in('tagId', tagIds);
+        
+        if (deleteError) throw new Error(`Delete error: ${deleteError.message}`);
+    }
 }
+

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 import { NewsItem } from "@/schemas/news.schema";
 import { deleteNews } from "@/app/actions/news-actions";
-import UnifiedUpdateModal from "@/components/mod/UnifiedUpdateModal";
+import UnifiedUpdateModal from "@/components/mod/editor/UnifiedUpdateModal";
 import NewsCard from "@/components/NewsCard";
 import { useRouter } from "next/navigation";
 import ConfirmModal from "@/components/ui/ConfirmModal";

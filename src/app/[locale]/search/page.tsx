@@ -6,16 +6,16 @@ import { Link } from '@/i18n/routing';
 import Tag from '@/components/ui/Tag';
 
 interface SearchPageProps {
-    searchParams: {
+    searchParams: Promise<{
         q?: string;
         tag?: string;
         lang?: string;
         version?: string;
         status?: string;
-    };
-    params: {
+    }>;
+    params: Promise<{
         locale: string;
-    };
+    }>;
 }
 
 export default async function SearchPage({ searchParams, params }: SearchPageProps) {
@@ -99,8 +99,7 @@ export default async function SearchPage({ searchParams, params }: SearchPagePro
                         {mods.map((mod) => (
                             <ModCard
                                 key={mod.slug}
-                                {...mod}
-                                updatedAt={mod.updatedAt || new Date().toISOString()}
+                                mod={mod}
                                 locale={locale as 'en' | 'ru'}
                             />
                         ))}

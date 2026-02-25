@@ -22,13 +22,13 @@ export type ModChangelogJson = ModChangelog;
 export type ModLocalizationJson = ModLocalization;
 
 // ============================================================================
-// PRISMA RESULT TYPES
+// DATABASE RESULT TYPES (Generic)
 // ============================================================================
 
 /**
- * Tag with related tag data from ModTag/NewsTag join
+ * Tag with related tag data
  */
-export interface PrismaTagWithRelation {
+export interface DatabaseTagWithRelation {
     isExternal?: boolean;
     externalLink?: string | null;
     tag: {
@@ -37,13 +37,14 @@ export interface PrismaTagWithRelation {
         value: string;
         displayName: string;
         color: string | null;
+        weight: number | null;
     };
 }
 
 /**
- * Mod with tags included from Prisma query
+ * Mod with tags included
  */
-export interface PrismaModWithTags {
+export interface DatabaseModWithTags {
     slug: string;
     title: string;
     version: string;
@@ -65,29 +66,28 @@ export interface PrismaModWithTags {
     downloads: string;
     views: string;
     screenshots: string[];
-    tags: PrismaTagWithRelation[];
-    createdAt: Date;
-    updatedAt: Date;
+    tags: DatabaseTagWithRelation[];
+    createdAt: string | Date;
+    updatedAt: string | Date;
 }
 
 /**
- * Tag with usage count from Prisma query
+ * Tag with usage count
  */
-export interface PrismaTagWithCount {
+export interface DatabaseTagWithCount {
     id: string;
     category: string;
     value: string;
     displayName: string;
     color: string | null;
-    _count: {
-        modTags?: number;
-    };
+    isExternal?: boolean;
+    modTags: { count: number }[];
 }
 
 /**
  * News item with frozen snapshot data
  */
-interface PrismaNewsWithFrozenData {
+export interface DatabaseNewsWithFrozenData {
     id: string;
     modSlug: string | null;
     modName: string | null;
@@ -96,49 +96,49 @@ interface PrismaNewsWithFrozenData {
     actionText: string;
     content: string;
     description: string | null;
-    date: Date;
+    date: string | Date;
     wipeRequired: boolean;
     sourceUrl: string | null;
     tags: unknown; // JSON array of frozen tag data
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string | Date;
+    updatedAt: string | Date;
 }
 
 /**
- * Subscription with mod data from Prisma query
+ * Subscription with mod data
  */
-export interface PrismaSubscriptionWithMod {
+export interface DatabaseSubscriptionWithMod {
     id: string;
     userId: string;
     modSlug: string;
-    subscribedAt: Date;
-    lastViewedAt: Date;
+    subscribedAt: string | Date;
+    lastViewedAt: string | Date;
     unseenVersions: number;
-    mod: PrismaModWithTags;
+    mod: DatabaseModWithTags;
 }
 
 /**
- * View history with mod data from Prisma query
+ * View history with mod data
  */
-export interface PrismaViewHistoryWithMod {
+export interface DatabaseViewHistoryWithMod {
     id: string;
     userId: string;
     modSlug: string;
-    viewedAt: Date;
-    mod: PrismaModWithTags;
+    viewedAt: string | Date;
+    mod: DatabaseModWithTags;
 }
 
 /**
- * Download history with mod data from Prisma query
+ * Download history with mod data
  */
-export interface PrismaDownloadHistoryWithMod {
+export interface DatabaseDownloadHistoryWithMod {
     id: string;
     userId: string;
     modSlug: string;
     version: string;
-    downloadedAt: Date;
+    downloadedAt: string | Date;
     sessionId: string;
-    mod: PrismaModWithTags;
+    mod: DatabaseModWithTags;
 }
 
 // ============================================================================
@@ -146,24 +146,27 @@ export interface PrismaDownloadHistoryWithMod {
 // ============================================================================
 
 /**
- * Map Prisma tag relation to TagData
+ * Map Database tag relation to TagData
  */
-export function mapPrismaTagToTagData(mt: PrismaTagWithRelation): TagData {
+export function mapDatabaseTagToTagData(mt: DatabaseTagWithRelation): TagData {
     return {
         id: mt.tag.id,
         category: mt.tag.category,
         value: mt.tag.value,
         displayName: mt.tag.displayName,
         color: mt.tag.color,
+        weight: mt.tag.weight ?? undefined,
         isExternal: mt.isExternal,
         externalLink: mt.externalLink ?? undefined
     };
 }
 
 /**
- * Map Prisma mod with tags to ModData
+ * Map Database mod with tags to ModData
  */
-export function mapPrismaModToModData(mod: PrismaModWithTags): import('@/schemas').ModData {
+export function mapDatabaseModToModData(mod: DatabaseModWithTags): import('@/schemas').ModData {
+    const toDate = (d: string | Date) => typeof d === 'string' ? d : d.toISOString();
+
     return {
         slug: mod.slug,
         title: mod.title,
@@ -175,7 +178,7 @@ export function mapPrismaModToModData(mod: PrismaModWithTags): import('@/schemas
         bannerUrl: mod.bannerUrl ?? '',
         isSaveBreaking: mod.isSaveBreaking,
         features: mod.features,
-        tags: mod.tags.map(mapPrismaTagToTagData),
+        tags: mod.tags.map(mapDatabaseTagToTagData),
         installationSteps: mod.installationSteps,
         links: (mod.links as ModLinks) ?? { download: '', discord: '', community: [], donations: [] },
         videos: (mod.videos as ModVideos) ?? { trailer: '', review: '' },
@@ -188,31 +191,28 @@ export function mapPrismaModToModData(mod: PrismaModWithTags): import('@/schemas
             downloads: mod.downloads,
             views: mod.views
         },
-        createdAt: mod.createdAt.toISOString(),
-        updatedAt: mod.updatedAt.toISOString()
+        createdAt: toDate(mod.createdAt),
+        updatedAt: toDate(mod.updatedAt)
     };
 }
 
 /**
- * Map Prisma tag with count to TagData
+ * Map Database tag with count to TagData
  */
-export function mapPrismaTagWithCountToTagData(tag: PrismaTagWithCount): TagData {
+export function mapDatabaseTagWithCountToTagData(tag: DatabaseTagWithCount): TagData {
     return {
         id: tag.id,
         category: tag.category,
         value: tag.value,
         displayName: tag.displayName,
         color: tag.color,
-        usageCount: tag._count.modTags ?? 0
+        isExternal: tag.isExternal ?? false,
+        usageCount: tag.modTags?.[0]?.count ?? 0
     };
 }
+
 
 // ============================================================================
 // JSON UTILITIES
 // ============================================================================
 
-/**
- * Type for JSON fields in Prisma models
- * Use this instead of 'as any' for JSON field casting
- */
-type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };

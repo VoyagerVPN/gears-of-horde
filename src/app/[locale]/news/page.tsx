@@ -3,17 +3,17 @@ import { fetchLatestNews, fetchNewsTags } from '@/app/actions/news-actions';
 import NewsFilter from '@/components/news/NewsFilter';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from '@/i18n/routing';
-import { auth } from '@/auth';
+import { createClient } from '@/utils/supabase/server';
 import NewsPageClient from './NewsPageClient';
 
 interface NewsPageProps {
-    searchParams: {
+    searchParams: Promise<{
         page?: string;
         tag?: string;
-    };
-    params: {
+    }>;
+    params: Promise<{
         locale: string;
-    };
+    }>;
 }
 
 export default async function NewsPage({ searchParams, params }: NewsPageProps) {
@@ -25,14 +25,20 @@ export default async function NewsPage({ searchParams, params }: NewsPageProps) 
     const limit = 12;
     const skip = (currentPage - 1) * limit;
 
-    const [news, tags, session] = await Promise.all([
+    const supabase = await createClient();
+    const [news, tags, { data: { user } }] = await Promise.all([
         fetchLatestNews(limit, skip, tag),
         fetchNewsTags(),
-        auth()
+        supabase.auth.getUser()
     ]);
 
+    const { data: dbUser } = user ? await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single() : { data: null };
     const hasMore = news.length === limit;
-    const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'MODERATOR';
+    const isAdmin = dbUser?.role === 'ADMIN' || dbUser?.role === 'MODERATOR';
 
     return (
         <div className="min-h-screen bg-background text-textMain pb-20">

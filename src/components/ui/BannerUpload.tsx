@@ -5,10 +5,12 @@ import { Upload, Loader2, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import type { Area } from 'react-easy-crop';
-import type { PutBlobResult } from '@vercel/blob';
+interface PutBlobResult {
+    url: string;
+}
 import ImageCropModal from './ImageCropModal';
 import { getCroppedImg, fileToDataUrl } from '@/lib/cropImage';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/shared/ui';
 import { cn } from '@/lib/utils';
 import { INVALID_INPUT_STYLE } from '@/lib/constants/ui-constants';
 

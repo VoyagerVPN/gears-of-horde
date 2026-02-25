@@ -60,6 +60,8 @@ export {
 // Profile schemas and types
 export {
     UserBioUpdateSchema,
+    UserRoleSchema,
     // Types
-    type UserBioUpdate
+    type UserBioUpdate,
+    type UserRole
 } from './profile.schema';

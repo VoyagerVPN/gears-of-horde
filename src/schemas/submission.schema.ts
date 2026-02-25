@@ -14,7 +14,7 @@ import {
 /**
  * Schema for mod submission (user-submitted mods pending review)
  */
-export const ModSubmissionSchema = z.object({
+const ModSubmissionBaseSchema = z.object({
     id: z.string(),
     title: z.string().min(1, "Title is required").max(100),
     slug: z.string().min(1, "Slug is required").regex(/^[a-z0-9-]+$/, "Slug can only contain Latin letters, numbers, and hyphens"),
@@ -44,7 +44,12 @@ export const ModSubmissionSchema = z.object({
     rejectionReason: z.string().optional(),
     submittedAt: z.string(),
     reviewedAt: z.string().optional()
-}).refine(data => {
+});
+
+/**
+ * Schema for mod submission (user-submitted mods pending review)
+ */
+export const ModSubmissionSchema = ModSubmissionBaseSchema.refine(data => {
     const hasAuthorTag = data.tags.some(t => t.category === 'author');
     return data.author.trim().length > 0 || hasAuthorTag;
 }, {
@@ -56,7 +61,7 @@ export const ModSubmissionSchema = z.object({
  * Schema for creating a new mod submission
  * Excludes auto-generated fields
  */
-export const ModSubmissionCreateSchema = ModSubmissionSchema.omit({
+export const ModSubmissionCreateSchema = ModSubmissionBaseSchema.omit({
     id: true,
     submitterId: true,
     submitterName: true,
@@ -87,5 +92,4 @@ export const TranslationSuggestionSchema = z.object({
 // ============================================================================
 
 export type ModSubmission = z.infer<typeof ModSubmissionSchema>;
-type ModSubmissionCreate = z.infer<typeof ModSubmissionCreateSchema>;
 export type TranslationSuggestion = z.infer<typeof TranslationSuggestionSchema>;

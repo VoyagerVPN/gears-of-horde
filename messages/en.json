@@ -60,7 +60,8 @@
         "privacy": "Privacy",
         "terms": "Terms",
         "searchPlaceholder": "Search mods or tags...",
-        "language": "EN / RU"
+        "language": "EN / RU",
+        "categories": "Categories"
     },
     "NewsPage": {
         "title": "News Archive",
@@ -677,5 +678,16 @@
         "title": "Something went wrong!",
         "description": "An unexpected error has occurred. Our team has been notified.",
         "retry": "Try again"
+    },
+    "Notifications": {
+        "title": "Notifications",
+        "markAllAsRead": "Mark all as read",
+        "noNotifications": "You're all caught up!",
+        "empty": "Updates will appear here.",
+        "types": {
+            "MOD_UPDATE": "Mod Update",
+            "COMMENT_REPLY": "New Reply",
+            "SYSTEM_ANNOUNCEMENT": "System"
+        }
     }
 }

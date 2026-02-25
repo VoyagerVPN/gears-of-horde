@@ -6,7 +6,6 @@ import {
     Sparkles,
     ExternalLink,
     HelpCircle,
-    User,
     Target,
     Globe
 } from "lucide-react";

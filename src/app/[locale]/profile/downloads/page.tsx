@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
 import { Download as DownloadIcon } from "lucide-react"
 import ModCard from "@/components/ModCard"
-import { getDownloadHistory } from "@/app/actions/profile-actions"
+import { getDownloadHistory } from "@/app/actions/analytics-actions"
 import UnifiedTopBar from "@/components/ui/UnifiedTopBar"
 
 interface DownloadWithMod {
@@ -20,9 +20,11 @@ interface DownloadWithMod {
         author: string
         tags: { id: string; category: string; value: string; displayName: string; color: string | null }[]
         updatedAt: string
-        rating: number
-        downloads: string
-        views: string
+        stats: {
+            rating: number
+            downloads: string
+            views: string
+        }
         bannerUrl?: string
         description?: string
     }
@@ -41,7 +43,9 @@ export default function ProfileDownloadsPage() {
             downloadedAt: typeof dl.downloadedAt === 'string' ? dl.downloadedAt : new Date(dl.downloadedAt).toISOString(),
             mod: {
                 ...dl.mod,
-                updatedAt: typeof dl.mod.updatedAt === 'string' ? dl.mod.updatedAt : new Date(dl.mod.updatedAt).toISOString()
+                updatedAt: typeof dl.mod.updatedAt === 'string' 
+                    ? dl.mod.updatedAt 
+                    : (dl.mod.updatedAt ? new Date(dl.mod.updatedAt).toISOString() : '')
             }
         })) as DownloadWithMod[])
         setLoading(false)
@@ -82,20 +86,8 @@ export default function ProfileDownloadsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {downloads.map((dl) => (
                             <ModCard
-                                key={dl.id}
-                                title={dl.mod.title}
-                                slug={dl.mod.slug}
-                                version={dl.mod.version}
-                                author={dl.mod.author}
-                                tags={dl.mod.tags}
-                                updatedAt={dl.mod.updatedAt}
-                                bannerUrl={dl.mod.bannerUrl}
-                                description={dl.mod.description || ''}
-                                stats={{
-                                    rating: dl.mod.rating,
-                                    downloads: dl.mod.downloads,
-                                    views: dl.mod.views
-                                }}
+                                key={dl.mod.slug}
+                                mod={dl.mod as any}
                             />
                         ))}
                     </div>

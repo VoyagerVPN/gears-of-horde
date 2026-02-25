@@ -25,6 +25,10 @@
 # misc
 .DS_Store
 *.pem
+.temp/
+.chatledger/
+.agents/
+docs/
 
 # debug
 npm-debug.log*

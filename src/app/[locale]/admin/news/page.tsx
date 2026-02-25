@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { fetchAllNews } from "@/app/actions/news-actions";
@@ -6,22 +6,28 @@ import NewsManagementClient from "./NewsManagementClient";
 import UnifiedTopBar from "@/components/ui/UnifiedTopBar";
 
 interface NewsManagementPageProps {
-    params: {
+    params: Promise<{
         locale: string;
-    };
+    }>;
 }
 
 export default async function NewsManagementPage({ params }: NewsManagementPageProps) {
     const { locale } = await params;
 
     // Auth protection - ADMIN only
-    const session = await auth();
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (!session) {
-        redirect("/api/auth/signin");
+    if (!user) {
+        redirect("/login");
     }
 
-    if (session.user.role !== "ADMIN") {
+    const { data: dbUser } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+    if (!dbUser || dbUser.role !== "ADMIN") {
         redirect("/profile");
     }
 

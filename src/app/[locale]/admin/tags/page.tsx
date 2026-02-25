@@ -10,8 +10,7 @@ import MergeTagModal from "@/components/tags/MergeTagModal";
 import CategoryEditModal from "@/components/tags/CategoryEditModal";
 import MergeCategoryModal from "@/components/tags/MergeCategoryModal";
 import Tag from "@/components/ui/Tag";
-import { useToast } from "@/components/ui/Toast";
-import { PRIMARY_COLOR } from "@/lib/tag-colors";
+import { useToast } from "@/shared/ui";
 import UnifiedTopBar from "@/components/ui/UnifiedTopBar";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 
