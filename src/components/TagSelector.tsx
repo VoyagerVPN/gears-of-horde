@@ -1,33 +1,25 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, Plus, TrendingUp, CircleUser } from 'lucide-react';
 import { searchTags, fetchPopularTags, TagData } from '@/app/actions/tag-actions';
-import Tag from '@/components/ui/Tag';
 import { cn } from '@/lib/utils';
-import { INVALID_INPUT_STYLE } from "@/lib/constants/ui-constants";
-import { useTranslations } from 'next-intl';
+
+import TagSearchInput from './ui/search/TagSearchInput';
+import TagSuggestions from './ui/search/TagSuggestions';
+import PopularTags from './ui/search/PopularTags';
+import SelectedTags from './ui/search/SelectedTags';
 
 interface TagSelectorProps {
-    /** Currently selected tags */
     selectedTags: Array<{ displayName: string; category?: string; id?: string; color?: string | null; value?: string }>;
-    /** Callback when tags change */
     onTagsChange: (tags: Array<{ displayName: string; category: string }>) => void;
-    /** Category to search/create tags in (default: 'tag') */
     category?: string;
-    /** Placeholder text */
     placeholder?: string;
-    /** Show popular tags section */
     showPopular?: boolean;
-    /** Maximum number of tags */
     maxTags?: number;
-    /** Additional className */
     className?: string;
-    /** Hide the list of selected tags (useful if parent renders them differently) */
     hideSelectedTags?: boolean;
     invalid?: boolean;
     onClear?: () => void;
-    /** Compact pill-sized mode for inline use */
     compact?: boolean;
 }
 
@@ -35,7 +27,6 @@ export default function TagSelector({
     selectedTags,
     onTagsChange,
     category = 'tag',
-    placeholder,
     showPopular = true,
     maxTags,
     className,
@@ -44,7 +35,6 @@ export default function TagSelector({
     onClear,
     compact = false
 }: TagSelectorProps) {
-    const t = useTranslations('Common');
     const [query, setQuery] = useState('');
     const [debouncedQuery, setDebouncedQuery] = useState('');
     const [suggestions, setSuggestions] = useState<TagData[]>([]);
@@ -57,9 +47,7 @@ export default function TagSelector({
     // Fetch popular tags on mount
     useEffect(() => {
         if (showPopular) {
-            fetchPopularTags(8, category).then(tags => {
-                setPopularTags(tags);
-            });
+            fetchPopularTags(8, category).then(setPopularTags);
         }
     }, [showPopular, category]);
 
@@ -69,7 +57,6 @@ export default function TagSelector({
             setSuggestions([]);
             return;
         }
-
         setIsLoading(true);
         try {
             const results = await searchTags(searchQuery, category);
@@ -89,7 +76,6 @@ export default function TagSelector({
             setSuggestions([]);
             return;
         }
-
         const timer = setTimeout(() => {
             setDebouncedQuery(query);
             handleSearch(query);
@@ -108,7 +94,6 @@ export default function TagSelector({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Helper to check if tag is selected
     const isSelected = (tagName: string) => {
         return selectedTags.some(s => s.displayName.toLowerCase() === tagName.toLowerCase());
     };
@@ -122,7 +107,6 @@ export default function TagSelector({
         setQuery('');
         setDebouncedQuery('');
         setSuggestions([]);
-        // Keep dropdown open so user can add multiple tags
     };
 
     const removeTag = (tagName: string) => {
@@ -151,198 +135,51 @@ export default function TagSelector({
         }
     };
 
-    // Combine server suggestions with matching selected tags (for local feedback)
-    const matchingSelected = query
-        ? selectedTags.filter(t =>
-            t.displayName.toLowerCase().includes(query.toLowerCase()) &&
-            (t.category === category || !t.category)
-        )
-        : [];
-
-    // Deduplicate suggestions + matching selected
-    const allSuggestions = [...suggestions];
-    matchingSelected.forEach(selected => {
-        if (!allSuggestions.some(s => s.displayName.toLowerCase() === selected.displayName.toLowerCase())) {
-            // Convert to TagData shape if needed (TagData has id, usageCount etc which might be missing on selected)
-            allSuggestions.push({
-                id: selected.id || `temp-${selected.displayName}`,
-                displayName: selected.displayName,
-                category: selected.category || category,
-                usageCount: 0 // Local/Selected tags might not have usage count known
-            });
-        }
-    });
-
     return (
         <div className={cn("space-y-2", className)} ref={dropdownRef}>
-            {/* Input ... (same) */}
-            <div className="relative">
-                <div
-                    className={cn(
-                        "flex flex-wrap items-center border rounded-md transition-all",
-                        compact ? "gap-1 px-2 py-1 bg-white/5" : "gap-2 px-3 py-1.5 bg-black/40 min-h-[38px]",
-                        invalid ? INVALID_INPUT_STYLE : "border-white/10 hover:border-white/20 focus-within:border-white/30"
-                    )}
-                    onClick={() => {
-                        inputRef.current?.focus();
-                        onClear?.();
-                    }}
-                >
-                    {category === 'author' ? (
-                        <CircleUser size={14} className="text-cyan-400 pointer-events-none" />
-                    ) : (
-                        <Search size={14} className="text-textMuted pointer-events-none" />
-                    )}
-                    <input
-                        id={`tag-input-${category}`}
-                        name={`tag-input-${category}`}
-                        ref={inputRef}
-                        type="text"
-                        value={query}
-                        onChange={(e) => {
-                            setQuery(e.target.value);
-                            setIsOpen(true);
-                            onClear?.();
-                        }}
-                        onFocus={() => {
-                            setIsOpen(true);
-                            onClear?.();
-                        }}
-                        onKeyDown={handleKeyDown}
-                        className={cn(
-                            "flex-1 bg-transparent border-none outline-none text-white p-0",
-                            compact ? "text-xs min-w-[40px] h-5" : "text-sm min-w-[120px] h-7"
-                        )}
-                        placeholder={(hideSelectedTags || selectedTags.length === 0) ? (placeholder || t('searchOrAddTags')) : ""}
-                        maxLength={25}
-                        spellCheck={false}
+            <TagSearchInput
+                query={query}
+                onChange={setQuery}
+                onFocus={() => setIsOpen(true)}
+                onKeyDown={handleKeyDown}
+                category={category}
+                compact={compact}
+                invalid={invalid}
+                onClear={onClear}
+                inputRef={inputRef}
+            />
+
+            {/* Dropdown */}
+            {isOpen && (query.length > 0 || (showPopular && popularTags.length > 0)) && (
+                <div className="absolute top-full left-0 mt-1 bg-zinc-900 border border-white/10 rounded-lg shadow-xl z-50 max-h-64 overflow-y-auto overflow-x-hidden min-w-[280px]">
+                    <TagSuggestions
+                        query={query}
+                        suggestions={suggestions}
+                        selectedTags={selectedTags}
+                        category={category}
+                        isLoading={isLoading}
+                        isSearching={debouncedQuery === query}
+                        onAdd={addTag}
+                        onToggle={toggleTag}
                     />
-                    {/* removed isLoading spinner */}
+
+                    {!query && (
+                        <PopularTags
+                            tags={popularTags}
+                            selectedTags={selectedTags}
+                            category={category}
+                            onAdd={addTag}
+                        />
+                    )}
                 </div>
+            )}
 
-                {/* Dropdown */}
-                {isOpen && (query.length > 0 || (showPopular && popularTags.length > 0)) && (
-                    <div className="absolute top-full left-0 mt-1 bg-zinc-900 border border-white/10 rounded-lg shadow-xl z-50 max-h-64 overflow-y-auto overflow-x-hidden min-w-[280px]">
-                        {/* 1. Immediate Action: Create Tag */}
-                        {query && !isSelected(query) && (
-                            <button
-                                onClick={() => addTag(query)}
-                                className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-white/5 text-left transition-colors font-bold border-b border-white/5"
-                            >
-                                <Plus size={14} className="text-primary" />
-                                <span className="text-sm text-white">
-                                    {t('createTag')} &quot;<span className="text-primary truncate max-w-[200px] inline-block align-bottom">{query}</span>&quot;
-                                </span>
-                            </button>
-                        )}
-
-                        {/* 2. Suggestions Section - Stable Layout */}
-                        {query && (
-                            <div className="p-2">
-                                <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-textMuted mb-2 px-1">
-                                    <span>{t('suggestions')}</span>
-                                </div>
-
-                                <div className="flex flex-wrap gap-1.5 min-h-[40px]">
-                                    {allSuggestions.length > 0 ? (
-                                        allSuggestions.map(tag => {
-                                            const selected = isSelected(tag.displayName);
-                                            const count = (tag.usageCount || 0) + (selected ? 1 : 0);
-                                            return (
-                                                <div
-                                                    key={tag.id || tag.displayName}
-                                                    className="cursor-pointer inline-flex items-center"
-                                                >
-                                                    <Tag
-                                                        category={tag.category || category}
-                                                        value={tag.value}
-                                                        color={tag.color || undefined}
-                                                        showIcon={true}
-                                                        className={selected ? "!border-primary" : ""}
-                                                        onContentClick={() => toggleTag(tag.displayName)}
-                                                        actions={[{
-                                                            icon: <span className="opacity-80">({count})</span>,
-                                                            onClick: () => toggleTag(tag.displayName),
-                                                            variant: 'transparent'
-                                                        }]}
-                                                    >
-                                                        {tag.displayName}
-                                                    </Tag>
-                                                </div>
-                                            );
-                                        })
-                                    ) : isLoading ? (
-                                        <>
-                                            <div className="h-7 w-20 bg-white/5 border border-white/5 rounded-md animate-pulse" />
-                                            <div className="h-7 w-16 bg-white/5 border border-white/5 rounded-md animate-pulse" />
-                                            <div className="h-7 w-24 bg-white/5 border border-white/5 rounded-md animate-pulse" />
-                                        </>
-                                    ) : (
-                                        debouncedQuery === query && (
-                                            <div className="w-full py-4 text-center text-sm text-textMuted italic">
-                                                {t('noTagsFound')}
-                                            </div>
-                                        )
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* 3. Popular tags - only if not searching */}
-                        {!query && popularTags.filter(p => !isSelected(p.displayName)).length > 0 && (
-                            <div className="p-2">
-                                <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-textMuted mb-2 px-1">
-                                    <TrendingUp size={10} />
-                                    {t('popularTags')}
-                                </div>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {popularTags.filter(p => !isSelected(p.displayName)).slice(0, 6).map(tag => (
-                                        <div
-                                            key={tag.id}
-                                            className="cursor-pointer"
-                                        >
-                                            <Tag
-                                                category={tag.category || category}
-                                                value={tag.category === 'author' ? 'author' : undefined}
-                                                color={tag.color || undefined}
-                                                showIcon={true}
-                                                onContentClick={() => addTag(tag.displayName)}
-                                                actions={[{
-                                                    icon: <span className="opacity-80">({tag.usageCount ?? 0})</span>,
-                                                    onClick: () => addTag(tag.displayName),
-                                                    variant: 'transparent'
-                                                }]}
-                                            >
-                                                {tag.displayName}
-                                            </Tag>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
-            </div>
-
-            {/* Selected tags */}
-            {!hideSelectedTags && selectedTags.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                    {selectedTags
-                        .filter(t => t.category === category || !t.category)
-                        .sort((a, b) => a.displayName.localeCompare(b.displayName))
-                        .map(tag => (
-                            <Tag
-                                key={tag.displayName}
-                                category={tag.category || category}
-                                value={tag.value}
-                                color={tag.color || undefined}
-                                showIcon={true}
-                                onRemove={() => removeTag(tag.displayName)}
-                            >
-                                {tag.displayName}
-                            </Tag>
-                        ))}
-                </div>
+            {!hideSelectedTags && (
+                <SelectedTags
+                    tags={selectedTags}
+                    category={category}
+                    onRemove={removeTag}
+                />
             )}
         </div>
     );

@@ -84,18 +84,20 @@ export const TagDataSchema = z.object({
     color: z.string().nullable().optional(),
     category: z.string().optional(),
     usageCount: z.number().int().optional(),
+    weight: z.number().int().optional(), // New field for game version sorting
     isExternal: z.boolean().optional(),
     externalLink: z.string().url("Invalid external link URL").optional().or(z.literal(''))
 });
+
 
 // ============================================================================
 // MAIN MOD SCHEMA
 // ============================================================================
 
 /**
- * Complete mod data schema for validation
+ * Base mod data schema without object-level refinements
  */
-export const ModDataSchema = z.object({
+const ModDataBaseSchema = z.object({
     title: z.string().min(1, "Title is required").max(100, "Title too long"),
     slug: z.string()
         .min(1, "Slug is required")
@@ -138,7 +140,12 @@ export const ModDataSchema = z.object({
     localizations: z.array(ModLocalizationSchema).default([]),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional()
-}).refine(data => {
+});
+
+/**
+ * Complete mod data schema with refinements
+ */
+export const ModDataSchema = ModDataBaseSchema.refine(data => {
     const hasAuthorTag = data.tags.some(t => t.category === 'author');
     return data.author.trim().length > 0 || hasAuthorTag;
 }, {
@@ -149,12 +156,12 @@ export const ModDataSchema = z.object({
 /**
  * Partial mod schema for updates (all fields optional)
  */
-const ModUpdateSchema = ModDataSchema.partial();
+const ModUpdateSchema = ModDataBaseSchema.partial();
 
 /**
  * Schema for mod creation (slug is auto-generated from title)
  */
-const ModCreateSchema = ModDataSchema.omit({
+const ModCreateSchema = ModDataBaseSchema.omit({
     createdAt: true,
     updatedAt: true,
     stats: true

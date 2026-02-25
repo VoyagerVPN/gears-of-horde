@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ChevronDown, Plus, Gamepad2, Loader2, Search, X } from "lucide-react";
+import { ChevronDown, Plus, Gamepad2, Loader2, Search, X, Info } from "lucide-react";
 import * as Select from "@radix-ui/react-select";
 import { TagData } from "@/types/mod";
 import { getTagColor } from "@/lib/tag-colors";
-import { normalizeGameVersion, compareGameVersions, cn } from "@/lib/utils";
+import { parseGameVersion, formatGameVersion, compareGameVersions, cn } from "@/lib/utils";
 import { INVALID_INPUT_STYLE } from "@/lib/constants/ui-constants";
 import { useTranslations } from "next-intl";
+import { useSupabaseAuth } from "@/components/SupabaseAuthProvider";
 
 interface GameVersionSelectorProps {
     value: string;
@@ -27,6 +28,7 @@ interface GameVersionSelectorProps {
  * Game Version Selector with Radix Select and ability to create new versions
  * 
  * Uses Gamepad2 icons with version-based colors
+ * RESTRICTION: Only ADMINs can create new versions.
  */
 export default function GameVersionSelector({
     value,
@@ -39,6 +41,8 @@ export default function GameVersionSelector({
     onClear
 }: GameVersionSelectorProps) {
     const t = useTranslations('Common');
+    const { role } = useSupabaseAuth();
+    const isAdmin = role === 'ADMIN';
 
     const [newVersionInput, setNewVersionInput] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
@@ -55,52 +59,66 @@ export default function GameVersionSelector({
         if (searchQuery.trim()) {
             tags = tags.filter(t => t.displayName.toLowerCase().includes(searchQuery.toLowerCase()));
         }
-        // Always sort descending by version
-        return [...tags].sort((a, b) => compareGameVersions(b.displayName, a.displayName));
+        
+        // Sort by weight if available, otherwise fallback to name comparison
+        return [...tags].sort((a, b) => {
+            const wA = a.weight ?? 0;
+            const wB = b.weight ?? 0;
+            if (wA !== 0 || wB !== 0) {
+                return wB - wA; // Newest first (highest weight)
+            }
+            return compareGameVersions(b.displayName, a.displayName);
+        });
     }, [gameVersionTags, searchQuery]);
+
+    // Live preview for admin new version creation
+    const previewVersion = useMemo(() => {
+        if (!newVersionInput.trim()) return null;
+        const parsed = parseGameVersion(newVersionInput);
+        if (!parsed) return null;
+        return {
+            display: formatGameVersion(parsed, 'display'),
+            storage: formatGameVersion(parsed, 'value')
+        };
+    }, [newVersionInput]);
 
     // Calculate suggested next version (latest + 0.1)
     const suggestedNextVersion = useMemo(() => {
         if (gameVersionTags.length === 0) return 'V1.0';
 
         // Sort tags by version number (newest first)
-        const sorted = [...gameVersionTags].sort((a, b) => compareGameVersions(b.displayName, a.displayName));
+        const sorted = [...gameVersionTags].sort((a, b) => {
+            const wA = a.weight ?? 0;
+            const wB = b.weight ?? 0;
+            if (wA !== 0 || wB !== 0) return wB - wA;
+            return compareGameVersions(b.displayName, a.displayName);
+        });
 
         const latest = sorted[0]?.displayName || 'V1.0';
-        const versionStr = latest.replace(/^[vV]/, '');
-        const parts = versionStr.split('.');
+        const parsed = parseGameVersion(latest);
+        if (!parsed) return 'V1.0';
 
-        if (parts.length >= 2) {
-            const major = parseInt(parts[0]) || 0;
-            const minor = parseInt(parts[1]) || 0;
-            return `V${major}.${minor + 1}`;
-        }
-
-        return 'V1.0';
+        return `V${parsed.v1}.${parsed.v2 + 1}`;
     }, [gameVersionTags]);
-
-    // Validate version format (Vx.x or x.x)
-    const isValidVersionFormat = (input: string): boolean => {
-        const pattern = /^[vV]?\d+\.\d+$/;
-        return pattern.test(input.trim());
-    };
 
     // Handle creating a new game version
     const handleCreateVersion = async () => {
+        if (!isAdmin) return;
+        
         const trimmedInput = newVersionInput.trim();
         if (!trimmedInput) return;
 
-        // Validate format
-        if (!isValidVersionFormat(trimmedInput)) {
-            setVersionInputError('Format: Vx.x (e.g., V2.6)');
+        const parsed = parseGameVersion(trimmedInput);
+        if (!parsed) {
+            setVersionInputError('Invalid format (e.g. V1.1 b14, A21)');
             return;
         }
+
+        const normalizedVersion = formatGameVersion(parsed, 'display');
 
         setVersionInputError(null);
         setIsCreatingVersion(true);
         try {
-            const normalizedVersion = normalizeGameVersion(trimmedInput);
-
             // Check if version already exists
             const exists = gameVersionTags.some(t => t.displayName === normalizedVersion);
             if (exists) {
@@ -125,6 +143,7 @@ export default function GameVersionSelector({
             setIsCreatingVersion(false);
         }
     };
+
 
     return (
         <Select.Root value={value} onValueChange={(v) => { onChange(v); onClear?.(); }} name="gameVersion">
@@ -208,7 +227,7 @@ export default function GameVersionSelector({
                                         <Select.Item
                                             key={tag.id}
                                             value={tag.displayName}
-                                            onPointerDown={(e) => {
+                                            onPointerDown={(_e) => {
                                                 if (value === tag.displayName) {
                                                     onChange("");
                                                     onClear?.();
@@ -252,12 +271,22 @@ export default function GameVersionSelector({
                             )}
                         </div>
 
-                        {onCreateVersion && (
+                        {onCreateVersion && isAdmin && (
                             <div className="border-t border-white/10 mt-2 pt-2 mx-1 shrink-0" onPointerDown={(e) => e.stopPropagation()}>
                                 <div className="px-1 py-1">
-                                    <label className="text-[10px] font-bold text-textMuted uppercase tracking-wider font-exo2 pl-1 mb-1 block">
-                                        {t('addVersion')}
-                                    </label>
+                                    <div className="flex items-center justify-between mb-1 px-1">
+                                        <label className="text-[10px] font-bold text-textMuted uppercase tracking-wider font-exo2">
+                                            {t('addVersion')}
+                                        </label>
+                                        {previewVersion && (
+                                            <div className="flex items-center gap-1.5 animate-in fade-in slide-in-from-right-2">
+                                                <Info size={10} className="text-primary" />
+                                                <span className="text-[9px] text-white/40 font-mono italic">
+                                                    Will create: <span className="text-white/80">{previewVersion.display}</span>
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
                                     <div className="flex items-center gap-2 bg-black/20 rounded-md p-1 border border-white/5 focus-within:border-primary/50 transition-colors">
                                         <input
                                             type="text"
@@ -304,6 +333,7 @@ export default function GameVersionSelector({
                                 </div>
                             </div>
                         )}
+
                     </Select.Viewport>
                 </Select.Content>
             </Select.Portal>

@@ -1,5 +1,5 @@
 import NewsCard from "@/components/NewsCard";
-import ModSection from "@/components/ModSection";
+import { ModSection, ModSectionHeader, ModSectionGrid } from "@/components/ModSection";
 import { fetchLatestNews } from "@/app/actions/news-actions";
 import { fetchModsByCategory } from "@/app/actions/admin-actions";
 import { getTranslations } from 'next-intl/server';
@@ -32,31 +32,34 @@ export default async function Home({ params }: Props) {
         <div className="lg:col-span-3 space-y-6">
 
           {/* Recently Updated Section */}
-          <ModSection
-            titleKey="recentlyUpdated"
-            iconType="updated"
-            mods={updatedMods}
-            viewAllHref="/mods?sort=updated"
-            locale={locale as 'en' | 'ru'}
-          />
+          <ModSection>
+            <ModSectionHeader 
+              title={t('recentlyUpdated')} 
+              iconType="updated" 
+              viewAllHref="/mods?sort=updated" 
+            />
+            <ModSectionGrid mods={updatedMods} locale={locale as 'en' | 'ru'} />
+          </ModSection>
 
           {/* Featured Section (Hot this month by downloads) */}
-          <ModSection
-            titleKey="featured"
-            iconType="featured"
-            mods={featuredMods}
-            viewAllHref="/mods?sort=downloads"
-            locale={locale as 'en' | 'ru'}
-          />
+          <ModSection>
+            <ModSectionHeader 
+              title={t('featured')} 
+              iconType="featured" 
+              viewAllHref="/mods?sort=downloads" 
+            />
+            <ModSectionGrid mods={featuredMods} locale={locale as 'en' | 'ru'} />
+          </ModSection>
 
           {/* Top Rated Section */}
-          <ModSection
-            titleKey="topRated"
-            iconType="topRated"
-            mods={topRatedMods}
-            viewAllHref="/mods?sort=rating"
-            locale={locale as 'en' | 'ru'}
-          />
+          <ModSection>
+            <ModSectionHeader 
+              title={t('topRated')} 
+              iconType="topRated" 
+              viewAllHref="/mods?sort=rating" 
+            />
+            <ModSectionGrid mods={topRatedMods} locale={locale as 'en' | 'ru'} />
+          </ModSection>
 
         </div>
 

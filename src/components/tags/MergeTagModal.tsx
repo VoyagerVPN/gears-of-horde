@@ -13,8 +13,8 @@ import {
     DialogFooter,
     DialogButton,
     DialogAlert,
-} from "@/components/ui/Dialog";
-import { useToast } from "@/components/ui/Toast";
+    useToast,
+} from "@/shared/ui";
 import { getTagColor } from "@/lib/tag-colors";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";

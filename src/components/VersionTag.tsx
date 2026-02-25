@@ -1,4 +1,3 @@
-import { Gamepad2, Settings } from "lucide-react";
 import Tag from "@/components/ui/Tag";
 import { normalizeGameVersion } from "@/lib/utils";
 
@@ -23,7 +22,6 @@ export default function VersionTag({ type, version, className, color }: VersionT
     if (!version) return null;
 
     const isGame = type === 'game';
-    const Icon = isGame ? Gamepad2 : Settings;
 
     // Normalize game versions to always display with "V" prefix
     const displayVersion = isGame ? normalizeGameVersion(version) : version;

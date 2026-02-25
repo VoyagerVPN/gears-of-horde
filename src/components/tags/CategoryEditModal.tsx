@@ -12,7 +12,7 @@ import {
     DialogButton,
     DialogField,
     dialogInputClass,
-} from "@/components/ui/Dialog";
+} from "@/shared/ui";
 
 interface CategoryEditModalProps {
     isOpen: boolean;

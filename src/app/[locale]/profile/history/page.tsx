@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
 import { History as HistoryIcon } from "lucide-react"
 import ModCard from "@/components/ModCard"
-import { getViewHistory } from "@/app/actions/profile-actions"
+import { getViewHistory } from "@/app/actions/analytics-actions"
 import UnifiedTopBar from "@/components/ui/UnifiedTopBar"
 
 interface ViewWithMod {
@@ -19,9 +19,11 @@ interface ViewWithMod {
         author: string
         tags: { id: string; category: string; value: string; displayName: string; color: string | null }[]
         updatedAt: string
-        rating: number
-        downloads: string
-        views: string
+        stats: {
+            rating: number
+            downloads: string
+            views: string
+        }
         bannerUrl?: string
         description?: string
     }
@@ -40,7 +42,9 @@ export default function ProfileHistoryPage() {
             viewedAt: typeof view.viewedAt === 'string' ? view.viewedAt : new Date(view.viewedAt).toISOString(),
             mod: {
                 ...view.mod,
-                updatedAt: typeof view.mod.updatedAt === 'string' ? view.mod.updatedAt : new Date(view.mod.updatedAt).toISOString()
+                updatedAt: typeof view.mod.updatedAt === 'string' 
+                    ? view.mod.updatedAt 
+                    : (view.mod.updatedAt ? new Date(view.mod.updatedAt).toISOString() : '')
             }
         })) as ViewWithMod[])
         setLoading(false)
@@ -81,20 +85,8 @@ export default function ProfileHistoryPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {history.map((view) => (
                             <ModCard
-                                key={view.id}
-                                title={view.mod.title}
-                                slug={view.mod.slug}
-                                version={view.mod.version}
-                                author={view.mod.author}
-                                tags={view.mod.tags}
-                                updatedAt={view.mod.updatedAt}
-                                bannerUrl={view.mod.bannerUrl}
-                                description={view.mod.description || ''}
-                                stats={{
-                                    rating: view.mod.rating,
-                                    downloads: view.mod.downloads,
-                                    views: view.mod.views
-                                }}
+                                key={view.mod.slug}
+                                mod={view.mod as any}
                             />
                         ))}
                     </div>

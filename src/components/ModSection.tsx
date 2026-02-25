@@ -2,98 +2,86 @@
 
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
-import { RefreshCw, Flame, Star, ChevronRight } from "lucide-react";
+import { RefreshCw, Flame, Star, ChevronRight, LucideIcon } from "lucide-react";
 import ModCard from "@/components/ModCard";
 import { ModData } from "@/types/mod";
-
-// Map of icon names to components
-const ICONS = {
-    updated: RefreshCw,
-    featured: Flame,
-    topRated: Star
-} as const;
-
-type IconType = keyof typeof ICONS;
+import { cn } from "@/lib/utils";
 
 interface ModSectionProps {
-    /** Section title key for translation (e.g., "recentlyUpdated") */
-    titleKey: string;
-    /** Icon type: 'updated' | 'featured' | 'topRated' */
-    iconType: IconType;
-    /** Array of mods to display (max 6) */
-    mods: ModData[];
-    /** Link for "View All" button with pre-selected sort */
-    viewAllHref: string;
-    /** Current locale */
-    locale: 'en' | 'ru';
+    children: React.ReactNode;
+    className?: string;
 }
 
-/**
- * Horizontal mod section with 2x3 grid layout for main page
- * Shows up to 6 mod cards with a header and "View All" link
- */
-export default function ModSection({
-    titleKey,
-    iconType,
-    mods,
-    viewAllHref,
-    locale
-}: ModSectionProps) {
-    const t = useTranslations("HomePage");
-    const todayISO = new Date().toISOString();
-
-    // Get icon component from map
-    const Icon = ICONS[iconType];
-
-    // Take max 6 mods
-    const displayMods = mods.slice(0, 6);
-
-    if (displayMods.length === 0) {
-        return null;
-    }
-
+export function ModSectionRoot({ children, className }: ModSectionProps) {
     return (
-        <section className="mb-6">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                    <Icon size={18} className="text-primary" />
-                    <h2 className="text-2xl font-bold text-white uppercase tracking-widest font-exo2">
-                        {t(titleKey)}
-                    </h2>
-                </div>
-                <Link
-                    href={viewAllHref}
-                    className="flex items-center gap-1 text-xs text-textMuted hover:text-white transition-colors group"
-                >
-                    <span>{t("viewAll")}</span>
-                    <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                </Link>
-            </div>
-
-            {/* 2x3 Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {displayMods.map((mod) => (
-                    <ModCard
-                        key={mod.slug}
-                        title={mod.title}
-                        slug={mod.slug}
-                        version={mod.version}
-                        author={mod.author}
-                        description={mod.description || ''}
-                        tags={mod.tags}
-                        updatedAt={mod.changelog?.[0]?.date || todayISO}
-                        bannerUrl={mod.bannerUrl}
-                        stats={{
-                            rating: mod.stats.rating,
-                            downloads: mod.stats.downloads,
-                            views: mod.stats.views || '0'
-                        }}
-                        locale={locale}
-                        status={mod.status}
-                    />
-                ))}
-            </div>
+        <section className={cn("bg-surface/50 border border-white/5 rounded-3xl overflow-hidden", className)}>
+            {children}
         </section>
     );
 }
+
+const iconMap: Record<string, LucideIcon> = {
+    updated: RefreshCw,
+    featured: Flame,
+    topRated: Star
+};
+
+export function ModSectionHeader({ 
+    title, 
+    iconType, 
+    viewAllHref 
+}: { 
+    title: string, 
+    iconType: string, 
+    viewAllHref: string 
+}) {
+    const t = useTranslations('HomePage');
+    const Icon = iconMap[iconType] || RefreshCw;
+
+    return (
+        <div className="w-full flex items-center justify-between p-6 bg-white/[0.02] border-b border-white/5">
+            <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                    <Icon className="text-primary" size={20} />
+                </div>
+                <h2 className="text-xl font-bold text-white font-exo2 uppercase tracking-wider">
+                    {title}
+                </h2>
+            </div>
+
+            <Link
+                href={viewAllHref}
+                className="flex items-center gap-2 text-xs font-bold text-textMuted hover:text-primary transition-colors uppercase tracking-widest group"
+            >
+                {t('viewAll')}
+                <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+        </div>
+    );
+}
+
+export function ModSectionGrid({ 
+    mods, 
+    locale 
+}: { 
+    mods: ModData[], 
+    locale: 'en' | 'ru' 
+}) {
+    if (mods.length === 0) return (
+        <div className="text-textMuted py-12 text-center text-sm italic">
+            No mods found in this category
+        </div>
+    );
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 p-6">
+            {mods.map((mod) => (
+                <ModCard key={mod.slug} mod={mod} locale={locale} />
+            ))}
+        </div>
+    );
+}
+
+// Re-export with clean names
+export { ModSectionRoot as ModSection };
+export default ModSectionRoot;

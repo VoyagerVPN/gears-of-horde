@@ -10,12 +10,13 @@
  * 4. Recalculates gamever colors using gradient (red->green)
  */
 
-import { db as prisma } from "@/lib/db";
+
 import { recalculateGameVersionColors } from "@/lib/tags";
 import { revalidatePath } from "next/cache";
 import { ROUTES } from "@/lib/routes";
 import { normalizeGameVersion, gameVersionToTagValue } from "@/lib/utils";
 import { AUTHOR_TAG_COLOR } from "@/lib/tag-colors";
+import { db } from "@/lib/db";
 
 export async function syncAllTags() {
     console.log('Starting tag sync...');
@@ -29,15 +30,14 @@ export async function syncAllTags() {
     };
 
     // 1. Get all unique gameVersions from mods
-    const mods = await prisma.mod.findMany({
-        select: {
-            slug: true,
-            gameVersion: true
-        }
-    });
+    const { data: mods } = await db
+        .from('Mod')
+        .select('slug, gameVersion');
+
+    if (!mods) return results;
 
     // Normalize all game versions and get unique normalized values
-    const normalizedVersions = [...new Set(mods.map(m => m.gameVersion).filter(Boolean).map(normalizeGameVersion))];
+    const normalizedVersions = [...new Set((mods || []).map((m) => m.gameVersion).filter(Boolean).map((v) => normalizeGameVersion(v!)))] as string[];
     console.log(`Found ${normalizedVersions.length} unique game versions:`, normalizedVersions);
 
     // 1.5. Normalize mod.gameVersion values in database
@@ -46,10 +46,11 @@ export async function syncAllTags() {
         if (!mod.gameVersion) continue;
         const normalized = normalizeGameVersion(mod.gameVersion);
         if (normalized !== mod.gameVersion) {
-            await prisma.mod.update({
-                where: { slug: mod.slug },
-                data: { gameVersion: normalized }
-            });
+            await db
+                .from('Mod')
+                .update({ gameVersion: normalized })
+                .eq('slug', mod.slug);
+            
             results.gameVersionsNormalized++;
             console.log(`Normalized ${mod.slug}: "${mod.gameVersion}" → "${normalized}"`);
         }
@@ -60,22 +61,18 @@ export async function syncAllTags() {
         // Convert "V2.4" to "2_4" for storage
         const value = gameVersionToTagValue(version);
 
-        const existingTag = await prisma.tag.findUnique({
-            where: {
-                category_value: {
-                    category: 'gamever',
-                    value: value
-                }
-            }
-        });
+        const { data: existingTag } = await db
+            .from('Tag')
+            .select('id')
+            .eq('category', 'gamever')
+            .eq('value', value)
+            .maybeSingle();
 
         if (!existingTag) {
-            await prisma.tag.create({
-                data: {
-                    category: 'gamever',
-                    value: value,
-                    displayName: version // Keep "V2.4" format for display
-                }
+            await db.from('Tag').insert({
+                category: 'gamever',
+                value: value,
+                displayName: version // Keep "V2.4" format for display
             });
             results.gameVerTagsCreated++;
             console.log(`Created gamever tag: ${version}`);
@@ -90,32 +87,26 @@ export async function syncAllTags() {
         const normalizedVersion = normalizeGameVersion(mod.gameVersion);
         const value = gameVersionToTagValue(normalizedVersion);
 
-        const tag = await prisma.tag.findUnique({
-            where: {
-                category_value: {
-                    category: 'gamever',
-                    value: value
-                }
-            }
-        });
+        const { data: tag } = await db
+            .from('Tag')
+            .select('id')
+            .eq('category', 'gamever')
+            .eq('value', value)
+            .maybeSingle();
 
         if (tag) {
             // Check if link already exists
-            const existingLink = await prisma.modTag.findUnique({
-                where: {
-                    modId_tagId: {
-                        modId: mod.slug,
-                        tagId: tag.id
-                    }
-                }
-            });
+            const { data: existingLink } = await db
+                .from('ModTag')
+                .select('modId')
+                .eq('modId', mod.slug)
+                .eq('tagId', tag.id)
+                .maybeSingle();
 
             if (!existingLink) {
-                await prisma.modTag.create({
-                    data: {
-                        modId: mod.slug,
-                        tagId: tag.id
-                    }
+                await db.from('ModTag').insert({
+                    modId: mod.slug,
+                    tagId: tag.id
                 });
                 results.gameVerLinksCreated++;
                 console.log(`Linked ${mod.slug} to gamever:${value}`);
@@ -124,19 +115,21 @@ export async function syncAllTags() {
     }
 
     // 4. Set blue color for all author tags
-    const authorTagsUpdate = await prisma.tag.updateMany({
-        where: {
-            category: 'author'
-        },
-        data: {
-            color: AUTHOR_TAG_COLOR
-        }
-    });
-    results.authorTagsUpdated = authorTagsUpdate.count;
-    console.log(`Updated ${authorTagsUpdate.count} author tags with color ${AUTHOR_TAG_COLOR}`);
+    const { data: authorTags, error: authorError } = await db
+        .from('Tag')
+        .update({ color: AUTHOR_TAG_COLOR })
+        .eq('category', 'author')
+        .select('id');
+    
+    if (authorError) {
+        console.error('Failed to update author tags:', authorError);
+    } else {
+        results.authorTagsUpdated = authorTags?.length || 0;
+        console.log(`Updated ${results.authorTagsUpdated} author tags with color ${AUTHOR_TAG_COLOR}`);
+    }
 
     // 5. Recalculate gamever colors (gradient)
-    const colorResults = await recalculateGameVersionColors(prisma);
+    const colorResults = await recalculateGameVersionColors();
     results.gameVerColorsUpdated = colorResults.length;
     console.log(`Updated colors for ${colorResults.length} gamever tags:`, colorResults);
 
@@ -163,37 +156,44 @@ export async function normalizeAllGameVersions() {
     };
 
     // 1. Normalize mod.gameVersion fields
-    const mods = await prisma.mod.findMany({
-        select: { slug: true, gameVersion: true }
-    });
+    const { data: mods } = await db
+        .from('Mod')
+        .select('slug, gameVersion');
 
-    for (const mod of mods) {
-        if (!mod.gameVersion) continue;
-        const normalized = normalizeGameVersion(mod.gameVersion);
-        if (normalized !== mod.gameVersion) {
-            await prisma.mod.update({
-                where: { slug: mod.slug },
-                data: { gameVersion: normalized }
-            });
-            results.modsNormalized++;
-            console.log(`Mod: "${mod.gameVersion}" → "${normalized}"`);
+    if (mods) {
+        for (const mod of mods) {
+            if (!mod.gameVersion) continue;
+            const normalized = normalizeGameVersion(mod.gameVersion);
+            if (normalized !== mod.gameVersion) {
+                await db
+                    .from('Mod')
+                    .update({ gameVersion: normalized })
+                    .eq('slug', mod.slug);
+                
+                results.modsNormalized++;
+                console.log(`Mod: "${mod.gameVersion}" → "${normalized}"`);
+            }
         }
     }
 
     // 2. Normalize gamever tag displayNames
-    const gameVerTags = await prisma.tag.findMany({
-        where: { category: 'gamever' }
-    });
+    const { data: gameVerTags } = await db
+        .from('Tag')
+        .select('id, displayName')
+        .eq('category', 'gamever');
 
-    for (const tag of gameVerTags) {
-        const normalized = normalizeGameVersion(tag.displayName);
-        if (normalized !== tag.displayName) {
-            await prisma.tag.update({
-                where: { id: tag.id },
-                data: { displayName: normalized }
-            });
-            results.tagsNormalized++;
-            console.log(`Tag: "${tag.displayName}" → "${normalized}"`);
+    if (gameVerTags) {
+        for (const tag of gameVerTags) {
+            const normalized = normalizeGameVersion(tag.displayName);
+            if (normalized !== tag.displayName) {
+                await db
+                    .from('Tag')
+                    .update({ displayName: normalized })
+                    .eq('id', tag.id);
+                
+                results.tagsNormalized++;
+                console.log(`Tag: "${tag.displayName}" → "${normalized}"`);
+            }
         }
     }
 
@@ -207,17 +207,19 @@ export async function normalizeAllGameVersions() {
 }
 
 export async function setAuthorTagsBlue() {
-    const result = await prisma.tag.updateMany({
-        where: {
-            category: 'author'
-        },
-        data: {
-            color: AUTHOR_TAG_COLOR
-        }
-    });
+    const { data: updatedTags, error } = await db
+        .from('Tag')
+        .update({ color: AUTHOR_TAG_COLOR })
+        .eq('category', 'author')
+        .select('id');
+
+    if (error) {
+        console.error('Failed to set author tags blue:', error);
+        return { updated: 0 };
+    }
 
     revalidatePath(ROUTES.mods);
     revalidatePath(ROUTES.tags);
 
-    return { updated: result.count };
+    return { updated: updatedTags?.length || 0 };
 }

@@ -1,16 +1,18 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { Link } from "@/i18n/routing"
 import { usePathname } from "next/navigation"
 import {
     Package, Settings, Tags, Users,
     Heart, Download, History, FileEdit, User,
-    Newspaper, LucideIcon
+    Newspaper, LucideIcon, Hash
 } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { ROUTES } from "@/lib/routes"
 import EditorSubNav from "./EditorSubNav"
+import { fetchNavCategories } from "@/app/actions/tag-actions"
+import type { TagData } from "@/schemas"
 
 // Utility to normalize path by removing locale prefix
 const normalizePathname = (pathname: string): string => {
@@ -23,6 +25,7 @@ interface NavItem {
     label: string
     roles?: string[]
     isEditorSection?: boolean
+    count?: number
 }
 
 interface NavCategory {
@@ -41,7 +44,18 @@ interface SidebarNavProps {
 export default function SidebarNav({ userRole }: SidebarNavProps) {
     const tAdmin = useTranslations('Admin')
     const tProfile = useTranslations('Profile')
+    const tNav = useTranslations('Navigation')
     const pathname = usePathname()
+
+    const [navCategories, setNavCategories] = useState<TagData[]>([])
+
+    useEffect(() => {
+        async function loadCategories() {
+            const cats = await fetchNavCategories()
+            setNavCategories(cats)
+        }
+        loadCategories()
+    }, [])
 
     const normalizedPath = normalizePathname(pathname)
 
@@ -73,6 +87,18 @@ export default function SidebarNav({ userRole }: SidebarNavProps) {
             ]
         },
         {
+            id: 'categories',
+            label: tNav('categories'),
+            icon: Tags,
+            href: ROUTES.mods,
+            items: navCategories.map(cat => ({
+                href: ROUTES.mods + `?tag=${cat.value}`,
+                icon: Hash,
+                label: cat.displayName,
+                count: cat.usageCount
+            }))
+        },
+        {
             id: 'admin',
             label: tAdmin('admin'),
             icon: User,
@@ -87,7 +113,7 @@ export default function SidebarNav({ userRole }: SidebarNavProps) {
                 { href: ROUTES.settings, icon: Settings, label: tAdmin('settings') },
             ]
         }
-    ], [tAdmin, tProfile])
+    ], [tAdmin, tProfile, tNav, navCategories])
 
     // Filter categories and items based on user role
     const filteredCategories = useMemo(() => {
@@ -118,13 +144,23 @@ export default function SidebarNav({ userRole }: SidebarNavProps) {
             <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 w-full px-3 py-2 mb-1 text-xs font-bold uppercase rounded-lg transition-colors ${active
+                className={`flex items-center justify-between group w-full px-3 py-2 mb-1 text-xs font-bold uppercase rounded-lg transition-colors ${active
                     ? 'text-primary bg-primary/10'
                     : 'text-textMuted hover:text-white hover:bg-white/5'
                     }`}
             >
-                <item.icon size={16} className="shrink-0" />
-                <span>{item.label}</span>
+                <div className="flex items-center gap-3">
+                    <item.icon size={16} className="shrink-0" />
+                    <span>{item.label}</span>
+                </div>
+                {item.count !== undefined && item.count > 0 && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full transition-colors ${active
+                        ? 'bg-primary/20 text-primary'
+                        : 'bg-white/10 text-textMuted group-hover:text-white'
+                        }`}>
+                        {item.count}
+                    </span>
+                )}
             </Link>
         )
     }

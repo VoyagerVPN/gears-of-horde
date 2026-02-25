@@ -13,7 +13,7 @@ import {
     DialogButton,
     DialogField,
     dialogInputClass,
-} from "@/components/ui/Dialog";
+} from "@/shared/ui";
 import RichSelector, { RichSelectorOption } from "@/components/ui/RichSelector";
 import { getTagColor, TAG_CATEGORY_COLORS, AUTHOR_TAG_COLOR, PRIMARY_COLOR, FALLBACK_TAG_COLOR } from "@/lib/tag-colors";
 

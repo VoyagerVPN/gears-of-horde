@@ -1,6 +1,6 @@
 'use server';
 
-import { db as prisma } from "@/lib/db";
+
 import { normalizeGameVersion } from "@/lib/utils";
 import {
     findOrCreateAuthorTag,
@@ -12,6 +12,8 @@ import { ModDataSchema } from "@/schemas";
 import { validate, ok, err, type Result } from "@/lib/result";
 import { revalidatePath } from "next/cache";
 import { ROUTES } from "@/lib/routes";
+import { db } from "@/lib/db";
+import { sanitizeHtml, stripHtml } from "@/lib/sanitization";
 
 /**
  * Helper to check if a string looks like a valid URL
@@ -40,10 +42,9 @@ function preprocessModData(rawData: unknown): unknown {
 
         // Clean up download/discord links to empty string if invalid
         if (typeof links.download === 'string' && links.download.trim() !== '' && !isValidUrl(links.download)) {
-            // Try to fix protocol if missing? simpler to just clear for now to pass validation
             links.download = '';
         } else if (typeof links.download === 'string' && links.download.trim() === '') {
-            links.download = ''; // ensure empty string for schema
+            links.download = '';
         }
 
         if (typeof links.discord === 'string' && links.discord.trim() !== '' && !isValidUrl(links.discord)) {
@@ -52,7 +53,7 @@ function preprocessModData(rawData: unknown): unknown {
             links.discord = '';
         }
 
-        // Filter community links - only keep entries with valid name AND url
+        // Filter community links
         if (Array.isArray(links.community)) {
             links.community = links.community.filter((link: unknown) => {
                 if (!link || typeof link !== 'object') return false;
@@ -66,7 +67,7 @@ function preprocessModData(rawData: unknown): unknown {
             });
         }
 
-        // Filter donations links - only keep entries with valid name AND url
+        // Filter donations links
         if (Array.isArray(links.donations)) {
             links.donations = links.donations.filter((link: unknown) => {
                 if (!link || typeof link !== 'object') return false;
@@ -97,7 +98,7 @@ function preprocessModData(rawData: unknown): unknown {
         );
     }
 
-    // Clean up video URLs (empty strings are allowed by schema)
+    // video URLs
     if (data.videos && typeof data.videos === 'object') {
         const videos = data.videos as Record<string, unknown>;
         if (typeof videos.trailer === 'string' && videos.trailer.trim() !== '' && !isValidUrl(videos.trailer)) {
@@ -113,23 +114,23 @@ function preprocessModData(rawData: unknown): unknown {
         }
     }
 
-    // Process Localizations (url field is optional but must be valid URL if present)
+    // Localizations
     if (Array.isArray(data.localizations)) {
         data.localizations = data.localizations.map((loc: unknown) => {
             if (!loc || typeof loc !== 'object') return loc;
             const l = loc as Record<string, unknown>;
 
             if (typeof l.url === 'string' && l.url.trim() !== '' && !isValidUrl(l.url)) {
-                return { ...l, url: undefined }; // remove invalid url
+                return { ...l, url: undefined };
             }
             if (typeof l.url === 'string' && l.url.trim() === '') {
-                return { ...l, url: undefined }; // clean empty string
+                return { ...l, url: undefined };
             }
             return loc;
         });
     }
 
-    // Process Tags (externalLink is optional)
+    // Tags
     if (Array.isArray(data.tags)) {
         data.tags = data.tags.map((tag: unknown) => {
             if (!tag || typeof tag !== 'object') return tag;
@@ -144,14 +145,11 @@ function preprocessModData(rawData: unknown): unknown {
             return tag;
         });
 
-        // If author field is empty but author tags exist, populate author from first author tag
-        // This ensures Zod validation passes when author is set via TagSelector
         const tagsArray = data.tags as Array<{ category?: string; displayName?: string }>;
         const authorTags = tagsArray.filter((tag) => tag && tag.category === 'author');
         if (authorTags.length > 0) {
             const firstAuthorName = authorTags[0]?.displayName;
             if (firstAuthorName && typeof firstAuthorName === 'string') {
-                // Only override if author is empty or placeholder
                 if (!data.author || data.author === '' || data.author === 'Author Name') {
                     data.author = firstAuthorName;
                 }
@@ -163,10 +161,7 @@ function preprocessModData(rawData: unknown): unknown {
 }
 
 export async function createMod(rawData: unknown): Promise<Result<{ slug: string }>> {
-    // Pre-process raw data to clean up empty/incomplete link entries
     const preprocessedData = preprocessModData(rawData);
-
-    // Validate input with Zod schema
     const validated = validate(ModDataSchema, preprocessedData);
     if (!validated.success) {
         return validated;
@@ -174,44 +169,38 @@ export async function createMod(rawData: unknown): Promise<Result<{ slug: string
     const data = validated.data;
 
     try {
-
-        // Check if mod with slug already exists
-        const existingMod = await prisma.mod.findUnique({
-            where: { slug: data.slug }
-        });
+        const { data: existingMod } = await db
+            .from('Mod')
+            .select('slug')
+            .eq('slug', data.slug)
+            .maybeSingle();
 
         if (existingMod) {
             throw new Error(`Mod with slug '${data.slug}' already exists`);
         }
 
-        // 1. Prepare Tag Data
-        // We will link these AFTER mod creation or as part of nested create
-        const tagLinks = [];
-
-        // Check if author tags are already in data.tags
+        const tagLinks: { tagId: string; isExternal: boolean; externalLink: string | null }[] = [];
         const authorTagsFromTags = data.tags.filter(t => t.category === 'author');
 
-        // If no author tags in data.tags, fall back to data.author (legacy field)
-        // Otherwise, use authors from tags and update data.author for backwards compatibility
         let effectiveAuthor = data.author;
         if (authorTagsFromTags.length > 0) {
-            // Use the first author tag as the primary author
             effectiveAuthor = authorTagsFromTags[0].displayName;
         } else if (data.author && data.author !== 'Author Name') {
-            // Only create author tag from data.author if it's not the placeholder
             const authorTag = await findOrCreateAuthorTag(data.author);
             tagLinks.push({
-                tag: { connect: { id: authorTag.id } }
+                tagId: authorTag.id,
+                isExternal: false,
+                externalLink: null
             });
         }
 
-        // Game Version Tag
         const gameVerTag = await findOrCreateGameVerTag(normalizeGameVersion(data.gameVersion));
         tagLinks.push({
-            tag: { connect: { id: gameVerTag.id } }
+            tagId: gameVerTag.id,
+            isExternal: false,
+            externalLink: null
         });
 
-        // Other Tags
         for (const t of data.tags) {
             let tag;
             const category = t.category || 'tag';
@@ -227,74 +216,80 @@ export async function createMod(rawData: unknown): Promise<Result<{ slug: string
             }
 
             tagLinks.push({
+                tagId: tag.id,
                 isExternal: t.isExternal || false,
-                externalLink: t.externalLink || null,
-                tag: { connect: { id: tag.id } }
+                externalLink: t.externalLink || null
             });
         }
 
-        // Create the mod
-        await prisma.mod.create({
-            data: {
-                slug: data.slug,
-                title: data.title,
-                version: data.version,
-                author: effectiveAuthor,
-                description: data.description,
-                status: data.status,
-                gameVersion: normalizeGameVersion(data.gameVersion),
-                bannerUrl: data.bannerUrl || null,
-                isSaveBreaking: data.isSaveBreaking,
-                features: data.features,
-                tags: {
-                    create: tagLinks
-                },
-                installationSteps: data.installationSteps,
-                // Zod validates these, Prisma accepts them as Json
-                links: data.links,
-                videos: data.videos,
-                changelog: data.changelog,
-                localizations: data.localizations,
-
-                // Stats are individual columns
-                rating: data.stats.rating,
-                ratingCount: data.stats.ratingCount,
-                downloads: data.stats.downloads,
-                views: data.stats.views,
-
-                screenshots: data.screenshots,
-            }
+        // 1. Create the mod
+        const { error: modError } = await db.from('Mod').insert({
+            slug: data.slug,
+            title: stripHtml(data.title),
+            version: stripHtml(data.version),
+            author: stripHtml(effectiveAuthor || ''),
+            description: sanitizeHtml(data.description),
+            status: data.status,
+            gameVersion: normalizeGameVersion(data.gameVersion),
+            bannerUrl: data.bannerUrl || null,
+            isSaveBreaking: data.isSaveBreaking,
+            features: (data.features || []).map((f: string) => sanitizeHtml(f)),
+            installationSteps: (data.installationSteps || []).map((s: string) => sanitizeHtml(s)),
+            links: data.links,
+            videos: data.videos,
+            changelog: (data.changelog || []).map((entry) => ({
+                ...entry,
+                version: stripHtml(entry.version),
+                changes: (entry.changes || []).map((c: string) => sanitizeHtml(c))
+            })),
+            localizations: data.localizations,
+            rating: data.stats.rating,
+            ratingCount: data.stats.ratingCount,
+            downloads: data.stats.downloads,
+            views: data.stats.views,
+            screenshots: data.screenshots,
         });
 
-        // 3. Create News Item for New Mod
-        // Find 'NEW' tag
-        const newTag = await prisma.tag.findUnique({
-            where: {
-                category_value: {
-                    category: 'newscat',
-                    value: 'new'
-                }
-            }
-        });
+        if (modError) throw new Error(`Failed to insert mod: ${modError.message}`);
+
+        // 2. Link tags
+        if (tagLinks.length > 0) {
+            const { error: tagError } = await db.from('ModTag').insert(
+                tagLinks.map((tl) => ({
+                    modId: data.slug,
+                    tagId: tl.tagId,
+                    isExternal: tl.isExternal,
+                    externalLink: tl.externalLink
+                }))
+            );
+            if (tagError) throw new Error(`Failed to link tags: ${tagError.message}`);
+        }
+
+        // 3. Create News Item
+        const { data: newTag } = await db
+            .from('Tag')
+            .select('*')
+            .eq('category', 'newscat')
+            .eq('value', 'new')
+            .single();
 
         if (newTag) {
-            await prisma.news.create({
-                data: {
-                    modSlug: data.slug,
-                    modName: data.title,
-                    modVersion: data.version,
-                    gameVersion: normalizeGameVersion(data.gameVersion),
-                    actionText: 'added',
-                    content: `Version ${data.version} is now available.`,
-                    description: `${data.title} was added to Gears of Horde`,
-                    date: new Date(),
-                    wipeRequired: false,
-                    newscatTagId: newTag.id,
-                    tags: [
-                        { id: newTag.id, displayName: newTag.displayName, color: newTag.color, category: newTag.category }
-                    ]
-                }
+            const { error: newsError } = await db.from('News').insert({
+                modSlug: data.slug,
+                modName: data.title,
+                modVersion: data.version,
+                gameVersion: normalizeGameVersion(data.gameVersion),
+                actionText: 'added',
+                content: `Version ${data.version} is now available.`,
+                description: `${data.title} was added to Gears of Horde`,
+                date: new Date().toISOString(),
+                wipeRequired: false,
+                newscatTagId: newTag.id,
+                tags: [
+                    { id: newTag.id, displayName: newTag.displayName, color: newTag.color, category: newTag.category }
+                ]
             });
+            if (newsError) console.error("Failed to create news item:", newsError.message);
         }
 
         revalidatePath(ROUTES.mods);

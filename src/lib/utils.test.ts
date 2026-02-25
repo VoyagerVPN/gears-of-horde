@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { normalizeGameVersion, compareGameVersions, calculateGameVersionColor, isValidUrl } from './utils'
+import { normalizeGameVersion, compareGameVersions, isValidUrl } from './utils'
 
 describe('normalizeGameVersion', () => {
   it('should normalize standard versions', () => {

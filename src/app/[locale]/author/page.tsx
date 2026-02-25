@@ -1,6 +1,6 @@
-import { auth } from "@/auth";
+import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import VisualModEditor from "@/components/mod/VisualModEditor";
+import VisualModEditor from "@/components/mod/editor/VisualModEditor";
 import { fetchModSubmissionById } from "@/app/actions/mod-submission-actions";
 import { ModStatusType } from "@/types/mod";
 
@@ -9,11 +9,21 @@ interface PageProps {
 }
 
 export default async function AuthorPage({ searchParams }: PageProps) {
-    const session = await auth();
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
     const params = await searchParams;
 
-    if (!session) {
-        redirect("/api/auth/signin");
+    if (!user) {
+        redirect("/login");
+    }
+    
+    const { data: dbUser } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+    if (!dbUser) {
+        redirect("/profile");
     }
 
     // const t = await getTranslations('Author');

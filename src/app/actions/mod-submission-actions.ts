@@ -1,6 +1,6 @@
 'use server';
 
-import { db as prisma } from "@/lib/db";
+
 import {
     ModSubmissionCreateSchema,
     type ModSubmission,
@@ -12,43 +12,44 @@ import {
 import { validate, ok, err, type Result } from "@/lib/result";
 import { revalidatePath } from "next/cache";
 import { ROUTES } from "@/lib/routes";
-import { auth } from "@/auth";
+import { createClient } from "@/utils/supabase/server";
+import { db } from "@/lib/db";
+
+const SUBMISSION_SELECT = `
+    *,
+    submitter:User!submitterId(name, image)
+`;
 
 /**
  * Submit a new mod for review (Developer role required)
  */
 export async function submitModSuggestion(rawData: unknown): Promise<Result<{ id: string }>> {
-    // Validate input with Zod
-    const validated = validate(ModSubmissionCreateSchema, rawData);
+    const preprocessedData = rawData; // Pre-processing if needed
+    const validated = validate(ModSubmissionCreateSchema, preprocessedData);
     if (!validated.success) {
         return validated;
     }
     const data = validated.data;
 
-    const session = await auth();
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
         return err("Not authenticated");
     }
 
-    // Check if user has Author role or higher
-    const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { role: true, isBanned: true }
-    });
+    const { data: dbUser } = await db
+        .from('User')
+        .select('role, isBanned')
+        .eq('id', user.id)
+        .single();
 
-    if (!user || user.isBanned) {
+    if (!dbUser || dbUser.isBanned) {
         return err("Account not found or banned");
     }
 
-    // Allow all users to submit mods
-    // if (!['DEVELOPER', 'MODERATOR', 'ADMIN'].includes(user.role)) {
-    //     return err("Developer role required to submit mods");
-    // }
-
-    // Check if slug already exists (in mods or pending submissions)
-    const existingMod = await prisma.mod.findUnique({ where: { slug: data.slug } });
-    const existingSubmission = await prisma.modSubmission.findUnique({ where: { slug: data.slug } });
+    const { data: existingMod } = await db.from('Mod').select('slug').eq('slug', data.slug).maybeSingle();
+    const { data: existingSubmission } = await db.from('ModSubmission').select('slug').eq('slug', data.slug).maybeSingle();
 
     if (existingMod) {
         return err("A mod with this slug already exists");
@@ -59,8 +60,9 @@ export async function submitModSuggestion(rawData: unknown): Promise<Result<{ id
     }
 
     try {
-        const submission = await prisma.modSubmission.create({
-            data: {
+        const { data: submission, error } = await db
+            .from('ModSubmission')
+            .insert({
                 title: data.title,
                 slug: data.slug,
                 version: data.version,
@@ -71,17 +73,19 @@ export async function submitModSuggestion(rawData: unknown): Promise<Result<{ id
                 isSaveBreaking: data.isSaveBreaking,
                 features: data.features,
                 installationSteps: data.installationSteps,
-                // Zod validates these, Prisma accepts as Json
                 links: data.links,
                 videos: data.videos,
                 changelog: data.changelog,
                 localizations: data.localizations,
                 screenshots: data.screenshots,
                 tags: data.tags,
-                submitterId: session.user.id,
+                submitterId: user.id,
                 submitterNote: data.submitterNote || null,
-            }
-        });
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
 
         revalidatePath(ROUTES.mods);
         revalidatePath('/author');
@@ -97,57 +101,53 @@ export async function submitModSuggestion(rawData: unknown): Promise<Result<{ id
  * Fetch all pending mod submissions (Admin only)
  */
 export async function fetchPendingModSubmissions(): Promise<ModSubmission[]> {
-    const submissions = await prisma.modSubmission.findMany({
-        where: { status: 'pending' },
-        orderBy: { submittedAt: 'desc' },
-        include: {
-            submitter: {
-                select: { name: true, image: true }
-            }
-        }
-    });
+    const { data: submissions } = await db
+        .from('ModSubmission')
+        .select(SUBMISSION_SELECT)
+        .eq('status', 'pending')
+        .order('submittedAt', { ascending: false });
 
-    return submissions.map(s => ({
-        id: s.id,
-        title: s.title,
-        slug: s.slug,
-        version: s.version,
-        author: s.author,
-        description: s.description,
-        gameVersion: s.gameVersion,
-        bannerUrl: s.bannerUrl || undefined,
-        isSaveBreaking: s.isSaveBreaking,
-        features: s.features,
-        installationSteps: s.installationSteps,
-        links: s.links as unknown as ModData['links'],
-        videos: s.videos as unknown as ModData['videos'],
-        changelog: s.changelog as unknown as ModChangelog[],
-        localizations: s.localizations as unknown as ModLocalization[],
-        screenshots: s.screenshots,
-        tags: s.tags as unknown as TagData[],
-        submitterId: s.submitterId,
-        submitterName: s.submitter.name || 'Unknown',
-        submitterImage: s.submitter.image || undefined,
-        submitterNote: s.submitterNote || undefined,
-        status: s.status as 'pending' | 'approved' | 'rejected',
-        rejectionReason: s.rejectionReason || undefined,
-        submittedAt: s.submittedAt.toISOString(),
-        reviewedAt: s.reviewedAt?.toISOString()
-    }));
+    return (submissions || []).map((s) => {
+        const item = s as unknown as Record<string, unknown>;
+        return {
+            id: item.id as string,
+            title: item.title as string,
+            slug: item.slug as string,
+            version: item.version as string,
+            author: item.author as string,
+            description: item.description as string,
+            gameVersion: item.gameVersion as string,
+            bannerUrl: (item.bannerUrl as string | null) || undefined,
+            isSaveBreaking: item.isSaveBreaking as boolean,
+            features: item.features as string[],
+            installationSteps: item.installationSteps as string[],
+            links: item.links as unknown as ModData['links'],
+            videos: item.videos as unknown as ModData['videos'],
+            changelog: item.changelog as unknown as ModChangelog[],
+            localizations: item.localizations as unknown as ModLocalization[],
+            screenshots: item.screenshots as string[],
+            tags: item.tags as unknown as TagData[],
+            submitterId: item.submitterId as string,
+            submitterName: (item.submitter as { name?: string })?.name || 'Unknown',
+            submitterImage: (item.submitter as { image?: string })?.image || undefined,
+            submitterNote: (item.submitterNote as string | null) || undefined,
+            status: item.status as 'pending' | 'approved' | 'rejected',
+            rejectionReason: (item.rejectionReason as string | null) || undefined,
+            submittedAt: new Date(item.submittedAt as string | number | Date).toISOString(),
+            reviewedAt: item.reviewedAt ? new Date(item.reviewedAt as string | number | Date).toISOString() : undefined
+        };
+    });
 }
 
 /**
  * Fetch a single mod submission by ID
  */
 export async function fetchModSubmissionById(id: string): Promise<ModSubmission | null> {
-    const s = await prisma.modSubmission.findUnique({
-        where: { id },
-        include: {
-            submitter: {
-                select: { name: true, image: true }
-            }
-        }
-    });
+    const { data: s } = await db
+        .from('ModSubmission')
+        .select(SUBMISSION_SELECT)
+        .eq('id', id)
+        .maybeSingle();
 
     if (!s) return null;
 
@@ -170,28 +170,30 @@ export async function fetchModSubmissionById(id: string): Promise<ModSubmission 
         screenshots: s.screenshots,
         tags: s.tags as unknown as TagData[],
         submitterId: s.submitterId,
-        submitterName: s.submitter.name || 'Unknown',
-        submitterImage: s.submitter.image || undefined,
+        submitterName: (s.submitter as { name?: string })?.name || 'Unknown',
+        submitterImage: (s.submitter as { image?: string })?.image || undefined,
         submitterNote: s.submitterNote || undefined,
         status: s.status as 'pending' | 'approved' | 'rejected',
         rejectionReason: s.rejectionReason || undefined,
-        submittedAt: s.submittedAt.toISOString(),
-        reviewedAt: s.reviewedAt?.toISOString()
+        submittedAt: new Date(s.submittedAt).toISOString(),
+        reviewedAt: s.reviewedAt ? new Date(s.reviewedAt).toISOString() : undefined
     };
 }
 
 /**
- * Mark submission as approved (actual mod creation happens via normal mod save)
+ * Mark submission as approved
  */
 export async function approveModSubmission(id: string) {
     try {
-        await prisma.modSubmission.update({
-            where: { id },
-            data: {
+        const { error } = await db
+            .from('ModSubmission')
+            .update({
                 status: 'approved',
-                reviewedAt: new Date()
-            }
-        });
+                reviewedAt: new Date().toISOString()
+            })
+            .eq('id', id);
+
+        if (error) throw error;
 
         revalidatePath(ROUTES.mods);
         revalidatePath('/author');
@@ -208,14 +210,16 @@ export async function approveModSubmission(id: string) {
  */
 export async function rejectModSubmission(id: string, reason: string) {
     try {
-        await prisma.modSubmission.update({
-            where: { id },
-            data: {
+        const { error } = await db
+            .from('ModSubmission')
+            .update({
                 status: 'rejected',
                 rejectionReason: reason,
-                reviewedAt: new Date()
-            }
-        });
+                reviewedAt: new Date().toISOString()
+            })
+            .eq('id', id);
+
+        if (error) throw error;
 
         revalidatePath(ROUTES.mods);
         revalidatePath('/author');
@@ -231,47 +235,47 @@ export async function rejectModSubmission(id: string, reason: string) {
  * Fetch submissions for current user (Author dashboard)
  */
 export async function fetchMySubmissions(): Promise<ModSubmission[]> {
-    const session = await auth();
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (!session?.user?.id) {
+    if (!user) {
         return [];
     }
 
-    const submissions = await prisma.modSubmission.findMany({
-        where: { submitterId: session.user.id },
-        orderBy: { submittedAt: 'desc' },
-        include: {
-            submitter: {
-                select: { name: true, image: true }
-            }
-        }
-    });
+    const { data: submissions } = await db
+        .from('ModSubmission')
+        .select(SUBMISSION_SELECT)
+        .eq('submitterId', user.id)
+        .order('submittedAt', { ascending: false });
 
-    return submissions.map(s => ({
-        id: s.id,
-        title: s.title,
-        slug: s.slug,
-        version: s.version,
-        author: s.author,
-        description: s.description,
-        gameVersion: s.gameVersion,
-        bannerUrl: s.bannerUrl || undefined,
-        isSaveBreaking: s.isSaveBreaking,
-        features: s.features,
-        installationSteps: s.installationSteps,
-        links: s.links as unknown as ModData['links'],
-        videos: s.videos as unknown as ModData['videos'],
-        changelog: s.changelog as unknown as ModChangelog[],
-        localizations: s.localizations as unknown as ModLocalization[],
-        screenshots: s.screenshots,
-        tags: s.tags as unknown as TagData[],
-        submitterId: s.submitterId,
-        submitterName: s.submitter.name || 'Unknown',
-        submitterImage: s.submitter.image || undefined,
-        submitterNote: s.submitterNote || undefined,
-        status: s.status as 'pending' | 'approved' | 'rejected',
-        rejectionReason: s.rejectionReason || undefined,
-        submittedAt: s.submittedAt.toISOString(),
-        reviewedAt: s.reviewedAt?.toISOString()
-    }));
+    return (submissions || []).map((s) => {
+        const item = s as unknown as Record<string, unknown>;
+        return {
+            id: item.id as string,
+            title: item.title as string,
+            slug: item.slug as string,
+            version: item.version as string,
+            author: item.author as string,
+            description: item.description as string,
+            gameVersion: item.gameVersion as string,
+            bannerUrl: (item.bannerUrl as string | null) || undefined,
+            isSaveBreaking: item.isSaveBreaking as boolean,
+            features: item.features as string[],
+            installationSteps: item.installationSteps as string[],
+            links: item.links as unknown as ModData['links'],
+            videos: item.videos as unknown as ModData['videos'],
+            changelog: item.changelog as unknown as ModChangelog[],
+            localizations: item.localizations as unknown as ModLocalization[],
+            screenshots: item.screenshots as string[],
+            tags: item.tags as unknown as TagData[],
+            submitterId: item.submitterId as string,
+            submitterName: (item.submitter as { name?: string })?.name || 'Unknown',
+            submitterImage: (item.submitter as { image?: string })?.image || undefined,
+            submitterNote: (item.submitterNote as string | null) || undefined,
+            status: item.status as 'pending' | 'approved' | 'rejected',
+            rejectionReason: (item.rejectionReason as string | null) || undefined,
+            submittedAt: new Date(item.submittedAt as string | number | Date).toISOString(),
+            reviewedAt: item.reviewedAt ? new Date(item.reviewedAt as string | number | Date).toISOString() : undefined
+        };
+    });
 }

@@ -1,4 +1,4 @@
-import { put } from '@vercel/blob';
+import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 
 // 4.5MB limit for server uploads
@@ -8,7 +8,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     try {
         const { searchParams } = new URL(request.url);
         const filename = searchParams.get('filename');
-        const folder = searchParams.get('folder') || 'uploads';
+        const bucket = searchParams.get('folder') || 'screenshots'; // Default to screenshots bucket
 
         if (!filename) {
             return NextResponse.json(
@@ -26,20 +26,46 @@ export async function POST(request: Request): Promise<NextResponse> {
             );
         }
 
+        const supabase = await createClient();
+        
+        // Get the file content
+        const blob = await request.blob();
+        
+        if (blob.size > MAX_FILE_SIZE) {
+            return NextResponse.json(
+                { error: 'File size exceeds 4.5MB limit' },
+                { status: 413 }
+            );
+        }
+
         // Generate unique filename with timestamp
         const timestamp = Date.now();
-        const uniqueFilename = `${folder}/${timestamp}-${filename}`;
+        const filePath = `${timestamp}-${filename}`;
 
-        // Upload to Vercel Blob
-        // - addRandomSuffix: false - we already have timestamp, avoid extra randomness
-        // - cacheControlMaxAge: 31 days - match our image optimization cache
-        const blob = await put(uniqueFilename, request.body as ReadableStream, {
-            access: 'public',
-            addRandomSuffix: false,
-            cacheControlMaxAge: 2678400, // 31 days
-        });
+        // Upload to Supabase Storage
+        const { data: _data, error } = await supabase.storage
+            .from(bucket)
+            .upload(filePath, blob, {
+                contentType: blob.type,
+                cacheControl: '2678400', // 31 days
+                upsert: false
+            });
 
-        return NextResponse.json(blob);
+        if (error) {
+            console.error('Supabase storage error:', error);
+            return NextResponse.json(
+                { error: error.message },
+                { status: 500 }
+            );
+        }
+
+        // Get the public URL for the uploaded file
+        const { data: { publicUrl } } = supabase.storage
+            .from(bucket)
+            .getPublicUrl(filePath);
+
+        // Return the URL in a format compatible with components expecting PutBlobResult
+        return NextResponse.json({ url: publicUrl });
     } catch (error) {
         console.error('Upload error:', error);
         return NextResponse.json(

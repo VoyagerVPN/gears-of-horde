@@ -1,4 +1,3 @@
-import { CircleUser } from "lucide-react";
 import Tag from "@/components/ui/Tag";
 
 interface AuthorTagProps {

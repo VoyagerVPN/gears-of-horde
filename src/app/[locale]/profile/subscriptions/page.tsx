@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
 import { Heart, Calendar, RefreshCw } from "lucide-react"
 import ModCard from "@/components/ModCard"
-import { getSubscriptions } from "@/app/actions/profile-actions"
+import { getSubscriptions } from "@/app/actions/subscription-actions"
 import UnifiedTopBar from "@/components/ui/UnifiedTopBar"
 
 type SortType = 'update' | 'subscribed'
@@ -22,9 +22,11 @@ interface SubscriptionWithMod {
         author: string
         tags: { id: string; category: string; value: string; displayName: string; color: string | null }[]
         updatedAt: string
-        rating: number
-        downloads: string
-        views: string
+        stats: {
+            rating: number
+            downloads: string
+            views: string
+        }
         bannerUrl?: string
         description?: string
     }
@@ -45,7 +47,9 @@ export default function ProfileSubscriptionsPage() {
                 subscribedAt: typeof sub.subscribedAt === 'string' ? sub.subscribedAt : new Date(sub.subscribedAt).toISOString(),
                 mod: {
                     ...sub.mod,
-                    updatedAt: typeof sub.mod.updatedAt === 'string' ? sub.mod.updatedAt : new Date(sub.mod.updatedAt).toISOString()
+                    updatedAt: typeof sub.mod.updatedAt === 'string' 
+                        ? sub.mod.updatedAt 
+                        : (sub.mod.updatedAt ? new Date(sub.mod.updatedAt).toISOString() : '')
                 }
             })) as SubscriptionWithMod[])
             setLoading(false)
@@ -107,19 +111,8 @@ export default function ProfileSubscriptionsPage() {
                                     </div>
                                 )}
                                 <ModCard
-                                    title={sub.mod.title}
-                                    slug={sub.mod.slug}
-                                    version={sub.mod.version}
-                                    author={sub.mod.author}
-                                    tags={sub.mod.tags}
-                                    updatedAt={sub.mod.updatedAt}
-                                    bannerUrl={sub.mod.bannerUrl}
-                                    description={sub.mod.description || ''}
-                                    stats={{
-                                        rating: sub.mod.rating,
-                                        downloads: sub.mod.downloads,
-                                        views: sub.mod.views
-                                    }}
+                                    key={sub.mod.slug}
+                                    mod={sub.mod as any}
                                 />
                             </div>
                         ))}

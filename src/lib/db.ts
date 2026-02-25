@@ -1,27 +1,55 @@
-import { PrismaClient } from '@/generated/prisma'
-import { PrismaPg } from '@prisma/adapter-pg'
-import pg from 'pg'
+import { createClient } from '@supabase/supabase-js'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 
-const connectionString = process.env.DATABASE_URL
-if (!connectionString) {
-    throw new Error("DATABASE_URL is not defined in environment variables")
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseServiceRoleKey || !supabaseAnonKey) {
+    throw new Error("Supabase environment variables (URL, Service Role, or Anon Key) are not defined")
 }
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
+/**
+ * Service Role Client
+ * 
+ * Use this client ONLY for administrative tasks that MUST bypass RLS.
+ * This should be used sparingly in Server Actions.
+ */
+export const db = createClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: {
+        autoRefreshToken: false,
+        persistSession: false
+    }
+})
 
-export const db =
-    globalForPrisma.prisma || (() => {
-        // For local Postgres we use the standard pg pool
-        const pool = new pg.Pool({
-            connectionString,
-        })
+/**
+ * Session Client (RLS-Aware)
+ * 
+ * Use this client in Server Actions and Server Components to perform
+ * operations within the context of the currently logged-in user.
+ * This respects Row Level Security (RLS) policies.
+ */
+export async function createSessionClient() {
+    const cookieStore = await cookies()
 
-        const adapter = new PrismaPg(pool)
+    return createServerClient(supabaseUrl!, supabaseAnonKey!, {
+        cookies: {
+            getAll() {
+                return cookieStore.getAll()
+            },
+            setAll(cookiesToSet) {
+                try {
+                    cookiesToSet.forEach(({ name, value, options }) =>
+                        cookieStore.set(name, value, options)
+                    )
+                } catch {
+                    // The `setAll` method was called from a Server Component.
+                    // This can be ignored if you have middleware refreshing
+                    // user sessions.
+                }
+            },
+        },
+    })
+}
 
-        return new PrismaClient({
-            adapter,
-            log: ['error']
-        })
-    })()
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db

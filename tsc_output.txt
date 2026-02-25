@@ -1,0 +1,65 @@
+src/app/[locale]/admin/tags/page.tsx(14,1): error TS6133: 'PRIMARY_COLOR' is declared but its value is never read.
+src/app/[locale]/faq/page.tsx(9,5): error TS6133: 'User' is declared but its value is never read.
+src/app/[locale]/layout.tsx(8,10): error TS6133: 'getLocale' is declared but its value is never read.
+src/app/[locale]/mods/[slug]/page.tsx(46,11): error TS6133: 't' is declared but its value is never read.
+src/app/[locale]/profile/my-mods/page.tsx(190,36): error TS6133: 'data' is declared but its value is never read.
+src/app/actions/admin-actions.ts(412,24): error TS7030: Not all code paths return a value.
+src/app/actions/language-actions.ts(83,36): error TS6133: 'fetchError' is declared but its value is never read.
+src/app/actions/profile-actions.ts(8,1): error TS6133: 'ModData' is declared but its value is never read.
+src/app/actions/stats-actions.ts(4,1): error TS6192: All imports in import declaration are unused.
+src/app/api/upload/route.ts(46,17): error TS6133: 'data' is declared but its value is never read.
+src/components/admin/AdminCharts.tsx(81,33): error TS2322: Type '(dateValue: string | number) => string' is not assignable to type '((label: ReactNode, payload: readonly Payload<ValueType, NameType>[]) => ReactNode) & ((label: any, payload: Payload<ValueType, NameType>[]) => ReactNode)'.
+  Type '(dateValue: string | number) => string' is not assignable to type '(label: ReactNode, payload: readonly Payload<ValueType, NameType>[]) => ReactNode'.
+    Types of parameters 'dateValue' and 'label' are incompatible.
+      Type 'ReactNode' is not assignable to type 'string | number'.
+        Type 'undefined' is not assignable to type 'string | number'.
+src/components/admin/AdminCharts.tsx(129,33): error TS2322: Type '(dateValue: string | number) => string' is not assignable to type '((label: ReactNode, payload: readonly Payload<ValueType, NameType>[]) => ReactNode) & ((label: any, payload: Payload<ValueType, NameType>[]) => ReactNode)'.
+  Type '(dateValue: string | number) => string' is not assignable to type '(label: ReactNode, payload: readonly Payload<ValueType, NameType>[]) => ReactNode'.
+    Types of parameters 'dateValue' and 'label' are incompatible.
+      Type 'ReactNode' is not assignable to type 'string | number'.
+        Type 'undefined' is not assignable to type 'string | number'.
+src/components/AuthorTag.tsx(1,1): error TS6133: 'CircleUser' is declared but its value is never read.
+src/components/mod/editor/components/AutoSummary.tsx(18,5): error TS6133: 'originalVersion' is declared but its value is never read.
+src/components/mod/editor/hooks/useDraftManager.ts(6,1): error TS6133: 'calculateGameVersionColor' is declared but its value is never read.
+src/components/mod/editor/hooks/useModForm.ts(3,33): error TS6133: 'useEffect' is declared but its value is never read.
+src/components/mod/editor/lib/validation.ts(65,50): error TS6133: 't' is declared but its value is never read.
+src/components/mod/editor/UnifiedUpdateModal.tsx(5,1): error TS6133: 'Select' is declared but its value is never read.
+src/components/mod/editor/UnifiedUpdateModal.tsx(14,24): error TS6133: 'DialogBody' is declared but its value is never read.
+src/components/mod/editor/UnifiedUpdateModal.tsx(20,33): error TS6133: 'ModSelectorItem' is declared but its value is never read.
+src/components/mod/sections/feedback/FeedbackInput.tsx(4,16): error TS6133: 'Star' is declared but its value is never read.
+src/components/mod/sections/ModHeader.tsx(33,5): error TS6133: 'isNew' is declared but its value is never read.
+src/components/mod/sections/ModMediaSection.tsx(9,15): error TS6133: 'XIcon' is declared but its value is never read.
+src/components/mod/sidebar/ModSidebar.tsx(5,28): error TS6133: 'ModStatusType' is declared but its value is never read.
+src/components/ModSection.tsx(8,8): error TS6133: 'React' is declared but its value is never read.
+src/components/TagSelector.tsx(39,11): error TS6133: 't' is declared but its value is never read.
+src/components/ui/GameVersionSelector.tsx(230,61): error TS6133: 'e' is declared but its value is never read.
+src/components/ui/Popover.tsx(8,7): error TS6133: 'PopoverAnchor' is declared but its value is never read.
+src/components/ui/search/SearchInput.tsx(4,1): error TS6133: 'cn' is declared but its value is never read.
+src/components/ui/SearchBar.tsx(3,67): error TS6133: 'useId' is declared but its value is never read.
+src/components/ui/SearchBar.tsx(32,11): error TS6133: '_unusedVariant' is declared but its value is never read.
+src/components/ui/Tag.tsx(4,1): error TS6133: 'cn' is declared but its value is never read.
+src/components/VersionTag.tsx(26,11): error TS6133: 'Icon' is declared but its value is never read.
+src/entities/mod/model/mappers.ts(10,44): error TS6196: 'CreateModDto' is declared but never used.
+src/entities/mod/model/types.ts(8,1): error TS6133: 'z' is declared but its value is never read.
+src/features/edit-mod/model/validation.ts(84,3): error TS6133: 't' is declared but its value is never read.
+src/features/edit-mod/ui/EditorToolbar.tsx(28,3): error TS6133: 'title' is declared but its value is never read.
+src/features/edit-mod/ui/EditorToolbar.tsx(29,3): error TS6133: 'isNew' is declared but its value is never read.
+src/features/edit-mod/ui/ModEditor.tsx(13,1): error TS6133: 'Mod' is declared but its value is never read.
+src/features/edit-mod/ui/ModEditor.tsx(24,3): error TS6133: 'submissionId' is declared but its value is never read.
+src/features/edit-mod/ui/ModEditor.tsx(26,3): error TS6133: 'onCancel' is declared but its value is never read.
+src/features/edit-mod/ui/ModEditor.tsx(34,10): error TS6133: 'invalidFields' is declared but its value is never read.
+src/features/edit-mod/ui/ModEditor.tsx(37,34): error TS6133: 'updateField' is declared but its value is never read.
+src/features/edit-mod/ui/ModEditor.tsx(37,47): error TS6133: 'isDirty' is declared but its value is never read.
+src/features/edit-mod/ui/ModEditor.tsx(42,5): error TS6133: 'draftHistory' is declared but its value is never read.
+src/features/edit-mod/ui/ModEditor.tsx(47,5): error TS6133: 'deleteDraft' is declared but its value is never read.
+src/features/edit-mod/ui/ModEditor.tsx(48,5): error TS6133: 'clearAllDrafts' is declared but its value is never read.
+src/features/edit-mod/ui/ModEditor.tsx(102,9): error TS6133: 'handleRestoreDraft' is declared but its value is never read.
+src/lib/config.ts(28,6): error TS6196: 'SiteConfig' is declared but never used.
+src/lib/tag-utils.ts(10,1): error TS6192: All imports in import declaration are unused.
+src/lib/tag-utils.ts(11,1): error TS6133: 'DatabaseTagWithRelation' is declared but its value is never read.
+src/lib/utils.test.ts(2,53): error TS6133: 'calculateGameVersionColor' is declared but its value is never read.
+src/schemas/submission.schema.ts(90,6): error TS6196: 'ModSubmissionCreate' is declared but never used.
+src/schemas/tag.schema.ts(10,7): error TS6133: 'TagCategorySchema' is declared but its value is never read.
+src/shared/ui/date-picker.tsx(3,1): error TS6133: 'React' is declared but its value is never read.
+src/shared/ui/rich-text-editor.tsx(158,27): error TS6133: 'view' is declared but its value is never read.
+src/types/database.ts(223,6): error TS6196: 'JsonValue' is declared but never used.

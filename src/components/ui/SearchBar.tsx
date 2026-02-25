@@ -1,21 +1,22 @@
 "use client";
 
-import { Search, X, TrendingUp } from "lucide-react";
-import { useState, useRef, useEffect, useCallback, ChangeEvent, KeyboardEvent, useId } from "react";
+import { useState, useRef, useEffect, useCallback, KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
-import { searchTags, fetchPopularTags, TagData } from "@/app/actions/tag-actions";
-import Tag from "@/components/ui/Tag";
-import { useTranslations } from "next-intl";
+import { searchTags, fetchPopularTags, TagData } from '@/app/actions/tag-actions';
 import { cn } from "@/lib/utils";
+
+import SearchInput from "./search/SearchInput";
+import SelectedSearchTags from "./search/SelectedSearchTags";
+import SearchDropdown from "./search/SearchDropdown";
 
 interface SearchBarProps {
     value?: string;
     onChange?: (value: string) => void;
     placeholder?: string;
-    variant?: 'default' | 'compact';
     className?: string;
     showTagSuggestions?: boolean;
     locale?: string;
+    variant?: 'default' | 'compact'; // Deprecated: kept for backward compatibility
 }
 
 export default function SearchBar({
@@ -25,13 +26,12 @@ export default function SearchBar({
     className,
     showTagSuggestions = false,
     locale = 'en',
+    variant: _variant, // Deprecated: kept for backward compatibility, will be removed in v2
 }: SearchBarProps) {
-    const t = useTranslations('Common');
     const router = useRouter();
     const inputRef = useRef<HTMLInputElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    // For uncontrolled mode
     const [internalValue, setInternalValue] = useState("");
     const [suggestions, setSuggestions] = useState<TagData[]>([]);
     const [popularTags, setPopularTags] = useState<TagData[]>([]);
@@ -43,7 +43,7 @@ export default function SearchBar({
     const isControlled = value !== undefined;
     const currentValue = isControlled ? value : internalValue;
 
-    // Fetch popular tags on mount if suggestions enabled
+    // Fetch popular tags
     useEffect(() => {
         if (showTagSuggestions) {
             fetchPopularTags(6).then(tags => {
@@ -52,13 +52,12 @@ export default function SearchBar({
         }
     }, [showTagSuggestions]);
 
-    // Search tags as user types
+    // Search tags
     const handleSearch = useCallback(async (searchQuery: string) => {
         if (!showTagSuggestions || searchQuery.length < 2) {
             setSuggestions([]);
             return;
         }
-
         setIsLoading(true);
         try {
             const results = await searchTags(searchQuery, 'tag', 5);
@@ -72,44 +71,34 @@ export default function SearchBar({
         }
     }, [showTagSuggestions]);
 
-    // Debounce search
+    // Debounce
     useEffect(() => {
         if (!showTagSuggestions) return;
-        const timer = setTimeout(() => {
-            handleSearch(currentValue);
-        }, 200);
+        const timer = setTimeout(() => handleSearch(currentValue), 200);
         return () => clearTimeout(timer);
     }, [currentValue, handleSearch, showTagSuggestions]);
 
-    // Close dropdown when clicking outside
+    // Click outside
     useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
+        const handler = (e: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
                 setIsOpen(false);
             }
         };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
     }, []);
 
-    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const newValue = e.target.value;
+    const updateValue = (newValue: string) => {
         if (isControlled && onChange) {
             onChange(newValue);
         } else {
             setInternalValue(newValue);
         }
-        if (showTagSuggestions) {
-            setIsOpen(true);
-        }
     };
 
     const handleClear = () => {
-        if (isControlled && onChange) {
-            onChange("");
-        } else {
-            setInternalValue("");
-        }
+        updateValue("");
         setSelectedTags([]);
         setSuggestions([]);
         setIsOpen(false);
@@ -120,11 +109,7 @@ export default function SearchBar({
         if (!selectedTags.some(t => t.displayName.toLowerCase() === tag.displayName.toLowerCase())) {
             setSelectedTags([...selectedTags, tag]);
         }
-        if (isControlled && onChange) {
-            onChange("");
-        } else {
-            setInternalValue("");
-        }
+        updateValue("");
         setSuggestions([]);
         setIsOpen(false);
         inputRef.current?.focus();
@@ -135,20 +120,13 @@ export default function SearchBar({
     };
 
     const performSearch = () => {
-        const query = currentValue.trim();
         const params = new URLSearchParams();
-
-        if (query) {
-            params.set('q', query);
-        }
-
+        if (currentValue.trim()) params.set('q', currentValue.trim());
         if (selectedTags.length > 0) {
             params.set('tags', selectedTags.map(t => t.displayName).join(','));
         }
-
         if (params.toString()) {
             router.push(`/${locale}/mods?${params.toString()}`);
-            // Keep the search query and tags visible - don't clear them
             setIsOpen(false);
         }
     };
@@ -158,11 +136,9 @@ export default function SearchBar({
             setIsOpen(false);
         } else if (e.key === "Enter") {
             e.preventDefault();
-            if (showTagSuggestions && isOpen && highlightIndex >= 0) {
-                const allItems = suggestions.length > 0 ? suggestions : popularTags;
-                if (highlightIndex < allItems.length) {
-                    selectTag(allItems[highlightIndex]);
-                }
+            const allItems = suggestions.length > 0 ? suggestions : popularTags;
+            if (showTagSuggestions && isOpen && highlightIndex >= 0 && highlightIndex < allItems.length) {
+                selectTag(allItems[highlightIndex]);
             } else {
                 performSearch();
             }
@@ -182,122 +158,28 @@ export default function SearchBar({
 
     const shouldShowDropdown = showTagSuggestions && isOpen && (suggestions.length > 0 || (currentValue.length < 2 && popularTags.length > 0));
 
-    const searchId = useId();
-
     return (
-        <div
-            ref={dropdownRef}
-            className={cn("w-full relative group", className)}
-        >
-            {/* Input Container */}
-            <div className="flex items-center gap-3 bg-background/50 border border-white/10 rounded-lg px-3 py-1.5 min-h-[38px] focus-within:border-white/20 focus-within:bg-background transition-all hover:bg-background/80 overflow-hidden w-full">
-                <Search className="w-5 h-5 text-textMuted shrink-0" aria-hidden="true" />
+        <div ref={dropdownRef} className={cn("w-full relative group", className)}>
+            <SearchInput
+                value={currentValue}
+                onChange={updateValue}
+                onClear={handleClear}
+                onFocus={() => showTagSuggestions && setIsOpen(true)}
+                onKeyDown={handleKeyDown}
+                placeholder={placeholder}
+                inputRef={inputRef}
+                isLoading={isLoading}
+            />
 
-                {/* Input */}
-                <input
-                    ref={inputRef}
-                    id={searchId}
-                    name="GohSearch"
-                    type="text"
-                    value={currentValue}
-                    onChange={handleChange}
-                    onKeyDown={handleKeyDown}
-                    onFocus={() => showTagSuggestions && setIsOpen(true)}
-                    placeholder={placeholder}
-                    className="flex-grow bg-transparent border-none outline-none text-sm text-foreground placeholder:text-textMuted/50 h-full min-w-[80px]"
-                />
+            <SelectedSearchTags tags={selectedTags} onRemove={removeTag} />
 
-                {/* Actions */}
-                <div className="flex items-center gap-2 shrink-0">
-                    {(currentValue || selectedTags.length > 0) && (
-                        <button
-                            type="button"
-                            onClick={handleClear}
-                            className="text-textMuted hover:text-foreground transition-colors p-1"
-                        >
-                            <X size={14} />
-                        </button>
-                    )}
-                    {isLoading && (
-                        <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                    )}
-                </div>
-            </div>
-
-            {/* Selected Tags - Below Search Bar */}
-            {selectedTags.length > 0 && (
-                <div className="flex items-center gap-2 flex-wrap mt-3">
-                    {selectedTags.map(tag => (
-                        <span
-                            key={tag.displayName}
-                            className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs bg-white/5 border border-white/10 animate-in fade-in zoom-in-95 duration-200"
-                        >
-                            <span style={{ color: tag.color || '#a1a1aa' }}>{tag.displayName}</span>
-                            <button
-                                type="button"
-                                onClick={(e) => { e.stopPropagation(); removeTag(tag.displayName); }}
-                                className="text-textMuted hover:text-red-400 transition-colors"
-                            >
-                                <X size={10} aria-hidden="true" />
-                            </button>
-                        </span>
-                    ))}
-                </div>
-            )}
-
-            {/* Dropdown */}
             {shouldShowDropdown && (
-                <div
-                    className="absolute top-full left-0 right-0 mt-2 bg-background border border-white/10 rounded-lg shadow-2xl z-50 overflow-hidden backdrop-blur-xl"
-                >
-                    {suggestions.length > 0 ? (
-                        <div className="p-2 space-y-1">
-                            <div className="text-[10px] uppercase tracking-wider text-textMuted px-2 py-1 font-semibold">
-                                {t('suggestions')}
-                            </div>
-                            {suggestions.map((tag, idx) => (
-                                <button
-                                    key={tag.id}
-                                    onClick={() => selectTag(tag)}
-                                    className={cn(
-                                        "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-all",
-                                        idx === highlightIndex ? 'bg-white/10' : 'hover:bg-white/5'
-                                    )}
-                                >
-                                    <Tag color={tag.color || undefined} className="text-xs pointer-events-none">
-                                        {tag.displayName}
-                                    </Tag>
-                                    <span className="text-[10px] text-textMuted ml-auto">
-                                        {tag.usageCount} {t('mods')}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="p-4">
-                            <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-textMuted mb-3 font-semibold">
-                                <TrendingUp size={12} />
-                                {t('popularTags')}
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {popularTags.map((tag, idx) => (
-                                    <button
-                                        key={tag.id}
-                                        onClick={() => selectTag(tag)}
-                                        className={cn(
-                                            "transition-transform hover:scale-105 active:scale-95",
-                                            idx === highlightIndex ? 'ring-2 ring-primary ring-offset-2 ring-offset-background rounded-full' : ''
-                                        )}
-                                    >
-                                        <Tag color={tag.color || undefined} className="text-xs cursor-pointer hover:brightness-110">
-                                            {tag.displayName}
-                                        </Tag>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </div>
+                <SearchDropdown
+                    suggestions={suggestions}
+                    popularTags={popularTags}
+                    highlightIndex={highlightIndex}
+                    onSelectTag={selectTag}
+                />
             )}
         </div>
     );

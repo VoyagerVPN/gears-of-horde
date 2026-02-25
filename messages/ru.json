@@ -60,7 +60,8 @@
         "privacy": "Конфиденциальность",
         "terms": "Условия",
         "searchPlaceholder": "Поиск модов или тегов...",
-        "language": "EN / RU"
+        "language": "EN / RU",
+        "categories": "Категории"
     },
     "NewsPage": {
         "title": "Архив новостей",
@@ -677,5 +678,16 @@
         "title": "Что-то пошло не так!",
         "description": "Произошла непредвиденная ошибка. Наша команда уже уведомлена.",
         "retry": "Попробовать снова"
+    },
+    "Notifications": {
+        "title": "Уведомления",
+        "markAllAsRead": "Прочитать все",
+        "noNotifications": "У вас нет новых уведомлений",
+        "empty": "Здесь будут появляться обновления.",
+        "types": {
+            "MOD_UPDATE": "Обновление мода",
+            "COMMENT_REPLY": "Новый ответ",
+            "SYSTEM_ANNOUNCEMENT": "Системное"
+        }
     }
 }

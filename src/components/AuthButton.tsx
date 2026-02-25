@@ -1,6 +1,7 @@
 "use client"
 
-import { signOut, useSession, signIn } from "next-auth/react"
+import { useSupabaseAuth } from "@/components/SupabaseAuthProvider"
+import { createClient } from "@/utils/supabase/client"
 import Image from "next/image"
 import { LogOut, User } from "lucide-react"
 import { Link } from "@/i18n/routing"
@@ -8,10 +9,24 @@ import { siDiscord } from "simple-icons/icons"
 import { useTranslations } from "next-intl"
 
 export default function AuthButton() {
-    const { data: session, status } = useSession()
+    const { session, isLoading } = useSupabaseAuth()
     const t = useTranslations("Common")
+    const supabase = createClient()
 
-    if (status === "loading") {
+    const handleSignIn = async () => {
+        await supabase.auth.signInWithOAuth({
+            provider: 'discord',
+            options: {
+                redirectTo: `${window.location.origin}/auth/callback`,
+            },
+        })
+    }
+
+    const handleSignOut = async () => {
+        await supabase.auth.signOut()
+    }
+
+    if (isLoading) {
         return (
             <div className="w-10 h-10 rounded-full bg-white/10 animate-pulse" aria-label="Loading" />
         )
@@ -24,10 +39,10 @@ export default function AuthButton() {
                     href="/profile"
                     className="flex items-center gap-3 pl-1 pr-3 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all group"
                 >
-                    {session.user?.image ? (
+                    {session.user?.user_metadata?.avatar_url ? (
                         <Image
-                            src={session.user.image}
-                            alt={session.user.name || "User"}
+                            src={session.user.user_metadata.avatar_url}
+                            alt={session.user.user_metadata.full_name || "User"}
                             width={32}
                             height={32}
                             className="rounded-full border border-white/10 group-hover:border-primary/50 transition-colors object-cover"
@@ -39,7 +54,7 @@ export default function AuthButton() {
                     )}
                     <div className="flex flex-col text-left">
                         <span className="text-sm font-semibold text-white leading-tight group-hover:text-primary transition-colors">
-                            {session.user?.name}
+                            {session.user?.user_metadata?.full_name || session.user?.email?.split('@')[0]}
                         </span>
                         <span className="text-[10px] text-textMuted leading-tight uppercase tracking-wide">
                             User
@@ -47,7 +62,7 @@ export default function AuthButton() {
                     </div>
                 </Link>
                 <button
-                    onClick={() => signOut()}
+                    onClick={handleSignOut}
                     className="p-2.5 hover:bg-red-500/10 rounded-lg text-textMuted hover:text-red-400 border border-transparent hover:border-red-500/20 transition-all font-locust"
                     aria-label={t("signOut")}
                     title={t("signOut")}
@@ -60,7 +75,7 @@ export default function AuthButton() {
 
     return (
         <button
-            onClick={() => signIn("discord")}
+            onClick={handleSignIn}
             className="flex items-center gap-2 px-5 py-2.5 bg-[#5865F2] hover:bg-[#4752C4] text-white text-sm font-bold rounded-lg transition-all shadow-lg shadow-[#5865F2]/20 hover:shadow-[#5865F2]/40"
             aria-label={t("signIn")}
         >

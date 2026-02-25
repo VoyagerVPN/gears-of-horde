@@ -1,16 +1,16 @@
 import { MetadataRoute } from 'next';
-import { db } from '@/lib/db';
+import { createClient } from "@/utils/supabase/server";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://gears-of-horde.com';
 const LOCALES = ['en', 'ru'];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const mods = await db.mod.findMany({
-        select: {
-            slug: true,
-            updatedAt: true,
-        },
-    });
+    const supabase = await createClient();
+    const { data: mods } = await supabase
+        .from('mods')
+        .select('slug, updatedAt');
+    
+    if (!mods) return [];
 
     const sitemapEntries: MetadataRoute.Sitemap = [];
 
@@ -53,7 +53,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         for (const mod of mods) {
             sitemapEntries.push({
                 url: `${BASE_URL}/${locale}/mods/${mod.slug}`,
-                lastModified: mod.updatedAt,
+                lastModified: mod.updatedAt ? new Date(mod.updatedAt) : new Date(),
                 changeFrequency: 'weekly',
                 priority: 0.8,
             });

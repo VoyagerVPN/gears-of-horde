@@ -1,6 +1,4 @@
-/**
- * Utility Functions
- */
+import { type TagData } from "@/types/mod";
 
 // ============================================================================
 // GAME VERSION UTILITIES
@@ -17,114 +15,95 @@
  *   "v1.1b14" → "V1.1b14"
  *   "N/A" → "N/A"
  */
-export function normalizeGameVersion(version: string): string {
-    if (!version) return version;
-
-    const trimmed = version.trim();
-
-    // N/A is special case - keep as-is
-    if (trimmed.toUpperCase() === 'N/A') return 'N/A';
-
-    // Fix: VA21 -> A21 (strip V if followed by A)
-    let cleaned = trimmed;
-    if (cleaned.match(/^[vV][aA]\d+/)) {
-        cleaned = cleaned.substring(1);
-    }
-
-    // Alpha versions (A20, a21, etc.)
-    if (cleaned.match(/^[aA]\d+/)) {
-        return cleaned.toUpperCase();
-    }
-
-    // V versions (with or without build number)
-    // Remove any existing V/v prefix
-    cleaned = cleaned.replace(/^[vV]/, '');
-
-    // Only add 'V' if it looks like a version number (starts with digit)
-    if (/^\d/.test(cleaned)) {
-        return `V${cleaned}`;
-    }
-
-    // Otherwise return as is (e.g. "Unknown", "Custom")
-    return cleaned;
+/**
+ * Represents a parsed game version for 7 Days to Die
+ */
+export interface GameVersion {
+    prefix: 'A' | 'V';
+    v1: number;
+    v2: number;
+    build?: number;
 }
 
 /**
- * Convert game version to tag value format for database storage
- * Examples:
- *   "V2.2" → "2_2"
- *   "A20" → "a20"
- *   "V1.1b14" → "1_1b14"
- *   "N/A" → "na"
+ * Parses a string into a GameVersion object.
+ * Handles: "V1.1 b14", "A21", "1.0", "v1.1-b14", etc.
+ */
+export function parseGameVersion(version: string): GameVersion | null {
+    if (!version) return null;
+    const clean = version.trim();
+    if (clean.toUpperCase() === 'N/A') return null;
+
+    // Match prefix (optional, defaults to V), digits, separator (dot, space, underscore, dash), digits, 
+    // and optional build (b, build, dash followed by digits)
+    const regex = /^([av])?\s*(\d+)(?:[.\s_-](\d+))?(?:\s*[b-]|build\s*)?(\d+)?$/i;
+    const match = clean.match(regex);
+
+    if (!match) return null;
+
+    const prefix = (match[1]?.toUpperCase() as 'A' | 'V') || 'V';
+    const v1 = parseInt(match[2]) || 0;
+    const v2 = parseInt(match[3]) || 0;
+    const build = match[4] ? parseInt(match[4]) : undefined;
+
+    return { prefix, v1, v2, build };
+}
+
+/**
+ * Calculates a numerical weight for a version to ensure correct database sorting.
+ * Stable (V) > Alpha (A)
+ */
+export function calculateGameVersionWeight(v: GameVersion | null): number {
+    if (!v) return 0;
+    
+    // Weights:
+    // Prefix: V = 2,000,000; A = 1,000,000
+    // V1: * 10,000
+    // V2: * 100
+    // Build: * 1
+    const prefixWeight = v.prefix === 'V' ? 2000000 : 1000000;
+    return prefixWeight + (v.v1 * 10000) + (v.v2 * 100) + (v.build || 0);
+}
+
+/**
+ * Formats a GameVersion into a standardized string.
+ */
+export function formatGameVersion(v: GameVersion | null, type: 'display' | 'value' = 'display'): string {
+    if (!v) return 'N/A';
+
+    if (type === 'value') {
+        const buildStr = v.build !== undefined ? `-b${v.build}` : '';
+        return `${v.prefix.toLowerCase()}${v.v1}.${v.v2}${buildStr}`;
+    }
+
+    const buildStr = v.build !== undefined ? ` b${v.build}` : '';
+    return `${v.prefix}${v.v1}.${v.v2}${buildStr}`;
+}
+
+/**
+ * @deprecated Use parseGameVersion and formatGameVersion instead.
+ * Keeps compatibility for existing components during transition.
+ */
+export function normalizeGameVersion(version: string): string {
+    const parsed = parseGameVersion(version);
+    return formatGameVersion(parsed, 'display');
+}
+
+/**
+ * @deprecated Use parseGameVersion and formatGameVersion instead.
  */
 export function gameVersionToTagValue(version: string): string {
-    if (!version) return version;
-
-    let trimmed = version.trim();
-
-    // N/A special case
-    if (trimmed.toUpperCase() === 'N/A') return 'na';
-
-    // Fix: VA21 -> A21 (strip V if followed by A)
-    if (trimmed.match(/^[vV][aA]\d+/)) {
-        trimmed = trimmed.substring(1);
-    }
-
-    // Alpha versions keep the 'a' prefix in lowercase BUT apply underscores for dots
-    if (trimmed.match(/^[aA]\d+/)) {
-        return trimmed.toLowerCase().replace(/\./g, '_');
-    }
-
-    // V versions: remove V prefix, replace dots with underscores
-    return trimmed
-        .replace(/^[vV]/, '')  // Remove V prefix
-        .replace(/\./g, '_');   // Replace dots with underscores
+    const parsed = parseGameVersion(version);
+    return formatGameVersion(parsed, 'value');
 }
 
 /**
- * Compare two game versions
- * Order: A20 < A21 < V1.0 < V1.1 < V1.1b14 < V1.2
- * N/A is treated as oldest (for sorting purposes)
- * Returns: < 0 if v1 < v2, 0 if v1 == v2, > 0 if v1 > v2
+ * Compares two game version strings using their calculated weights.
  */
 export function compareGameVersions(v1: string, v2: string): number {
-    const v1Upper = (v1 || '').toUpperCase();
-    const v2Upper = (v2 || '').toUpperCase();
-
-    // N/A handling - treat as oldest
-    if (v1Upper === 'N/A' && v2Upper === 'N/A') return 0;
-    if (v1Upper === 'N/A') return -1;
-    if (v2Upper === 'N/A') return 1;
-
-    const v1IsAlpha = v1Upper.startsWith('A');
-    const v2IsAlpha = v2Upper.startsWith('A');
-
-    // Alpha versions come before V versions
-    if (v1IsAlpha && !v2IsAlpha) return -1;
-    if (!v1IsAlpha && v2IsAlpha) return 1;
-
-    // Extract version parts and build number
-    const parseVersion = (v: string): { parts: number[], build: number } => {
-        const clean = v.replace(/^[AVav]/, '');
-        const buildMatch = clean.match(/b(\d+)$/i);
-        const build = buildMatch ? parseInt(buildMatch[1]) : 0;
-        const versionStr = clean.replace(/b\d+$/i, '');
-        const parts = versionStr.split('.').map(n => parseInt(n) || 0);
-        return { parts, build };
-    };
-
-    const { parts: v1Parts, build: v1Build } = parseVersion(v1Upper);
-    const { parts: v2Parts, build: v2Build } = parseVersion(v2Upper);
-
-    // Compare version numbers
-    for (let i = 0; i < Math.max(v1Parts.length, v2Parts.length); i++) {
-        const p1 = v1Parts[i] || 0;
-        const p2 = v2Parts[i] || 0;
-        if (p1 !== p2) return p1 - p2;
-    }
-
-    // If versions are equal, compare build numbers
-    return v1Build - v2Build;
+    const w1 = calculateGameVersionWeight(parseGameVersion(v1));
+    const w2 = calculateGameVersionWeight(parseGameVersion(v2));
+    return w1 - w2;
 }
 
 /**
@@ -135,6 +114,22 @@ export function getLatestGameVersion(tags: { displayName: string }[], defaultVer
 
     const sorted = [...tags].sort((a, b) => compareGameVersions(b.displayName, a.displayName));
     return sorted[0]?.displayName || defaultVersion;
+}
+
+export function getGameVerColor(version: string | TagData): string {
+    const value = typeof version === 'string' ? version : (version.value || version.displayName);
+    const parsed = parseGameVersion(value);
+    
+    if (!parsed) return 'zinc';
+
+    // Highlight Alpha as amber/orange, Stable as emerald/green
+    if (parsed.prefix === 'A') {
+        if (parsed.v1 >= 21) return 'amber';
+        return 'orange';
+    }
+    
+    if (parsed.v1 >= 1) return 'emerald';
+    return 'blue';
 }
 
 /**

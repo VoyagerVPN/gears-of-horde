@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useTranslations } from "next-intl"
 import { FileText, Pencil, X, Check } from "lucide-react"
 import { updateUserBio } from "@/app/actions/profile-actions"
-import RichTextEditor from "@/components/ui/RichTextEditor"
+import { RichTextEditor } from "@/shared/ui"
 
 interface ProfileBioCardProps {
     bio: string | null

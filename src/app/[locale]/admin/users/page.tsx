@@ -5,7 +5,7 @@ import Image from "next/image"
 import { useTranslations } from 'next-intl'
 import { Ban, RefreshCw, Check, ChevronDown } from "lucide-react"
 import { fetchAllUsers, updateUserRole, toggleUserBan, UserData } from "@/app/actions/user-actions"
-import { UserRole } from "@/generated/prisma"
+import { UserRole } from "@/entities/user"
 import SearchBar from "@/components/ui/SearchBar"
 import * as Select from "@radix-ui/react-select"
 import UnifiedTopBar from "@/components/ui/UnifiedTopBar"

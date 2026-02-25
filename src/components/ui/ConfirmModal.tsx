@@ -9,7 +9,7 @@ import {
     DialogBody,
     DialogFooter,
     DialogButton,
-} from "@/components/ui/Dialog";
+} from "@/shared/ui";
 
 interface ConfirmModalProps {
     isOpen: boolean;

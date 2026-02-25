@@ -1,4 +1,4 @@
-import VisualModEditor from "@/components/mod/VisualModEditor";
+import VisualModEditor from "@/components/mod/editor/VisualModEditor";
 import { fetchModBySlug } from "@/app/actions/admin-actions";
 import { notFound, redirect } from "next/navigation";
 import { ROUTES } from "@/lib/routes";

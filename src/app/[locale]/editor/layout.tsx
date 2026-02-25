@@ -2,20 +2,30 @@ import { Link } from "@/i18n/routing";
 import { LogOut } from "lucide-react";
 import SidebarNav from "@/components/ui/SidebarNav";
 import ProfileBottomNav from "@/components/profile/ProfileBottomNav";
-import { auth } from "@/auth";
+import { createClient } from "@/utils/supabase/server";
+import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
-import { getTranslations } from 'next-intl/server';
 
 export default async function EditorLayout({
-    children,
+    children
 }: {
     children: React.ReactNode;
 }) {
-    // Auth protection
-    const session = await auth();
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (!session) {
-        redirect("/api/auth/signin");
+    if (!user) {
+        redirect("/login");
+    }
+
+    const { data: dbUser } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+    if (!dbUser) {
+        redirect("/profile");
     }
 
     const t = await getTranslations('Admin');
@@ -26,10 +36,10 @@ export default async function EditorLayout({
             <aside className="hidden lg:flex w-64 bg-surface border-r border-white/5 flex-col fixed h-full z-50">
 
 
-                <SidebarNav userRole={session.user.role} />
+                <SidebarNav userRole={dbUser.role} />
 
                 <div className="p-4 border-t border-white/5 mt-auto">
-                    <Link href="/api/auth/signout" className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-lg transition-colors w-full">
+                    <Link href="/auth/signout" className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 rounded-lg transition-colors w-full">
                         <LogOut size={18} />
                         {t('logout')}
                     </Link>
@@ -42,7 +52,7 @@ export default async function EditorLayout({
             </main>
 
             {/* Mobile Bottom Nav */}
-            <ProfileBottomNav userRole={session.user.role} />
+            <ProfileBottomNav userRole={dbUser.role} />
         </div>
     );
 }

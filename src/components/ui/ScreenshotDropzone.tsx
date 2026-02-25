@@ -3,8 +3,10 @@
 import { useState, useRef, useCallback } from 'react';
 import { Upload, Loader2, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { PutBlobResult } from '@vercel/blob';
-import { useToast } from '@/components/ui/Toast';
+interface PutBlobResult {
+    url: string;
+}
+import { useToast } from '@/shared/ui';
 
 const MAX_FILE_SIZE = 4.5 * 1024 * 1024; // 4.5MB
 const MAX_SCREENSHOTS = 10;

@@ -7,14 +7,6 @@ import { z } from 'zod';
 /**
  * Valid tag categories in the system
  */
-const TagCategorySchema = z.enum([
-    'gamever',  // Game version tags
-    'author',   // Author tags
-    'lang',     // Language tags
-    'status',   // Mod status tags
-    'newscat',  // News category tags
-    'tag'       // Generic tags
-]);
 
 /**
  * Schema for creating a new tag

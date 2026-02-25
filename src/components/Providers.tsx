@@ -1,14 +1,14 @@
 "use client"
 
-import { SessionProvider } from "next-auth/react"
-import { ToastProvider } from "@/components/ui/Toast"
+import { SupabaseAuthProvider } from "@/components/SupabaseAuthProvider"
+import { ToastProvider } from "@/shared/ui"
 
 export default function Providers({ children }: { children: React.ReactNode }) {
     return (
-        <SessionProvider>
+        <SupabaseAuthProvider>
             <ToastProvider>
                 {children}
             </ToastProvider>
-        </SessionProvider>
+        </SupabaseAuthProvider>
     )
 }

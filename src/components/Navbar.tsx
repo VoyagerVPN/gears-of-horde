@@ -6,6 +6,7 @@ import { Link } from '@/i18n/routing';
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import AuthButton from "@/components/AuthButton";
 import SearchBar from "@/components/ui/SearchBar";
+import NotificationCenter from "@/components/ui/NotificationCenter";
 
 import { useState, useEffect } from "react";
 import { useSearchParams, usePathname } from "next/navigation";
@@ -75,6 +76,7 @@ export default function Navbar() {
 
         {/* Actions - Right */}
         <div className="flex items-center gap-4 shrink-0 ml-auto">
+          <NotificationCenter />
           <LanguageSwitcher />
           <AuthButton />
           <button

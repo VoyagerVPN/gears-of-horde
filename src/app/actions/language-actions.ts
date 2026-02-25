@@ -1,8 +1,10 @@
 'use server';
 
-import { db as prisma } from "@/lib/db";
+
 import { revalidatePath } from "next/cache";
 import { ROUTES } from "@/lib/routes";
+import { db } from "@/lib/db";
+import { DatabaseTagWithCount, mapDatabaseTagWithCountToTagData } from "@/types/database";
 
 export interface LanguageData {
     id: string;
@@ -10,25 +12,34 @@ export interface LanguageData {
     usageCount: number; // Number of mods using this language
 }
 
+const LANG_SELECT = `
+    *,
+    modTags:ModTag(count)
+`;
+
 /**
  * Fetch all languages from the database
  */
 export async function fetchAllLanguages(): Promise<LanguageData[]> {
-    const tags = await prisma.tag.findMany({
-        where: { category: 'lang' },
-        include: {
-            _count: {
-                select: { modTags: true }
-            }
-        },
-        orderBy: { displayName: 'asc' }
-    });
+    const { data: tags, error } = await db
+        .from('Tag')
+        .select(LANG_SELECT)
+        .eq('category', 'lang')
+        .order('displayName', { ascending: true });
 
-    return tags.map(tag => ({
-        id: tag.id,
-        name: tag.displayName,
-        usageCount: tag._count.modTags
-    }));
+    if (error) {
+        console.error("Failed to fetch all languages:", error.message);
+        return [];
+    }
+
+    return (tags as unknown as DatabaseTagWithCount[]).map(tag => {
+        const mapped = mapDatabaseTagWithCountToTagData(tag);
+        return {
+            id: mapped.id || '',
+            name: mapped.displayName,
+            usageCount: mapped.usageCount ?? 0
+        };
+    });
 }
 
 /**
@@ -37,30 +48,29 @@ export async function fetchAllLanguages(): Promise<LanguageData[]> {
 export async function searchLanguages(query: string, limit: number = 10): Promise<LanguageData[]> {
     if (!query || query.length < 1) return [];
 
-    const tags = await prisma.tag.findMany({
-        where: {
-            category: 'lang',
-            OR: [
-                { displayName: { contains: query, mode: 'insensitive' } },
-                { value: { contains: query.toLowerCase(), mode: 'insensitive' } }
-            ]
-        },
-        include: {
-            _count: {
-                select: { modTags: true }
-            }
-        },
-        orderBy: {
-            modTags: { _count: 'desc' }
-        },
-        take: limit
-    });
+    const { data: tags, error } = await db
+        .from('Tag')
+        .select(LANG_SELECT)
+        .eq('category', 'lang')
+        .or(`displayName.ilike.%${query}%,value.ilike.%${query}%`)
+        .limit(limit);
 
-    return tags.map(tag => ({
-        id: tag.id,
-        name: tag.displayName,
-        usageCount: tag._count.modTags
-    }));
+    if (error) {
+        console.error("Failed to search languages:", error.message);
+        return [];
+    }
+
+    // Sort by popularity in-memory if needed, or just return. Original code sorted by count desc.
+    return (tags as unknown as DatabaseTagWithCount[])
+        .map(tag => {
+            const mapped = mapDatabaseTagWithCountToTagData(tag);
+            return {
+                id: mapped.id || '',
+                name: mapped.displayName,
+                usageCount: mapped.usageCount ?? 0
+            };
+        })
+        .sort((a, b) => (b.usageCount ?? 0) - (a.usageCount ?? 0));
 }
 
 /**
@@ -70,14 +80,12 @@ export async function createLanguage(name: string): Promise<LanguageData> {
     const normalizedValue = name.toLowerCase().trim().replace(/\s+/g, '_');
 
     // Check if language already exists
-    const existing = await prisma.tag.findUnique({
-        where: {
-            category_value: {
-                category: 'lang',
-                value: normalizedValue
-            }
-        }
-    });
+    const { data: existing } = await db
+        .from('Tag')
+        .select('id, displayName')
+        .eq('category', 'lang')
+        .eq('value', normalizedValue)
+        .maybeSingle();
 
     if (existing) {
         return {
@@ -88,14 +96,21 @@ export async function createLanguage(name: string): Promise<LanguageData> {
     }
 
     // Create new language tag
-    const tag = await prisma.tag.create({
-        data: {
+    const { data: tag, error: insertError } = await db
+        .from('Tag')
+        .insert({
             category: 'lang',
             value: normalizedValue,
             displayName: name.trim(),
-            color: null // Languages don't need colors
-        }
-    });
+            color: null
+        })
+        .select()
+        .single();
+
+    if (insertError) {
+        console.error("Failed to create language:", insertError.message);
+        throw new Error("Failed to create language");
+    }
 
     revalidatePath(ROUTES.mods);
 
@@ -112,30 +127,28 @@ export async function createLanguage(name: string): Promise<LanguageData> {
 export async function getOrCreateLanguage(name: string): Promise<LanguageData> {
     const normalizedValue = name.toLowerCase().trim().replace(/\s+/g, '_');
 
-    const tag = await prisma.tag.upsert({
-        where: {
-            category_value: {
-                category: 'lang',
-                value: normalizedValue
-            }
-        },
-        update: {}, // Don't update if exists
-        create: {
+    // Supabase upsert requires unique constraint. 
+    // Since we have a composite unique constraint on (category, value), we can use it.
+    const { data: tag, error } = await db
+        .from('Tag')
+        .upsert({
             category: 'lang',
             value: normalizedValue,
             displayName: name.trim(),
             color: null
-        },
-        include: {
-            _count: {
-                select: { modTags: true }
-            }
-        }
-    });
+        }, { onConflict: 'category,value' })
+        .select(LANG_SELECT)
+        .single();
 
+    if (error) {
+        console.error("Failed to get/create language:", error.message);
+        throw new Error("Failed to get or create language");
+    }
+
+    const mapped = mapDatabaseTagWithCountToTagData(tag as unknown as DatabaseTagWithCount);
     return {
-        id: tag.id,
-        name: tag.displayName,
-        usageCount: tag._count.modTags
+        id: mapped.id || '',
+        name: mapped.displayName,
+        usageCount: mapped.usageCount ?? 0
     };
 }

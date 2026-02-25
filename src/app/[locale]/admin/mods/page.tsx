@@ -14,12 +14,12 @@ import { fetchPendingModSubmissions, rejectModSubmission } from "@/app/actions/m
 import { fetchTagsByCategory } from "@/app/actions/tag-actions";
 import { ModData, TranslationSuggestion, ModSubmission, TagData } from "@/types/mod";
 import Image from "next/image";
-import UnifiedUpdateModal from "@/components/mod/UnifiedUpdateModal";
+import UnifiedUpdateModal from "@/components/mod/editor/UnifiedUpdateModal";
 import Tag from "@/components/ui/Tag";
 import AuthorTag from "@/components/AuthorTag";
 import VersionTag from "@/components/VersionTag";
 import DateDisplay from "@/components/DateDisplay";
-import { useToast } from "@/components/ui/Toast";
+import { useToast } from "@/shared/ui";
 import UnifiedTopBar from "@/components/ui/UnifiedTopBar";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 

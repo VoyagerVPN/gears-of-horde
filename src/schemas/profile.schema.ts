@@ -5,6 +5,12 @@ import { z } from 'zod';
 // ============================================================================
 
 /**
+ * User roles
+ */
+export const UserRoleSchema = z.enum(['USER', 'ADMIN', 'MODERATOR', 'DEVELOPER']);
+export type UserRole = z.infer<typeof UserRoleSchema>;
+
+/**
  * Schema for user bio update
  */
 export const UserBioUpdateSchema = z.object({
